@@ -45,7 +45,16 @@ class ModInfo:
         self.runtime_native_file: Path = None
         self.runtime_native_pdb_file: Path = None
         
+        # Python Library Info:
+        self.build_python_dll_file: Path = None
+        self.build_python_dylib_file: Path = None
+        self.build_python_so_file: Path = None
+        self.build_python_native_file: Path = None
         
+        self.runtime_python_dll_file: Path = None
+        self.runtime_python_dylib_file: Path = None
+        self.runtime_python_so_file: Path = None
+        self.runtime_python_native_file: Path = None
         
     def set_extlib_info(self, windows_lib: str, macos_lib: str, linux_lib: str, native_lib: str):
         self.build_dll_file = self.project_root.joinpath(windows_lib)
@@ -61,6 +70,16 @@ class ModInfo:
         self.runtime_so_file = self.runtime_mods_dir.joinpath(self.build_so_file.name.removeprefix("lib"))
         self.runtime_native_file = self.runtime_mods_dir.joinpath(self.build_native_file.name.removeprefix("lib"))
         self.runtime_native_pdb_file = self.runtime_mods_dir.joinpath(self.build_native_pdb_file.name.removeprefix("lib"))
+        
+        self.build_python_dll_file: Path = self.build_dll_file.with_stem("python313")
+        self.build_python_dylib_file: Path = self.build_dylib_file.with_stem("libpython3.13")
+        self.build_python_so_file: Path = self.build_so_file.with_stem("libpython3.13")
+        self.build_python_native_file: Path = self.build_native_file.with_stem("python313" if os.name == 'nt' else "libpython3.13")
+        
+        self.runtime_python_dll_file: Path = self.runtime_mods_dir.joinpath(self.build_python_dll_file.name)
+        self.runtime_python_dylib_file: Path = self.runtime_mods_dir.joinpath(self.build_python_dylib_file.name)
+        self.runtime_python_so_file: Path = self.runtime_mods_dir.joinpath(self.build_python_so_file.name)
+        self.runtime_python_native_file: Path = self.runtime_mods_dir.joinpath(self.build_python_native_file.name)
         
         return self
     
@@ -204,6 +223,10 @@ class ModInfo:
             self.copy_if_exists(self.build_pdb_file, self.runtime_pdb_file)
             self.copy_if_exists(self.build_dylib_file, self.runtime_dylib_file)
             self.copy_if_exists(self.build_so_file, self.runtime_so_file)
+            
+            self.copy_if_exists(self.build_python_dll_file, self.runtime_python_dll_file)
+            self.copy_if_exists(self.build_python_dylib_file, self.runtime_python_dylib_file)
+            self.copy_if_exists(self.build_python_so_file, self.runtime_python_so_file)
 
     def copy_to_runtime_dir_native(self):
         # Copying files for debugging:
@@ -218,6 +241,8 @@ class ModInfo:
         if 'extlib_compiling' in self.mod_data:
             self.copy_if_exists(self.build_native_file, self.runtime_native_file)
             self.copy_if_exists(self.build_native_pdb_file, self.runtime_native_pdb_file)
+            
+            self.copy_if_exists(self.build_python_native_file, self.runtime_python_native_file)
 
     def copy_if_exists(self, src: Path, dest: Path):
         if src.exists():

@@ -4,12 +4,26 @@ project(recomp_mod_native_lib)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (NOT DEFINED LIB_NAME)
+    set(LIB_NAME recomp_extlib)
+endif()
+
 set(TARGET_NAME ${LIB_NAME})
 
 include_directories("./offline_build")
 include_directories("./include/extlib")
 include_directories("./include/shared")
 include_directories("./src/extlib")
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    # 64-bit
+    message(STATUS "Building for 64-bit...")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    # 32-bit
+    message(FATAL_ERROR "Building for 32-bit not supported.")
+else()
+    message(FATAL_ERROR "Unknown pointer size.")
+endif()
 
 # Include the script to download and set up the Python binary
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")

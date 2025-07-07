@@ -7,7 +7,7 @@ info = bm.ModInfo("./mod.toml", "build")
 extlib_name = info.get_extlib_name();
 if extlib_name is not None:
     info.set_extlib_info(
-        f"./build/zig-windows-x64-Release/bin/lib{extlib_name}.dll",
+        f"./build/zig-windows-x64-Release/lib/lib{extlib_name}.dll",
         f"./build/zig-macos-aarch64-Release/lib/lib{extlib_name}.dylib",
         f"./build/zig-linux-x64-Release/lib/lib{extlib_name}.so",
         ""
