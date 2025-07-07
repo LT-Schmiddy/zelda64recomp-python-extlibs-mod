@@ -31,7 +31,7 @@ NATIVE_CMAKE_BUILD_PRESET ?= $(call get_python_func_no_build_info,get_extlib_nat
 
 ifeq ($(OS),Windows_NT)
 MOD_TOOL_ZIG_TRIPLET ?= x86_64-windows
-NATIVE_SUBDIR := bin
+NATIVE_SUBDIR := lib
 NATIVE_EXTENSION := dll
 else ifneq ($(shell uname),Darwin)
 MOD_TOOL_ZIG_TRIPLET ?= x86_64-linux
