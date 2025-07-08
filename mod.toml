@@ -43,7 +43,8 @@ dependencies = [
 native_libraries = [
 # Example native library:
     { name = "PythonForRecompNative", funcs = [
-        "PythonNative_Init"
+        "PythonNative_Init",
+        "PythonNative_Call"
     ] }
 ]
 
