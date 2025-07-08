@@ -7,3 +7,7 @@
 [submodule "N64Recomp"]
 	path = N64Recomp
 	url = https://github.com/N64Recomp/N64Recomp.git
+[submodule "extern/pybind11"]
+	path = extern/pybind11
+	url = https://github.com/pybind/pybind11.git
+	branch = stable
