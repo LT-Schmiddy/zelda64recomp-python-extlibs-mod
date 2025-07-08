@@ -5,6 +5,7 @@ include(FetchContent)
 
 # URL and output directories
 set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-aarch64-apple-darwin-install_only_stripped.tar.gz")
+# set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-aarch64-apple-darwin-install_only.tar.gz")
 set(PYTHON_ARCHIVE "${CMAKE_BINARY_DIR}/cpython.tar.gz")
 set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
 

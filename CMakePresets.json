@@ -30,6 +30,13 @@
                 "CMAKE_BUILD_TYPE":"Debug"
             }
         },
+                {
+            "name": "native-windows-x64-RelWithDebInfo",
+            "inherits": "native-windows-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
+        },
         {
             "name": "native-windows-x64-Release",
             "inherits": "native-windows-x64",
@@ -50,6 +57,13 @@
             "inherits": "native-linux-x64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Debug"
+            }
+        },        
+        {
+            "name": "native-linux-x64-RelWithDebInfo",
+            "inherits": "native-linux-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
             }
         },
         {
@@ -74,6 +88,12 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Debug"
             }
+        },        {
+            "name": "native-macos-x64-RelWithDebInfo",
+            "inherits": "native-macos-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
         },
         {
             "name": "native-macos-x64-Release",
@@ -95,6 +115,13 @@
             "inherits": "native-macos-aarch64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Debug"
+            }
+        },
+        {
+            "name": "native-macos-aarch64-RelWithDebInfo",
+            "inherits": "native-macos-aarch64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
             }
         },
         {
@@ -123,6 +150,13 @@
             }
         },
         {
+            "name": "zig-windows-x64-RelWithDebInfo",
+            "inherits": "zig-windows-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
+        },
+        {
             "name": "zig-windows-x64-Release",
             "inherits": "zig-windows-x64",
             "cacheVariables": {
@@ -145,6 +179,13 @@
             "inherits": "zig-linux-x64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Debug"
+            }
+        },        
+        {
+            "name": "zig-linux-x64-RelWithDebInfo",
+            "inherits": "zig-linux-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
             }
         },
         {
@@ -171,6 +212,13 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Debug"
             }
+        },        
+        {
+            "name": "zig-macos-x64-RelWithDebInfo",
+            "inherits": "zig-macos-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
         },
         {
             "name": "zig-macos-x64-Release",
@@ -195,6 +243,13 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Debug"
             }
+        },        
+        {
+            "name": "zig-macos-aarch64-RelWithDebInfo",
+            "inherits": "zig-macos-aarch64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
         },
         {
             "name": "zig-macos-aarch64-Release",
@@ -216,6 +271,10 @@
         {
             "name": "native-windows-x64-Debug",
             "configurePreset": "native-windows-x64-Debug"
+        },        
+        {
+            "name": "native-windows-x64-RelWithDebInfo",
+            "configurePreset": "native-windows-x64-RelWithDebInfo"
         },
         {
             "name": "native-windows-x64-Release",
@@ -228,6 +287,10 @@
         {
             "name": "native-linux-x64-Debug",
             "configurePreset": "native-linux-x64-Debug"
+        },        
+        {
+            "name": "native-linux-x64-RelWithDebInfo",
+            "configurePreset": "native-linux-x64-RelWithDebInfo"
         },
         {
             "name": "native-linux-x64-Release",
@@ -240,6 +303,10 @@
         {
             "name": "macos-x64-Debug",
             "configurePreset": "native-macos-x64-Debug"
+        },        
+        {
+            "name": "macos-x64-RelWithDebInfo",
+            "configurePreset": "native-macos-x64-RelWithDebInfo"
         },
         {
             "name": "native-macos-x64-Release",
@@ -252,6 +319,10 @@
         {
             "name": "native-macos-aarch64-Debug",
             "configurePreset": "native-macos-aarch64-Debug"
+        },        
+        {
+            "name": "native-macos-aarch64-RelWithDebInfo",
+            "configurePreset": "native-macos-aarch64-RelWithDebInfo"
         },
         {
             "name": "native-macos-aarch64-Release",
@@ -264,6 +335,10 @@
         {
             "name": "zig-windows-x64-Debug",
             "configurePreset": "zig-windows-x64-Debug"
+        },        
+        {
+            "name": "zig-windows-x64-RelWithDebInfo",
+            "configurePreset": "zig-windows-x64-RelWithDebInfo"
         },
         {
             "name": "zig-windows-x64-Release",
@@ -276,6 +351,10 @@
         {
             "name": "zig-linux-x64-Debug",
             "configurePreset": "zig-linux-x64-Debug"
+        },        
+        {
+            "name": "zig-linux-x64-RelWithDebInfo",
+            "configurePreset": "zig-linux-x64-RelWithDebInfo"
         },
         {
             "name": "zig-linux-x64-Release",
@@ -288,6 +367,10 @@
         {
             "name": "zig-macos-x64-Debug",
             "configurePreset": "zig-macos-x64-Debug"
+        },        
+        {
+            "name": "zig-macos-x64-RelWithDebInfo",
+            "configurePreset": "zig-macos-x64-RelWithDebInfo"
         },
         {
             "name": "zig-macos-x64-Release",
@@ -300,6 +383,10 @@
         {
             "name": "zig-macos-aarch64-Debug",
             "configurePreset": "zig-macos-aarch64-Debug"
+        },        
+        {
+            "name": "zig-macos-aarch64-RelWithDebInfo",
+            "configurePreset": "zig-macos-aarch64-RelWithDebInfo"
         },
         {
             "name": "zig-macos-aarch64-Release",

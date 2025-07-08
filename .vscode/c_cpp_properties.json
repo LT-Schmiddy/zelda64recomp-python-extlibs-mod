@@ -15,7 +15,8 @@
                 "${workspaceFolder}/assets_extracted",
                 "${workspaceFolder}/assets_extracted/assets",
                 "${workspaceFolder}/mm-decomp/extracted/n64-us",
-                "${workspaceFolder}/build/native-windows-x64-Debug/python-standalone/python/include"
+                "${workspaceFolder}/build/native-windows-x64-Debug/python-standalone/python/include",
+                "${workspaceFolder}/extern/pybind11/include"
             ],
             "defines": [
                 "F3DEX_GBI_2",
@@ -57,7 +58,8 @@
                 "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
-                "${workspaceFolder}/build/zig-windows-x64-Debug/python-standalone/python/include"
+                "${workspaceFolder}/build/zig-windows-x64-Debug/python-standalone/python/include",
+                "${workspaceFolder}/extern/pybind11/include"
             ]
         },
         {
@@ -67,7 +69,8 @@
                 "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
-                "${workspaceFolder}/build/zig-macos-aarch64-Debug/python-standalone/python/include"
+                "${workspaceFolder}/build/zig-macos-aarch64-Debug/python-standalone/python/include",
+                "${workspaceFolder}/extern/pybind11/include"
             ]
         },
         {
@@ -77,7 +80,8 @@
                 "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
-                "${workspaceFolder}/build/zig-linux-x64-Debug/python-standalone/python/include"
+                "${workspaceFolder}/build/zig-linux-x64-Debug/python-standalone/python/include",
+                "${workspaceFolder}/extern/pybind11/include"
             ]
         }
     ],

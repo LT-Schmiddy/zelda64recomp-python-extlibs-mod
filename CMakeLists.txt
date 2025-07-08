@@ -15,6 +15,7 @@ include_directories("./include/extlib")
 include_directories("./include/shared")
 include_directories("./src/extlib")
 
+## Setting up Python building:
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     # 64-bit
     message(STATUS "Building for 64-bit...")
@@ -36,11 +37,23 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_Linux_x64.cmake)
 endif()
 
+set(PYBIND11_PYTHON_VERSION 3.13)
+set(PYTHON_EXECUTABLE ${PYTHON_EXE})
+set(PYTHON_IS_DEBUG OFF)
+
+# Adding PyBind11
+set(Python_FIND_ABI "OFF" "ANY" "ANY")
+set(PYBIND11_FINDPYTHON OFF)
+set(PYBIND11_NOPYTHON ON)
+add_subdirectory("./extern/pybind11")
+
+# include_directories("./extern/pybind11/include/")
+
+# Establishing Build Target:
 add_library(${TARGET_NAME} SHARED)
-
 add_subdirectory("./src/extlib")
-
 link_python_standalone(${TARGET_NAME})
+target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
 set_target_properties(${TARGET_NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "./arc/"
