@@ -1,24 +1,14 @@
-#include <iostream>
-#include <filesystem>
-#include <stdio.h>
-
-#include <pybind11/pybind11.h>
-#include <pybind11/embed.h>
+#include "globals.hpp"
 #include "lib_recomp.hpp"
 
-namespace py = pybind11;
-namespace fs = std::filesystem;
+#include "embedded_import.hpp"
+#include "incbin.h"
 
 extern "C" {
     DLLEXPORT uint32_t recomp_api_version = 1;
 }
 
-PYBIND11_EMBEDDED_MODULE(nrm_importer, m) {
-    // `m` is a `py::module_` which is used to bind functions and classes
-    m.def("add", [](int i, int j) {
-        return i + j;
-    });
-}
+INCLUDE_PYTHON_SRC_MODULE(incbin_module, "incbin_module.py");
 
 RECOMP_DLL_FUNC(PythonNative_Init) {
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(0);
@@ -33,13 +23,25 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     // Setting the module search path for the interpreter
     auto sys = py::module_::import("sys");
     auto sys_path = sys.attr("path");
-    sys_path = sys.attr("path");
     sys_path.attr("clear")();
     sys_path.attr("append")(mod_dir.string());
     sys_path.attr("append")(mod_dir_DLLs.string());
     sys_path.attr("append")(mod_dir_Lib.string());
 
-    py::print(sys_path);
+    embedded_import::construct_module("test_module", R"(message = "Hello Alex"
+)");
+
+    try {
+        py::exec(R"(
+            import test_module, incbin_module
+            print(test_module.message)
+            print(incbin_module.message)
+        )");
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+    }
+
+    // py::print(sys_path);
 
     RECOMP_RETURN(int, 0);
 }
