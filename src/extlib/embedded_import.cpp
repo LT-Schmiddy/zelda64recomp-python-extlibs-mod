@@ -4,6 +4,8 @@
 namespace embedded_import {
 
 py::module_ construct_module(std::string module_name, std::string module_code) {
+    py::gil_scoped_acquire gil;
+    
     auto types = py::module_::import("types");
     auto sys = py::module_::import("sys");
     

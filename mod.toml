@@ -44,7 +44,12 @@ native_libraries = [
 # Example native library:
     { name = "PythonForRecompNative", funcs = [
         "PythonNative_Init",
-        "PythonNative_Call"
+        "PythonNative_CompileBytecode",
+        "PythonNative_ReleaseBytecode",
+        "PythonNative_CreateScope",
+        "PythonNative_ReleaseScope",
+        "PythonNative_Execute",
+        "PythonNative_ExecuteString"
     ] }
 ]
 

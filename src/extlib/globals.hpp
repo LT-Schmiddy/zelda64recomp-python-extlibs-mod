@@ -10,13 +10,19 @@ namespace py = pybind11;
 namespace fs = std::filesystem;
 
 // Incbin stuff
+#define INCBIN_SILENCE_BITCODE_WARNING
 #define INCBIN_STYLE INCBIN_STYLE_SNAKE
 #define INCBIN_PREFIX 
 #include <incbin.h>
 
-#define INCLUDE_PYTHON_SRC_MODULE(module_name, module_file) \
-INCTXT(module_name ## _code, module_file); \
-PYBIND11_EMBEDDED_MODULE(module_name, m) { \
-    py::exec((const char*)module_name ## _code_data, m.attr("__dict__")); \
-} 
+// #define INCLUDE_PYTHON_SRC_MODULE(module_name, module_file) \
+// INCTXT(module_name ## _code, module_file); \
+// PYBIND11_EMBEDDED_MODULE(module_name, m) { \
+//     py::gil_scoped_acquire gil; \
+//     auto builtins = py::module_::import("builtins"); \
+//     auto py_compile = builtins.attr("compile"); \
+//     auto py_exec = builtins.attr("exec"); \
+//     auto p_code = py_compile((const char*)module_name ## _code_data, module_file, "exec"); \
+//     py_exec(p_code, m.attr("__dict__")); \
+// } 
 

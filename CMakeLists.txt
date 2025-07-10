@@ -10,6 +10,14 @@ endif()
 
 set(TARGET_NAME ${LIB_NAME})
 
+function(py_watch)
+    set_property(
+            DIRECTORY
+            APPEND
+            PROPERTY CMAKE_CONFIGURE_DEPENDS ${ARGV}
+    )
+endfunction()
+
 include_directories("./offline_build")
 include_directories("./include/extlib")
 include_directories("./include/shared")
