@@ -23,6 +23,7 @@ static PyThreadState* py_main_thread = NULL;
 std::unordered_map<int, py::object> bytecode_objects;
 std::unordered_map<int, py::dict> scope_objects;
 
+static std::string cached_return_string;
 
 int get_new_handle() {
     return random_in_range(1, INT_MAX);
@@ -56,7 +57,89 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     py_main_thread = PyEval_SaveThread();
     RECOMP_RETURN(int, 0);
 }
+// Scopes:
+// Type Getters
+RECOMP_DLL_FUNC(PythonNative_CreateScope) {
+    py::gil_scoped_acquire gil;
 
+    py::dict new_dict = py::dict();
+
+    int new_handle = 0;
+    while (scope_objects.contains(new_handle) || new_handle == 0) {
+        new_handle = get_new_handle();
+    }
+
+    scope_objects.insert({new_handle, new_dict});
+
+    RECOMP_RETURN(int, new_handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_ReleaseScope) {
+    py::gil_scoped_acquire gil;
+    int handle = RECOMP_ARG(int, 0);
+
+    scope_objects.erase(handle);
+}
+
+#define PYTHON_SCOPE_GETTER(fname, vtype) \
+RECOMP_DLL_FUNC(fname) { \
+    py::gil_scoped_acquire gil; \
+    int scope_handle = RECOMP_ARG(int, 0); \
+    std::string name = RECOMP_ARG_STR(1); \
+    py::dict scope = scope_objects.at(scope_handle); \
+    printf("Trying to cast %s as " #vtype "... \n", name.c_str()); \
+    vtype retVal = scope[name.c_str()].cast<vtype>(); \
+    printf("Cast of %s was successful ... \n", name.c_str()); \
+    RECOMP_RETURN(vtype, retVal); \
+}
+
+#define PYTHON_SCOPE_SETTER(fname, vtype) \
+RECOMP_DLL_FUNC(fname) { \
+    py::gil_scoped_acquire gil; \
+    int scope_handle = RECOMP_ARG(int, 1); \
+    std::string name = RECOMP_ARG_STR(2); \
+    vtype value = RECOMP_ARG(vtype, 0); \
+    py::dict scope = scope_objects.at(scope_handle); \
+    scope[name.c_str()] = value; \
+}
+
+
+#define PYTHON_SCOPE_GETSET(fname, vtype) \
+PYTHON_SCOPE_GETTER(PythonNative_Scope_Get ## fname, vtype); \
+PYTHON_SCOPE_SETTER(PythonNative_Scope_Set ## fname, vtype); \
+
+PYTHON_SCOPE_GETSET(U32, unsigned int);
+PYTHON_SCOPE_GETSET(S32, int);
+PYTHON_SCOPE_GETSET(F32, float);
+
+// RECOMP_DLL_FUNC(PythonNative_Scope_SetString) {
+//     py::gil_scoped_acquire gil;
+//     int scope_handle = RECOMP_ARG(int, 0);
+//     std::string name = RECOMP_ARG_STR(1);
+//     std::string value = RECOMP_ARG_STR(2);
+//     py::dict scope = scope_objects.at(scope_handle);
+//     scope[name.c_str()] = value;
+// }
+
+// RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Prepare) {
+//     py::gil_scoped_acquire gil;
+//     int scope_handle = RECOMP_ARG(int, 0);
+//     std::string name = RECOMP_ARG_STR(1);
+//     py::dict scope = scope_objects.at(scope_handle);
+//     cached_return_string = scope[name.c_str()].cast<std::string>();
+
+//     RECOMP_RETURN(unsigned int, cached_return_string.size());
+// }
+
+// RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Copy) {
+//     py::gil_scoped_acquire gil;
+//     int scope_handle = RECOMP_ARG(int, 0);
+//     std::string name = RECOMP_ARG_STR(1);
+//     py::dict scope = scope_objects.at(scope_handle);
+//     cached_return_string = scope[name.c_str()].cast<std::string>();
+// }
+
+// Execution:
 RECOMP_DLL_FUNC(PythonNative_CompileBytecode) {
     py::gil_scoped_acquire gil;
     std::string code_str = RECOMP_ARG_STR(0);
@@ -88,41 +171,21 @@ RECOMP_DLL_FUNC(PythonNative_ReleaseBytecode) {
     bytecode_objects.erase(handle);
 }
 
-RECOMP_DLL_FUNC(PythonNative_CreateScope) {
-    py::gil_scoped_acquire gil;
-
-    py::dict new_dict = py::dict();
-
-    int new_handle = 0;
-    while (scope_objects.contains(new_handle) || new_handle == 0) {
-        new_handle = get_new_handle();
-    }
-
-    scope_objects.insert({new_handle, new_dict});
-
-    RECOMP_RETURN(int, new_handle);
-}
-
-RECOMP_DLL_FUNC(PythonNative_ReleaseScope) {
-    py::gil_scoped_acquire gil;
-    int handle = RECOMP_ARG(int, 0);
-
-    scope_objects.erase(handle);
-}
-
 RECOMP_DLL_FUNC(PythonNative_Execute) {
     py::gil_scoped_acquire gil;
     int code_handle = RECOMP_ARG(int, 0);
     int scope_handle = RECOMP_ARG(int, 1);
 
     py::object bytecode = bytecode_objects.at(code_handle);
-    py::object scope = scope_objects.at(scope_handle);
+    py::dict scope = scope_objects.at(scope_handle);
 
     try {
         py_exec(bytecode, scope);
     } catch (py::error_already_set &e) {
         std::cout << e.what();
     }
+
+    py::print(scope);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecuteString) {
@@ -130,7 +193,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecuteString) {
     std::string code_string = RECOMP_ARG_STR(0);
     int scope_handle = RECOMP_ARG(int, 1);
 
-    py::object scope = scope_objects.at(scope_handle);
+    py::dict scope = scope_objects.at(scope_handle);
 
     try {
         py_exec(code_string, scope);
@@ -138,5 +201,3 @@ RECOMP_DLL_FUNC(PythonNative_ExecuteString) {
         std::cout << e.what();
     }
 }
-
-// Type Getters

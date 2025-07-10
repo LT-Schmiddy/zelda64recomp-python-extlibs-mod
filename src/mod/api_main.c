@@ -20,6 +20,13 @@ RECOMP_IMPORT(".", int PythonNative_ReleaseScope(PythonScopeHandle scope));
 RECOMP_IMPORT(".", int PythonNative_Execute(PythonBytecodeHandle handle, PythonScopeHandle scope));
 RECOMP_IMPORT(".", int PythonNative_ExecuteString(const char* str, PythonScopeHandle scope));
 
+RECOMP_IMPORT(".", u32 PythonNative_Scope_GetU32(PythonScopeHandle scope, const char* name));
+RECOMP_IMPORT(".", int PythonNative_Scope_SetU32(u32 value, PythonScopeHandle scope, const char* name));
+RECOMP_IMPORT(".", s32 PythonNative_Scope_GetS32(PythonScopeHandle scope, const char* name));
+RECOMP_IMPORT(".", int PythonNative_Scope_SetS32(s32 value, PythonScopeHandle scope, const char* name));
+RECOMP_IMPORT(".", f32 PythonNative_Scope_GetF32(PythonScopeHandle scope, const char* name));
+RECOMP_IMPORT(".", int PythonNative_Scope_SetF32(f32 value, PythonScopeHandle scope, const char* name));
+
 // Patches a function in the base game that's used to check if the player should quickspin.
 RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
     const unsigned char* mod_folder = recomp_get_mod_folder_path();
@@ -38,15 +45,25 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
         "import threading, time\n"
         "def test_fn():\n"
         "    time.sleep(5)\n"
-        "    print('Hello from a thread.')\n"
+        "    print('Hello from a thread.')\n" 
         "\n"
         "t = threading.Thread(target=test_fn)\n"
         "t.start()\n"
+        "int_val = 10\n"
+        "float_val = 5.5\n"
+        "\n"
         ,
         "Inline Codeblock 1",
         PY_CODE_EXEC
     );
+
     PythonNative_Execute(bc, py_scope);
+    u32 uint_val = PythonNative_Scope_GetU32(py_scope, "int_val");
+    s32 int_val = PythonNative_Scope_GetS32(py_scope, "int_val");
+    f32 float_val = PythonNative_Scope_GetF32(py_scope, "float_val");
+
+    recomp_printf("Returned values: %u, %i, %f\n", uint_val, int_val, float_val);
+
     PythonNative_ReleaseScope(py_scope);
     PythonNative_ReleaseBytecode(bc);
 
