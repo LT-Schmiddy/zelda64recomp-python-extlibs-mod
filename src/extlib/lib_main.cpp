@@ -55,10 +55,9 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     // Release the GIL so that Python threads can run in the background.
     // This does mean that all other functions that operate on python will need to reaquire the GIL.
     py_main_thread = PyEval_SaveThread();
-    RECOMP_RETURN(int, 0);
+    RECOMP_RETURN(int, 1);
 }
-// Scopes:
-// Type Getters
+// ======================================  Scopes: ======================================  
 RECOMP_DLL_FUNC(PythonNative_CreateScope) {
     py::gil_scoped_acquire gil;
 
@@ -87,22 +86,19 @@ RECOMP_DLL_FUNC(fname) { \
     int scope_handle = RECOMP_ARG(int, 0); \
     std::string name = RECOMP_ARG_STR(1); \
     py::dict scope = scope_objects.at(scope_handle); \
-    printf("Trying to cast %s as " #vtype "... \n", name.c_str()); \
     vtype retVal = scope[name.c_str()].cast<vtype>(); \
-    printf("Cast of %s was successful ... \n", name.c_str()); \
     RECOMP_RETURN(vtype, retVal); \
 }
 
 #define PYTHON_SCOPE_SETTER(fname, vtype) \
 RECOMP_DLL_FUNC(fname) { \
     py::gil_scoped_acquire gil; \
+    vtype value = RECOMP_ARG(vtype, 0); \
     int scope_handle = RECOMP_ARG(int, 1); \
     std::string name = RECOMP_ARG_STR(2); \
-    vtype value = RECOMP_ARG(vtype, 0); \
     py::dict scope = scope_objects.at(scope_handle); \
     scope[name.c_str()] = value; \
 }
-
 
 #define PYTHON_SCOPE_GETSET(fname, vtype) \
 PYTHON_SCOPE_GETTER(PythonNative_Scope_Get ## fname, vtype); \
@@ -112,34 +108,36 @@ PYTHON_SCOPE_GETSET(U32, unsigned int);
 PYTHON_SCOPE_GETSET(S32, int);
 PYTHON_SCOPE_GETSET(F32, float);
 
-// RECOMP_DLL_FUNC(PythonNative_Scope_SetString) {
-//     py::gil_scoped_acquire gil;
-//     int scope_handle = RECOMP_ARG(int, 0);
-//     std::string name = RECOMP_ARG_STR(1);
-//     std::string value = RECOMP_ARG_STR(2);
-//     py::dict scope = scope_objects.at(scope_handle);
-//     scope[name.c_str()] = value;
-// }
+RECOMP_DLL_FUNC(PythonNative_Scope_SetString) {
+    py::gil_scoped_acquire gil;
+    std::string value = RECOMP_ARG_STR(0);
+    int scope_handle = RECOMP_ARG(int, 1);
+    std::string name = RECOMP_ARG_STR(2);
+    py::dict scope = scope_objects.at(scope_handle);
+    scope[name.c_str()] = value;
+}
 
-// RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Prepare) {
-//     py::gil_scoped_acquire gil;
-//     int scope_handle = RECOMP_ARG(int, 0);
-//     std::string name = RECOMP_ARG_STR(1);
-//     py::dict scope = scope_objects.at(scope_handle);
-//     cached_return_string = scope[name.c_str()].cast<std::string>();
+RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Prepare) {
+    py::gil_scoped_acquire gil;
+    int scope_handle = RECOMP_ARG(int, 0);
+    std::string name = RECOMP_ARG_STR(1);
+    py::dict scope = scope_objects.at(scope_handle);
+    cached_return_string = scope[name.c_str()].cast<std::string>();
 
-//     RECOMP_RETURN(unsigned int, cached_return_string.size());
-// }
+    RECOMP_RETURN(unsigned int, cached_return_string.size());
+}
 
-// RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Copy) {
-//     py::gil_scoped_acquire gil;
-//     int scope_handle = RECOMP_ARG(int, 0);
-//     std::string name = RECOMP_ARG_STR(1);
-//     py::dict scope = scope_objects.at(scope_handle);
-//     cached_return_string = scope[name.c_str()].cast<std::string>();
-// }
+RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Copy) {
+    py::gil_scoped_acquire gil;
+    int str_len = RECOMP_ARG(int, 0);
+    PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
 
-// Execution:
+    for (int i = 0; i < str_len; i++) {
+        MEM_B(str_ptr, i) = cached_return_string.at(i);
+    }
+}
+
+// ====================================== Execution: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_CompileBytecode) {
     py::gil_scoped_acquire gil;
     std::string code_str = RECOMP_ARG_STR(0);
@@ -183,9 +181,9 @@ RECOMP_DLL_FUNC(PythonNative_Execute) {
         py_exec(bytecode, scope);
     } catch (py::error_already_set &e) {
         std::cout << e.what();
+        RECOMP_RETURN(int, 0);
     }
-
-    py::print(scope);
+    RECOMP_RETURN(int, 1);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecuteString) {
@@ -199,5 +197,8 @@ RECOMP_DLL_FUNC(PythonNative_ExecuteString) {
         py_exec(code_string, scope);
     } catch (py::error_already_set &e) {
         std::cout << e.what();
+        RECOMP_RETURN(int, 0);
     }
+
+    RECOMP_RETURN(int, 1);
 }

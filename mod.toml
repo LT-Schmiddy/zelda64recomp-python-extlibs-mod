@@ -56,6 +56,9 @@ native_libraries = [
         "PythonNative_Scope_SetS32",
         "PythonNative_Scope_GetF32",
         "PythonNative_Scope_SetF32",
+        "PythonNative_Scope_SetString",
+        "PythonNative_Scope_GetString_Prepare",
+        "PythonNative_Scope_GetString_Copy",
     ] }
 ]
 
