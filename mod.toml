@@ -44,12 +44,10 @@ native_libraries = [
 # Example native library:
     { name = "PythonForRecompNative", funcs = [
         "PythonNative_Init",
-        "PythonNative_CompileBytecode",
-        "PythonNative_ReleaseBytecode",
         "PythonNative_CreateScope",
         "PythonNative_ReleaseScope",
-        "PythonNative_Execute",
-        "PythonNative_ExecuteString",
+        "PythonNative_Scope_GetBool",
+        "PythonNative_Scope_SetBool",
         "PythonNative_Scope_GetU32",
         "PythonNative_Scope_SetU32",
         "PythonNative_Scope_GetS32",
@@ -57,8 +55,21 @@ native_libraries = [
         "PythonNative_Scope_GetF32",
         "PythonNative_Scope_SetF32",
         "PythonNative_Scope_SetString",
+        "PythonNative_Scope_SetStringN",
         "PythonNative_Scope_GetString_Prepare",
         "PythonNative_Scope_GetString_Copy",
+        "PythonNative_Scope_SetBytes",
+        "PythonNative_Scope_SetBytesN",
+        "PythonNative_Scope_GetBytes_Prepare",
+        "PythonNative_Scope_GetBytes_Copy",
+        "PythonNative_CompileBytecode",
+        "PythonNative_CompileBytecodeN",
+        "PythonNative_ReleaseBytecode",
+        "PythonNative_Execute",
+        "PythonNative_ExecuteString",
+        "PythonNative_ExecuteStringN",
+        "PythonNative_LoadModule",
+        "PythonNative_LoadModuleN",
     ] }
 ]
 

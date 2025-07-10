@@ -35,12 +35,7 @@ extern "C" {
     #define DLLIMPORT
 #endif
 
-inline std::string ptr_to_string(uint8_t* rdram, PTR(char) str) {
-    size_t len = 0;
-    while (MEM_B(str, len) != 0x00) {
-        len++;
-    }
-
+inline std::string ptr_to_string_n(uint8_t* rdram, size_t len, PTR(char) str) {
     std::string ret{};
     ret.reserve(len + 1);
 
@@ -51,12 +46,7 @@ inline std::string ptr_to_string(uint8_t* rdram, PTR(char) str) {
     return ret;
 }
 
-inline std::u8string ptr_to_u8string(uint8_t* rdram, PTR(char) str) {
-    size_t len = 0;
-    while (MEM_B(str, len) != 0x00) {
-        len++;
-    }
-
+inline std::u8string ptr_to_u8string_n(uint8_t* rdram, size_t len, PTR(char) str) {
     std::u8string ret{};
     ret.reserve(len + 1);
 
@@ -65,6 +55,22 @@ inline std::u8string ptr_to_u8string(uint8_t* rdram, PTR(char) str) {
     }
 
     return ret;
+}
+
+inline std::string ptr_to_string(uint8_t* rdram, PTR(char) str) {
+    size_t len = 0;
+    while (MEM_B(str, len) != 0x00) {
+        len++;
+    }
+    return ptr_to_string_n(rdram, len, str);
+}
+
+inline std::u8string ptr_to_u8string(uint8_t* rdram, PTR(char) str) {
+    size_t len = 0;
+    while (MEM_B(str, len) != 0x00) {
+        len++;
+    }
+    return ptr_to_u8string_n(rdram, len, str);
 }
 
 template<int index, typename T>
@@ -115,6 +121,22 @@ std::u8string _arg_u8string(uint8_t* rdram, recomp_context* ctx) {
     return ptr_to_u8string(rdram, str);
 }
 
+template <int arg_index>
+std::string _arg_string_n(uint8_t* rdram, recomp_context* ctx, size_t len) {
+    PTR(char) str = _arg<arg_index, PTR(char)>(rdram, ctx);
+
+    // Get the length of the byteswapped string.
+    return ptr_to_string_n(rdram, len, str);
+}
+
+template <int arg_index>
+std::u8string _arg_u8string_n(uint8_t* rdram, recomp_context* ctx, size_t len) {
+    PTR(char) str = _arg<arg_index, PTR(char)>(rdram, ctx);
+
+    // Get the length of the byteswapped string.
+    return ptr_to_u8string_n(rdram, len, str);
+}
+
 template <typename T>
 void _return(recomp_context* ctx, T val) {
     static_assert(sizeof(T) <= 4 && "Only 32-bit value returns supported currently");
@@ -137,4 +159,6 @@ void _return(recomp_context* ctx, T val) {
 #define RECOMP_ARG(_type, _pos) _arg<_pos, _type>(rdram, ctx)
 #define RECOMP_ARG_STR(_pos) _arg_string<_pos>(rdram, ctx)
 #define RECOMP_ARG_U8STR(_pos) _arg_u8string<_pos>(rdram, ctx)
+#define RECOMP_ARG_STR_N(_pos, len) _arg_string_n<_pos>(rdram, ctx, len)
+#define RECOMP_ARG_U8STR_N(_pos, len) _arg_u8string_n<_pos>(rdram, ctx, len)
 #define RECOMP_RETURN(_type, _value) _return(ctx, (_type) _value); return
