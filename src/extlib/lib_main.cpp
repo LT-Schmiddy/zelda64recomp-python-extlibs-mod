@@ -2,8 +2,8 @@
 #include <random>
 #include <unordered_map>
 
-#include "lib_recomp.hpp"
-#include "globals.hpp"
+#include "lib_main.hpp"
+#include "lib_recomp.hpp""
 #include "utils.hpp"
 
 #include "embedded_import.hpp"
@@ -82,6 +82,41 @@ RECOMP_DLL_FUNC(PythonNative_ReleaseScope) {
     scope_objects.erase(handle);
 }
 
+RECOMP_DLL_FUNC(PythonNative_GetObjectFromScope) {
+    py::gil_scoped_acquire gil;
+    int scope_handle = RECOMP_ARG(int, 0);
+    std::string name = RECOMP_ARG_STR(1); 
+
+    int new_object_handle = 0;
+    while (general_objects.contains(new_object_handle) || new_object_handle == 0) {
+        new_object_handle = get_new_handle();
+    }
+    py::dict scope = scope_objects.at(scope_handle);
+    py::object py_obj = scope[name.c_str()];
+    general_objects.insert({new_object_handle, py_obj});
+
+    RECOMP_RETURN(int, new_object_handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_AddObjectToScope) {
+    py::gil_scoped_acquire gil;
+    int object_handle = RECOMP_ARG(int, 0);
+    int scope_handle = RECOMP_ARG(int, 1);
+    std::string name = RECOMP_ARG_STR(2); 
+
+    py::dict scope = scope_objects.at(scope_handle);
+    py::object py_obj = general_objects.at(object_handle);
+
+    scope[name.c_str()] = py_obj;
+}
+
+RECOMP_DLL_FUNC(PythonNative_ReleaseObject) {
+    py::gil_scoped_acquire gil;
+    int object_handle = RECOMP_ARG(int, 0);
+
+    general_objects.erase(object_handle);
+}
+
 #define PYTHON_SCOPE_GETTER(fname, vtype) \
 RECOMP_DLL_FUNC(fname) { \
     py::gil_scoped_acquire gil; \
@@ -141,7 +176,7 @@ RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Prepare) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Copy) {
-    py::gil_scoped_acquire gil;
+    // Don't need the GIL for this step.
     int str_len = RECOMP_ARG(int, 0);
     PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
 
@@ -180,13 +215,32 @@ RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Prepare) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Copy) {
-    py::gil_scoped_acquire gil;
+    // Don't actually need the GIL for this one.
     int str_len = RECOMP_ARG(int, 0);
     PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
 
     for (int i = 0; i < str_len; i++) {
         MEM_B(str_ptr, i) = cached_return_string.at(i);
     }
+}
+
+RECOMP_DLL_FUNC(PythonNative_Scope_Has) {
+    py::gil_scoped_acquire gil;
+    int scope_handle = RECOMP_ARG(int, 0);
+    std::string name = RECOMP_ARG_STR(1);
+
+    py::dict scope = scope_objects.at(scope_handle);
+    unsigned int retVal = scope.contains(name.c_str());
+    RECOMP_RETURN(retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Scope_Remove) {
+    py::gil_scoped_acquire gil;
+    int scope_handle = RECOMP_ARG(int, 0);
+    std::string name = RECOMP_ARG_STR(1);
+
+    py::dict scope = scope_objects.at(scope_handle);
+    scope.attr("pop")(name.c_str());
 }
 
 // ====================================== Execution: ====================================== 

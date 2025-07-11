@@ -1,5 +1,4 @@
 #pragma once
-
 #include <iostream>
 #include <filesystem>
 #include <stdio.h>

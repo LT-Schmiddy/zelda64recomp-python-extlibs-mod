@@ -62,6 +62,8 @@ native_libraries = [
         "PythonNative_Scope_SetBytesN",
         "PythonNative_Scope_GetBytes_Prepare",
         "PythonNative_Scope_GetBytes_Copy",
+        "PythonNative_Scope_Has",
+        "PythonNative_Scope_Remove",
         "PythonNative_CompileBytecode",
         "PythonNative_CompileBytecodeN",
         "PythonNative_ReleaseBytecode",

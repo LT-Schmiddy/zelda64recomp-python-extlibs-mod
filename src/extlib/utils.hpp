@@ -1,3 +1,4 @@
+#pragma once
 #include "globals.hpp"
 
 extern py::object py_compile;
