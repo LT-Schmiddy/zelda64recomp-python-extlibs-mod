@@ -3,7 +3,6 @@
 #include <unordered_map>
 
 #include "lib_main.hpp"
-#include "lib_recomp.hpp""
 #include "utils.hpp"
 
 #include "embedded_import.hpp"
@@ -20,17 +19,38 @@ static const char* code_type_strs[] = {
 
 static PyThreadState* py_main_thread = NULL;
 
-std::unordered_map<int, py::object> general_objects;
-std::unordered_map<int, py::object> bytecode_objects;
-std::unordered_map<int, py::dict> scope_objects;
+std::unordered_map<int, PyObjectHandleEntry> py_objects;
 
 static std::u8string cached_return_u8string;
 static std::string cached_return_string;
 
-int get_new_handle() {
-    return random_in_range(1, INT_MAX);
+
+// ======================================  Handle Control: ====================================== 
+PyObjectHandle get_new_handle_value() {
+    PyObjectHandle new_handle = 0;
+    while (py_objects.contains(new_handle) || new_handle == 0) {
+        new_handle = random_in_range(1, INT_MAX);
+    }
+    return new_handle;
 }
 
+int create_py_handle(py::object obj) {
+    PyObjectHandle new_handle = get_new_handle_value();
+    py_objects.insert({new_handle, {obj, false}});
+    return new_handle;
+}
+
+py::object get_py_object(PyObjectHandle handle) {
+    
+    PyObjectHandleEntry* entry = &py_objects.at(handle);
+    py::object retVal = entry->py_object;
+    if (entry->is_single_use) {
+        py_objects.erase(handle);
+    }
+    return retVal;
+}
+
+// ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(0);
     fs::path mod_dir(mod_dir_text);
@@ -41,7 +61,6 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 
     // start the interpreter and keep it alive
     py::initialize_interpreter(); 
-
     {
         py::gil_scoped_acquire gil;
         // Setting the module search path for the interpreter
@@ -59,299 +78,24 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     py_main_thread = PyEval_SaveThread();
     RECOMP_RETURN(int, 1);
 }
-// ======================================  Scopes: ======================================  
-RECOMP_DLL_FUNC(PythonNative_CreateScope) {
-    py::gil_scoped_acquire gil;
-
-    py::dict new_dict = py::dict();
-
-    int new_handle = 0;
-    while (scope_objects.contains(new_handle) || new_handle == 0) {
-        new_handle = get_new_handle();
-    }
-
-    scope_objects.insert({new_handle, new_dict});
-
-    RECOMP_RETURN(int, new_handle);
-}
-
-RECOMP_DLL_FUNC(PythonNative_ReleaseScope) {
+// ======================================  General: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_Object_Release) {
     py::gil_scoped_acquire gil;
     int handle = RECOMP_ARG(int, 0);
 
-    scope_objects.erase(handle);
+    py_objects.erase(handle);
 }
 
-RECOMP_DLL_FUNC(PythonNative_GetObjectFromScope) {
+RECOMP_DLL_FUNC(PythonNative_Object_MakeSUH) {
     py::gil_scoped_acquire gil;
-    int scope_handle = RECOMP_ARG(int, 0);
-    std::string name = RECOMP_ARG_STR(1); 
+    PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
 
-    int new_object_handle = 0;
-    while (general_objects.contains(new_object_handle) || new_object_handle == 0) {
-        new_object_handle = get_new_handle();
-    }
-    py::dict scope = scope_objects.at(scope_handle);
-    py::object py_obj = scope[name.c_str()];
-    general_objects.insert({new_object_handle, py_obj});
+    py_objects.at(handle).is_single_use = true;
 
-    RECOMP_RETURN(int, new_object_handle);
+    RECOMP_RETURN(int, handle);
 }
 
-RECOMP_DLL_FUNC(PythonNative_AddObjectToScope) {
-    py::gil_scoped_acquire gil;
-    int object_handle = RECOMP_ARG(int, 0);
-    int scope_handle = RECOMP_ARG(int, 1);
-    std::string name = RECOMP_ARG_STR(2); 
-
-    py::dict scope = scope_objects.at(scope_handle);
-    py::object py_obj = general_objects.at(object_handle);
-
-    scope[name.c_str()] = py_obj;
-}
-
-RECOMP_DLL_FUNC(PythonNative_ReleaseObject) {
-    py::gil_scoped_acquire gil;
-    int object_handle = RECOMP_ARG(int, 0);
-
-    general_objects.erase(object_handle);
-}
-
-#define PYTHON_SCOPE_GETTER(fname, vtype) \
-RECOMP_DLL_FUNC(fname) { \
-    py::gil_scoped_acquire gil; \
-    int scope_handle = RECOMP_ARG(int, 0); \
-    std::string name = RECOMP_ARG_STR(1); \
-    py::dict scope = scope_objects.at(scope_handle); \
-    vtype retVal = scope[name.c_str()].cast<vtype>(); \
-    RECOMP_RETURN(vtype, retVal); \
-}
-
-#define PYTHON_SCOPE_SETTER(fname, vtype) \
-RECOMP_DLL_FUNC(fname) { \
-    py::gil_scoped_acquire gil; \
-    vtype value = RECOMP_ARG(vtype, 0); \
-    int scope_handle = RECOMP_ARG(int, 1); \
-    std::string name = RECOMP_ARG_STR(2); \
-    py::dict scope = scope_objects.at(scope_handle); \
-    scope[name.c_str()] = value; \
-}
-
-#define PYTHON_SCOPE_GETSET(fname, vtype) \
-PYTHON_SCOPE_GETTER(PythonNative_Scope_Get ## fname, vtype); \
-PYTHON_SCOPE_SETTER(PythonNative_Scope_Set ## fname, vtype); \
-
-PYTHON_SCOPE_GETSET(Bool, bool);
-PYTHON_SCOPE_GETSET(U32, unsigned int);
-PYTHON_SCOPE_GETSET(S32, int);
-PYTHON_SCOPE_GETSET(F32, float);
-
-RECOMP_DLL_FUNC(PythonNative_Scope_SetString) {
-    py::gil_scoped_acquire gil;
-    std::u8string value = RECOMP_ARG_U8STR(0);
-    int scope_handle = RECOMP_ARG(int, 1);
-    std::string name = RECOMP_ARG_STR(2);
-    py::dict scope = scope_objects.at(scope_handle);
-    scope[name.c_str()] = py::str(value);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_SetStringN) {
-    py::gil_scoped_acquire gil;
-    unsigned int str_len = RECOMP_ARG(unsigned int, 1);
-    std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
-    int scope_handle = RECOMP_ARG(int, 2);
-    std::string name = RECOMP_ARG_STR(3);
-    py::dict scope = scope_objects.at(scope_handle);
-    scope[name.c_str()] = py::str(value);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Prepare) {
-    py::gil_scoped_acquire gil;
-    int scope_handle = RECOMP_ARG(int, 0);
-    std::string name = RECOMP_ARG_STR(1);
-    py::dict scope = scope_objects.at(scope_handle);
-    cached_return_u8string = scope[name.c_str()].cast<std::u8string>();
-
-    RECOMP_RETURN(unsigned int, cached_return_u8string.size());
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_GetString_Copy) {
-    // Don't need the GIL for this step.
-    int str_len = RECOMP_ARG(int, 0);
-    PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
-
-    for (int i = 0; i < str_len; i++) {
-        MEM_B(str_ptr, i) = cached_return_u8string.at(i);
-    }
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_SetBytes) {
-    py::gil_scoped_acquire gil;
-    std::string value = RECOMP_ARG_STR(0);
-    int scope_handle = RECOMP_ARG(int, 1);
-    std::string name = RECOMP_ARG_STR(2);
-    py::dict scope = scope_objects.at(scope_handle);
-    scope[name.c_str()] = py::bytes(value);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_SetBytesN) {
-    py::gil_scoped_acquire gil;
-    unsigned int str_len = RECOMP_ARG(unsigned int, 1);
-    std::string value = RECOMP_ARG_STR_N(0, str_len);
-    int scope_handle = RECOMP_ARG(int, 2);
-    std::string name = RECOMP_ARG_STR(3);
-    py::dict scope = scope_objects.at(scope_handle);
-    scope[name.c_str()] = py::bytes(value);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Prepare) {
-    py::gil_scoped_acquire gil;
-    int scope_handle = RECOMP_ARG(int, 0);
-    std::string name = RECOMP_ARG_STR(1);
-    py::dict scope = scope_objects.at(scope_handle);
-    cached_return_string = scope[name.c_str()].cast<std::string>();
-
-    RECOMP_RETURN(unsigned int, cached_return_string.size());
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Copy) {
-    // Don't actually need the GIL for this one.
-    int str_len = RECOMP_ARG(int, 0);
-    PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
-
-    for (int i = 0; i < str_len; i++) {
-        MEM_B(str_ptr, i) = cached_return_string.at(i);
-    }
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_Has) {
-    py::gil_scoped_acquire gil;
-    int scope_handle = RECOMP_ARG(int, 0);
-    std::string name = RECOMP_ARG_STR(1);
-
-    py::dict scope = scope_objects.at(scope_handle);
-    unsigned int retVal = scope.contains(name.c_str());
-    RECOMP_RETURN(retVal);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Scope_Remove) {
-    py::gil_scoped_acquire gil;
-    int scope_handle = RECOMP_ARG(int, 0);
-    std::string name = RECOMP_ARG_STR(1);
-
-    py::dict scope = scope_objects.at(scope_handle);
-    scope.attr("pop")(name.c_str());
-}
-
-// ====================================== Execution: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_CompileBytecode) {
-    py::gil_scoped_acquire gil;
-    std::string code_str = RECOMP_ARG_STR(0);
-    std::string identifier = RECOMP_ARG_STR(1);
-    unsigned int code_type = RECOMP_ARG(unsigned int, 2);
-
-    py::object bytecode;
-    try {
-        bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
-    } catch (py::error_already_set &e) {
-        std::cout << e.what();
-        RECOMP_RETURN(int, 0);
-    }
-
-    int new_handle = 0;
-    while (bytecode_objects.contains(new_handle) || new_handle == 0) {
-        new_handle = get_new_handle();
-    }
-
-    bytecode_objects.insert({new_handle, bytecode});
-
-    RECOMP_RETURN(int, new_handle);
-}
-
-RECOMP_DLL_FUNC(PythonNative_CompileBytecodeN) {
-    py::gil_scoped_acquire gil;
-    unsigned int code_len = RECOMP_ARG(unsigned int, 1);
-    std::string code_str = RECOMP_ARG_STR_N(0, code_len);
-    std::string identifier = RECOMP_ARG_STR(2);
-    unsigned int code_type = RECOMP_ARG(unsigned int, 3);
-
-    py::object bytecode;
-    try {
-        bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
-    } catch (py::error_already_set &e) {
-        std::cout << e.what();
-        RECOMP_RETURN(int, 0);
-    }
-
-    int new_handle = 0;
-    while (bytecode_objects.contains(new_handle) || new_handle == 0) {
-        new_handle = get_new_handle();
-    }
-
-    bytecode_objects.insert({new_handle, bytecode});
-
-    RECOMP_RETURN(int, new_handle);
-}
-
-RECOMP_DLL_FUNC(PythonNative_ReleaseBytecode) {
-    py::gil_scoped_acquire gil;
-    int handle = RECOMP_ARG(int, 0);
-
-    bytecode_objects.erase(handle);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Execute) {
-    py::gil_scoped_acquire gil;
-    int code_handle = RECOMP_ARG(int, 0);
-    int scope_handle = RECOMP_ARG(int, 1);
-
-    py::object bytecode = bytecode_objects.at(code_handle);
-    py::dict scope = scope_objects.at(scope_handle);
-
-    try {
-        py_exec(bytecode, scope);
-    } catch (py::error_already_set &e) {
-        std::cout << e.what();
-        RECOMP_RETURN(int, 0);
-    }
-    RECOMP_RETURN(int, 1);
-}
-
-RECOMP_DLL_FUNC(PythonNative_ExecuteString) {
-    py::gil_scoped_acquire gil;
-    std::string code_string = RECOMP_ARG_STR(0);
-    int scope_handle = RECOMP_ARG(int, 1);
-
-    py::dict scope = scope_objects.at(scope_handle);
-
-    try {
-        py_exec(code_string, scope);
-    } catch (py::error_already_set &e) {
-        std::cout << e.what();
-        RECOMP_RETURN(int, 0);
-    }
-
-    RECOMP_RETURN(int, 1);
-}
-
-RECOMP_DLL_FUNC(PythonNative_ExecuteStringN) {
-    py::gil_scoped_acquire gil;
-    unsigned int code_len = RECOMP_ARG(unsigned int, 1);
-    std::string code_string = RECOMP_ARG_STR_N(0, code_len);
-    int scope_handle = RECOMP_ARG(int, 1);
-
-    py::dict scope = scope_objects.at(scope_handle);
-
-    try {
-        py_exec(code_string, scope);
-    } catch (py::error_already_set &e) {
-        std::cout << e.what();
-        RECOMP_RETURN(int, 0);
-    }
-
-    RECOMP_RETURN(int, 1);
-}
-
+// ======================================  Modules: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_LoadModule) {
     py::gil_scoped_acquire gil;
     std::string module_name = RECOMP_ARG_STR(0);
@@ -367,4 +111,341 @@ RECOMP_DLL_FUNC(PythonNative_LoadModuleN) {
     std::string code_string = RECOMP_ARG_STR_N(1, code_len);
 
     embedded_import::construct_module(module_name, code_string, true);
+}
+
+// ======================================  Casting: ======================================  
+#define PYTHON_OBJECT_CREATE(fname, c_type, py_type) \
+RECOMP_DLL_FUNC(fname) { \
+    py::gil_scoped_acquire gil; \
+    c_type value = RECOMP_ARG(c_type, 0); \
+    py::object obj = py_type(value); \
+    int new_handle = create_py_handle(py_type(value)); \
+    RECOMP_RETURN(int, new_handle); \
+}
+
+#define PYTHON_OBJECT_CAST(fname, c_type, py_type) \
+RECOMP_DLL_FUNC(fname) { \
+    py::gil_scoped_acquire gil; \
+    py_type obj = RECOMP_ARG_PYOBJECT(0); \
+    c_type retVal = obj.cast<c_type>(); \
+    RECOMP_RETURN(c_type, retVal); \
+}
+
+#define PYTHON_OBJECT_CREATECAST(fname, c_type, py_type) \
+PYTHON_OBJECT_CREATE(PythonNative_Object_Create ## fname, c_type, py_type); \
+PYTHON_OBJECT_CAST(PythonNative_Object_Cast ## fname, c_type, py_type); \
+
+PYTHON_OBJECT_CREATECAST(Bool, unsigned int, py::bool_);
+PYTHON_OBJECT_CREATECAST(U32, unsigned int, py::int_);
+PYTHON_OBJECT_CREATECAST(S32, int, py::int_);
+PYTHON_OBJECT_CREATECAST(F32, float, py::float_);
+
+RECOMP_DLL_FUNC(PythonNative_Object_CreateStr) {
+    py::gil_scoped_acquire gil;
+    std::u8string value = RECOMP_ARG_U8STR(0);
+    int scope_handle = RECOMP_ARG(int, 1);
+
+    py::str obj = py::str(value);
+    PyObjectHandle retVal = create_py_handle(obj);
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_CreateStrN) {
+    py::gil_scoped_acquire gil;
+    unsigned int str_len = RECOMP_ARG(unsigned int, 1);
+    std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
+    PyObjectHandle scope_handle = RECOMP_ARG(int, 2);
+
+    py::str obj = py::str(value);
+    PyObjectHandle retVal = create_py_handle(obj);
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Prepare) {
+    py::gil_scoped_acquire gil;
+    py::str str = RECOMP_ARG_PYOBJECT(0);
+    cached_return_u8string = str.cast<std::u8string>();
+    RECOMP_RETURN(unsigned int, cached_return_u8string.size());
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Copy) {
+    // Don't need the GIL for this step.
+    int str_len = RECOMP_ARG(int, 0);
+    PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
+
+    for (int i = 0; i < str_len; i++) {
+        MEM_B(str_ptr, i) = cached_return_u8string.at(i);
+    }
+}
+
+RECOMP_DLL_FUNC(PythonNative_Scope_CreateBytes) {
+    py::gil_scoped_acquire gil;
+    std::u8string value = RECOMP_ARG_U8STR(0);
+    int scope_handle = RECOMP_ARG(int, 1);
+
+    py::str obj = py::str(value);
+    PyObjectHandle retVal = create_py_handle(obj);
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Scope_CreateBytesN) {
+    py::gil_scoped_acquire gil;
+    unsigned int str_len = RECOMP_ARG(unsigned int, 1);
+    std::string value = RECOMP_ARG_STR_N(0, str_len);
+    PyObjectHandle scope_handle = RECOMP_ARG(int, 2);
+
+    py::bytes obj = py::bytes(value);
+    PyObjectHandle retVal = create_py_handle(obj);
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Prepare) {
+    py::gil_scoped_acquire gil;
+    py::str str = RECOMP_ARG_PYOBJECT(0);
+    cached_return_string = str.cast<std::string>();
+    RECOMP_RETURN(unsigned int, cached_return_string.size());
+}
+
+RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Copy) {
+    // Don't actually need the GIL for this one.
+    int str_len = RECOMP_ARG(int, 0);
+    PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
+
+    for (int i = 0; i < str_len; i++) {
+        MEM_B(str_ptr, i) = cached_return_string.at(i);
+    }
+}
+
+// ======================================  Dicts: ======================================  
+RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
+    py::gil_scoped_acquire gil;
+
+    PyObjectHandle new_handle = create_py_handle(py::dict());
+
+    RECOMP_RETURN(PyObjectHandle, new_handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Dict_Get) {
+    py::gil_scoped_acquire gil;
+    py::dict d = RECOMP_ARG_PYOBJECT(0);
+    py::object key = RECOMP_ARG_PYOBJECT(1);
+
+    py::object obj = d[key];
+
+    PyObjectHandle retVal = create_py_handle(obj);
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Dict_Set) {
+    py::gil_scoped_acquire gil;
+    py::dict d = RECOMP_ARG_PYOBJECT(0);
+    py::object key = RECOMP_ARG_PYOBJECT(1);
+    py::object value = RECOMP_ARG_PYOBJECT(2);
+
+    d[key] = value;
+}
+
+RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
+    py::gil_scoped_acquire gil;
+    py::dict d = RECOMP_ARG_PYOBJECT(0);
+    py::object key = RECOMP_ARG_PYOBJECT(1);
+
+    unsigned int retVal = d.contains(key);
+    RECOMP_RETURN(unsigned int, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
+    py::gil_scoped_acquire gil;
+    py::dict d = RECOMP_ARG_PYOBJECT(0);
+    py::object key = RECOMP_ARG_PYOBJECT(1);
+
+    d.attr("pop")(key);
+}
+
+
+// ====================================== Execution: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_Compile) {
+    py::gil_scoped_acquire gil;
+    py::str code_str = RECOMP_ARG_PYOBJECT(0);
+    py::str identifier_str = RECOMP_ARG_PYOBJECT(1);
+    py::str type_str = RECOMP_ARG_PYOBJECT(2);
+
+    py::object bytecode;
+    try {
+        bytecode = py_compile(code_str, identifier_str, type_str);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(int, 0);
+    }
+
+    PyObjectHandle handle = create_py_handle(bytecode);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
+    py::gil_scoped_acquire gil;
+    std::string code_str = RECOMP_ARG_STR(0);
+    std::string identifier = RECOMP_ARG_STR(1);
+    unsigned int code_type = RECOMP_ARG(unsigned int, 2);
+
+    py::object bytecode;
+    try {
+        bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(int, 0);
+    }
+
+    PyObjectHandle handle = create_py_handle(bytecode);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
+    py::gil_scoped_acquire gil;
+    unsigned int code_len = RECOMP_ARG(unsigned int, 1);
+    std::string code_str = RECOMP_ARG_STR_N(0, code_len);
+    std::string identifier = RECOMP_ARG_STR(2);
+    unsigned int code_type = RECOMP_ARG(unsigned int, 3);
+
+    py::object bytecode;
+    try {
+        bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(int, 0);
+    }
+
+    PyObjectHandle handle = create_py_handle(bytecode);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Exec) {
+    py::gil_scoped_acquire gil;
+    py::object bytecode = RECOMP_ARG_PYOBJECT(0);
+    py::dict globals = RECOMP_ARG_PYOBJECT(1);
+    py::dict locals;
+    if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
+        locals = globals;
+    } else {
+        locals = RECOMP_ARG_PYOBJECT(2);
+    }
+
+    try {
+        py_exec(bytecode, globals, locals);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(unsigned int, 0);
+    }
+    RECOMP_RETURN(unsigned int, 1);
+}
+
+RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
+    py::gil_scoped_acquire gil;
+    std::string code_string = RECOMP_ARG_STR(0);
+    py::dict globals = RECOMP_ARG_PYOBJECT(1);
+    py::dict locals;
+    if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
+        locals = globals;
+    } else {
+        locals = RECOMP_ARG_PYOBJECT(2);
+    }
+
+    try {
+        py_exec(code_string, globals, locals);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(unsigned int, 0);
+    }
+    RECOMP_RETURN(unsigned int, 1);
+}
+
+RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
+    py::gil_scoped_acquire gil;
+    unsigned int code_len = RECOMP_ARG(unsigned int, 1);
+    std::string code_string = RECOMP_ARG_STR_N(0, code_len);
+    py::dict globals = RECOMP_ARG_PYOBJECT(2);
+    py::dict locals;
+    if (RECOMP_ARG(PyObjectHandle, 3) == 0) {
+        locals = globals;
+    } else {
+        locals = RECOMP_ARG_PYOBJECT(3);
+    }
+
+    try {
+        py_exec(code_string, globals, locals);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(unsigned int, 0);
+    }
+    RECOMP_RETURN(unsigned int, 1);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Eval) {
+    py::gil_scoped_acquire gil;
+    py::object bytecode = RECOMP_ARG_PYOBJECT(0);
+    py::dict globals = RECOMP_ARG_PYOBJECT(1);
+    py::dict locals;
+    if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
+        locals = globals;
+    } else {
+        locals = RECOMP_ARG_PYOBJECT(2);
+    }
+    
+    py::object result;
+    try {
+        result = py_eval(bytecode, globals, locals);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(PyObjectHandle, 0);
+    }
+
+    PyObjectHandle handle = create_py_handle(result);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
+    py::gil_scoped_acquire gil;
+    std::string code_string = RECOMP_ARG_STR(0);
+    py::dict globals = RECOMP_ARG_PYOBJECT(1);
+    py::dict locals;
+    if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
+        locals = globals;
+    } else {
+        locals = RECOMP_ARG_PYOBJECT(2);
+    }
+
+    py::object result;
+    try {
+        result = py_eval(code_string, globals, locals);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(PyObjectHandle, 0);
+    }
+
+    PyObjectHandle handle = create_py_handle(result);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
+    py::gil_scoped_acquire gil;
+    unsigned int code_len = RECOMP_ARG(unsigned int, 1);
+    std::string code_string = RECOMP_ARG_STR_N(0, code_len);
+    py::dict globals = RECOMP_ARG_PYOBJECT(2);
+    py::dict locals;
+    if (RECOMP_ARG(PyObjectHandle, 3) == 0) {
+        locals = globals;
+    } else {
+        locals = RECOMP_ARG_PYOBJECT(3);
+    }
+
+    py::object result;
+    try {
+        result = py_eval(code_string, globals, locals);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(PyObjectHandle, 0);
+    }
+
+    PyObjectHandle handle = create_py_handle(result);
+    RECOMP_RETURN(PyObjectHandle, handle);
 }
