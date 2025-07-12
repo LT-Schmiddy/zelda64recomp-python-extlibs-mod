@@ -43,9 +43,52 @@ dependencies = [
 native_libraries = [
 # Example native library:
     { name = "PythonForRecompNative", funcs = [
+        # General
         "PythonNative_Init",
+        "PythonNative_Object_Release",
+        "PythonNative_Object_MakeSUH",
+        
+        # Modules
         "PythonNative_LoadModule",
         "PythonNative_LoadModuleN",
+
+        # Primatives
+        "PythonNative_Object_CreateBool",
+        "PythonNative_Object_CastBool",
+        "PythonNative_Object_CreateU32",
+        "PythonNative_Object_CastU32",
+        "PythonNative_Object_CreateS32",
+        "PythonNative_Object_CastS32",
+        "PythonNative_Object_CreateF32",
+        "PythonNative_Object_CastF32",
+        
+        # Strings
+        "PythonNative_Object_CreateStr",
+        "PythonNative_Object_CreateStrN",
+        "PythonNative_Object_CastStr_Prepare",
+        "PythonNative_Object_CastStr_Copy",
+        "PythonNative_Object_CreateBytes",
+        "PythonNative_Object_CreateBytesN",
+        "PythonNative_Object_CastBytes_Prepare",
+        "PythonNative_Object_CastBytes_Copy",
+    
+        # Dicts    
+        "PythonNative_Dict_Create",
+        "PythonNative_Dict_Get",
+        "PythonNative_Dict_Set",
+        "PythonNative_Dict_Has",
+        "PythonNative_Dict_Remove",
+        
+        # Execution
+        "PythonNative_Compile",
+        "PythonNative_CompileCStr",
+        "PythonNative_CompileCStrN",
+        "PythonNative_Exec",
+        "PythonNative_ExecCStr",
+        "PythonNative_ExecCStrN",
+        "PythonNative_Eval",
+        "PythonNative_EvalCStr",
+        "PythonNative_EvalCStrN",
     ] }
 ]
 
