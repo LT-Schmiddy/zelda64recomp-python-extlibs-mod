@@ -2,11 +2,10 @@
 #include <random>
 #include <unordered_map>
 #include <plog/Log.h> // Step1: include the headers
-#include <plog/Initializers/RollingFileInitializer.h>
+
 
 #include "lib_main.hpp"
 #include "utils.hpp"
-
 #include "embedded_import.hpp"
 
 extern "C" {
@@ -24,7 +23,13 @@ static std::string cached_return_string;
 
 // ======================================  Handle Control: ====================================== 
 
-PyInterpreterController::PyInterpreterController() {
+PyInterpreterController::PyInterpreterController(plog::Severity severity) {
+    file_appender = new plog::RollingFileAppender<plog::TxtFormatter>("REPY.log");
+    console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
+    log = &plog::init((plog::Severity)severity);
+    log->addAppender(file_appender);
+    log->addAppender(console_appender);
+
     PyPreConfig preconfig;
     PyPreConfig_InitPythonConfig(&preconfig);
     Py_PreInitialize(&preconfig);
@@ -36,7 +41,7 @@ PyInterpreterController::PyInterpreterController() {
     config.install_signal_handlers = true;
 
     py::initialize_interpreter(&config); 
-    PLOGD << "-> Python Interpreter Parent: INIT\n";
+    PLOGI << "-> Python Interpreter Parent: INIT";
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
 };
@@ -51,7 +56,7 @@ PyInterpreterController::~PyInterpreterController() {
         py_objects.clear();
     }
     PyEval_RestoreThread(py_main_thread);
-    PLOGD << "-> Python Interpreter Parent: DEINIT\n";
+    PLOGI << "-> Python Interpreter Parent: DEINIT";
 }
 
 PyObjectHandle PyInterpreterController::get_new_handle_value() {
@@ -68,7 +73,7 @@ int PyInterpreterController::create_handle(py::object obj) {
     PyObjectHandle new_handle = get_new_handle_value();
     py_objects.insert({new_handle, {obj, false}});
 
-    PLOGD.printf("-> PyObjectHandle %i Created\n", new_handle);
+    PLOGD.printf("-> PyObjectHandle %i Created", new_handle);
     return new_handle;
 }
 
@@ -77,9 +82,9 @@ py::object PyInterpreterController::get_py_object(PyObjectHandle handle) {
     py::object retVal = entry->py_object;
     if (entry->is_single_use) {
         py_objects.erase(handle);
-        PLOGD.printf("-> PyObjectHandle %i Accessed and Released (SUH)\n", handle);
+        PLOGD.printf("-> PyObjectHandle %i Accessed and Released (SUH)", handle);
     } else {
-        PLOGD.printf("-> PyObjectHandle %i Accessed\n", handle);
+        PLOGD.printf("-> PyObjectHandle %i Accessed", handle);
     }
     return retVal;
 }
@@ -92,14 +97,16 @@ bool PyInterpreterController::get_handle_suh(PyObjectHandle handle) {
 void PyInterpreterController::set_handle_suh(PyObjectHandle handle, bool is_single_use) {
     PyObjectHandleEntry* entry = &py_objects.at(handle);
     entry->is_single_use = is_single_use;
-    PLOGD.printf("-> PyObjectHandle %i Setting SUH = %i\n", handle, is_single_use);
+    PLOGD.printf("-> PyObjectHandle %i Setting SUH = %i", handle, is_single_use);
 }
 
 
 void PyInterpreterController::release_handle(PyObjectHandle handle) {
     py_objects.erase(handle);
-    PLOGD.printf("-> PyObjectHandle %i Released\n", handle);
+    PLOGD.printf("-> PyObjectHandle %i Released", handle);
 }
+
+
 
 std::shared_ptr<PyInterpreterController> controller = NULL;
 
@@ -107,6 +114,7 @@ std::shared_ptr<PyInterpreterController> controller = NULL;
 RECOMP_DLL_FUNC(PythonNative_Init) {
     unsigned int log_level = RECOMP_ARG(unsigned int, 0);
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(1);
+
     fs::path mod_dir(mod_dir_text);
     fs::path py_log_file = fs::path(mod_dir).append("REPY.log");
     plog::init(plog::debug, py_log_file.c_str());
@@ -115,12 +123,12 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     fs::path mod_dir_Lib = fs::path(mod_dir).append("Lib");
     fs::path mod_dir_site = fs::path(mod_dir_Lib).append("site-packages");
 
-    printf("Mod Folder: %s\n", (char*)mod_dir_text.c_str());
-    plog::init((plog::Severity)log_level, "Hello.txt");
+    // Set up logging:
+    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level);
 
 
+    PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
 
-    controller = std::make_shared<PyInterpreterController>();
     {
         py::gil_scoped_acquire gil;
         // Setting the module search path for the interpreter

@@ -1,5 +1,9 @@
 #pragma once
 #include <memory>
+#include <plog/Log.h>
+#include <plog/Formatters/TxtFormatter.h>// Step1: include the headers
+#include <plog/Appenders/ColorConsoleAppender.h>// Step1: include the headers
+#include <plog/Initializers/RollingFileInitializer.h>
 
 #include "globals.hpp"
 #include "lib_recomp.hpp"
@@ -17,7 +21,11 @@ public:
     PyThreadState* py_main_thread = NULL;
     std::unordered_map<int, PyObjectHandleEntry> py_objects;
 
-    PyInterpreterController();
+    plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
+    plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
+    plog::Logger<0>* log = NULL;
+
+    PyInterpreterController(plog::Severity severity);
     ~PyInterpreterController();
 
     // Handle Operations:
