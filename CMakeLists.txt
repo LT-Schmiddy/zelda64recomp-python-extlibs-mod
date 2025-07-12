@@ -58,11 +58,16 @@ add_subdirectory("./extern/pybind11")
 # Including GraphiteMaster's Incbin:
 include_directories("./extern/incbin/")
 
+#Including PLOG:
+add_subdirectory("./extern/plog/")
+include_directories("./extern/plog/include")
+
 # Establishing Build Target:
 add_library(${TARGET_NAME} SHARED)
 add_subdirectory("./src/extlib")
 link_python_standalone(${TARGET_NAME})
 target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
+target_link_libraries(${TARGET_NAME} PRIVATE plog::plog)
 target_sources(${TARGET_NAME} PUBLIC ./extern/incbin/incbin.c)
 
 set_target_properties(${TARGET_NAME}

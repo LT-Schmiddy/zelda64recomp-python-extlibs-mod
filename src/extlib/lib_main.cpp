@@ -1,6 +1,8 @@
 #include <chrono>
 #include <random>
 #include <unordered_map>
+#include <plog/Log.h> // Step1: include the headers
+#include <plog/Initializers/RollingFileInitializer.h>
 
 #include "lib_main.hpp"
 #include "utils.hpp"
@@ -34,7 +36,7 @@ PyInterpreterController::PyInterpreterController() {
     config.install_signal_handlers = true;
 
     py::initialize_interpreter(&config); 
-    std::cout << "-> Python Interpreter Parent: INIT\n";
+    PLOGD << "-> Python Interpreter Parent: INIT\n";
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
 };
@@ -49,7 +51,7 @@ PyInterpreterController::~PyInterpreterController() {
         py_objects.clear();
     }
     PyEval_RestoreThread(py_main_thread);
-    std::cout << "-> Python Interpreter Parent: DEINIT\n";
+    PLOGD << "-> Python Interpreter Parent: DEINIT\n";
 }
 
 PyObjectHandle PyInterpreterController::get_new_handle_value() {
@@ -66,7 +68,7 @@ int PyInterpreterController::create_handle(py::object obj) {
     PyObjectHandle new_handle = get_new_handle_value();
     py_objects.insert({new_handle, {obj, false}});
 
-    printf("-> PyObjectHandle %i Created\n", new_handle);
+    PLOGD.printf("-> PyObjectHandle %i Created\n", new_handle);
     return new_handle;
 }
 
@@ -75,9 +77,9 @@ py::object PyInterpreterController::get_py_object(PyObjectHandle handle) {
     py::object retVal = entry->py_object;
     if (entry->is_single_use) {
         py_objects.erase(handle);
-        printf("-> PyObjectHandle %i Accessed and Released (SUH)\n", handle);
+        PLOGD.printf("-> PyObjectHandle %i Accessed and Released (SUH)\n", handle);
     } else {
-        printf("-> PyObjectHandle %i Accessed\n", handle);
+        PLOGD.printf("-> PyObjectHandle %i Accessed\n", handle);
     }
     return retVal;
 }
@@ -90,26 +92,33 @@ bool PyInterpreterController::get_handle_suh(PyObjectHandle handle) {
 void PyInterpreterController::set_handle_suh(PyObjectHandle handle, bool is_single_use) {
     PyObjectHandleEntry* entry = &py_objects.at(handle);
     entry->is_single_use = is_single_use;
-    printf("-> PyObjectHandle %i Setting SUH = %i\n", handle, is_single_use);
+    PLOGD.printf("-> PyObjectHandle %i Setting SUH = %i\n", handle, is_single_use);
 }
 
 
 void PyInterpreterController::release_handle(PyObjectHandle handle) {
     py_objects.erase(handle);
-    printf("-> PyObjectHandle %i Released\n", handle);
+    PLOGD.printf("-> PyObjectHandle %i Released\n", handle);
 }
 
 std::shared_ptr<PyInterpreterController> controller = NULL;
 
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
-    std::u8string mod_dir_text = RECOMP_ARG_U8STR(0);
+    unsigned int log_level = RECOMP_ARG(unsigned int, 0);
+    std::u8string mod_dir_text = RECOMP_ARG_U8STR(1);
     fs::path mod_dir(mod_dir_text);
+    fs::path py_log_file = fs::path(mod_dir).append("REPY.log");
+    plog::init(plog::debug, py_log_file.c_str());
+
     fs::path mod_dir_DLLs = fs::path(mod_dir).append("DLLs");
     fs::path mod_dir_Lib = fs::path(mod_dir).append("Lib");
     fs::path mod_dir_site = fs::path(mod_dir_Lib).append("site-packages");
 
     printf("Mod Folder: %s\n", (char*)mod_dir_text.c_str());
+    plog::init((plog::Severity)log_level, "Hello.txt");
+
+
 
     controller = std::make_shared<PyInterpreterController>();
     {
@@ -380,7 +389,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
     try {
         bytecode = py_compile(code_str, identifier_str, type_str);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+       PLOGE << e.what();
         RECOMP_RETURN(int, 0);
     }
 
@@ -398,7 +407,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
     try {
         bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+       PLOGE << e.what();
         RECOMP_RETURN(int, 0);
     }
 
@@ -417,7 +426,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
     try {
         bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+       PLOGE << e.what();
         RECOMP_RETURN(int, 0);
     }
 
@@ -439,7 +448,7 @@ RECOMP_DLL_FUNC(PythonNative_Exec) {
     try {
         py_exec(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+       PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
     }
     RECOMP_RETURN(unsigned int, 1);
@@ -459,7 +468,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     try {
         py_exec(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+       PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
     }
     RECOMP_RETURN(unsigned int, 1);
@@ -480,7 +489,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     try {
         py_exec(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
     }
     RECOMP_RETURN(unsigned int, 1);
@@ -501,7 +510,7 @@ RECOMP_DLL_FUNC(PythonNative_Eval) {
     try {
         result = py_eval(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -524,7 +533,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
     try {
         result = py_eval(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -548,7 +557,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
     try {
         result = py_eval(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -566,7 +575,7 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
     try {
         func(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
     }
 
@@ -583,7 +592,7 @@ RECOMP_DLL_FUNC(PythonNative_Call_Return) {
     try {
         result = func(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -602,7 +611,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     try {
         obj.attr((char*)name.c_str())(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
     }
 
@@ -620,7 +629,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
     try {
         result = obj.attr((char*)name.c_str())(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        std::cout << e.what();
+        PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 

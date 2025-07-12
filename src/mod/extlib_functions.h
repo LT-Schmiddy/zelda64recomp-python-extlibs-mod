@@ -8,7 +8,7 @@
 
 
 // General
-RECOMP_IMPORT(".", int PythonNative_Init(const unsigned char* str));
+RECOMP_IMPORT(".", int PythonNative_Init(u32 log_level, const unsigned char* str));
 RECOMP_IMPORT(".", void PythonNative_Object_Release(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_MakeSUH(PyObjectHandle py_object));
 RECOMP_IMPORT(".", bool PythonNative_Object_GetSUH(PyObjectHandle py_object));

@@ -14,3 +14,6 @@
 [submodule "extern/incbin"]
 	path = extern/incbin
 	url = https://github.com/graphitemaster/incbin.git
+[submodule "extern/plog"]
+	path = extern/plog
+	url = https://github.com/SergiusTheBest/plog
