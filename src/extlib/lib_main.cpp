@@ -17,6 +17,8 @@ static const char* code_type_strs[] = {
     "single"
 };
 
+static std::u8string cached_return_u8string;
+static std::string cached_return_string;
 
 // ======================================  Handle Control: ====================================== 
 
@@ -45,10 +47,12 @@ PyObjectHandle PyInterpreterController::get_new_handle_value() {
     return new_handle;
 }
 
-int PyInterpreterController::create_py_handle(py::object obj) {
+int PyInterpreterController::create_handle(py::object obj) {
     py::gil_scoped_acquire gil;
     PyObjectHandle new_handle = get_new_handle_value();
     py_objects.insert({new_handle, {obj, false}});
+
+    printf("-> PyObjectHandle %i Created\n", new_handle);
     return new_handle;
 }
 
@@ -57,8 +61,24 @@ py::object PyInterpreterController::get_py_object(PyObjectHandle handle) {
     py::object retVal = entry->py_object;
     if (entry->is_single_use) {
         py_objects.erase(handle);
+        printf("-> PyObjectHandle %i Accessed and Released (SUH)\n", handle);
+    } else {
+        printf("-> PyObjectHandle %i Accessed\n", handle);
     }
     return retVal;
+}
+
+
+void PyInterpreterController::set_handle_suh(PyObjectHandle handle, bool is_single_use) {
+    PyObjectHandleEntry* entry = &py_objects.at(handle);
+    entry->is_single_use = is_single_use;
+    printf("-> PyObjectHandle %i is now Single Use\n", handle);
+}
+
+
+void PyInterpreterController::release_handle(PyObjectHandle handle) {
+    py_objects.erase(handle);
+    printf("-> PyObjectHandle %i Released\n", handle);
 }
 
 std::shared_ptr<PyInterpreterController> controller = NULL;
@@ -94,14 +114,14 @@ RECOMP_DLL_FUNC(PythonNative_Object_Release) {
     py::gil_scoped_acquire gil;
     int handle = RECOMP_ARG(int, 0);
 
-    controller->py_objects.erase(handle);
+    controller->release_handle(handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Object_MakeSUH) {
     py::gil_scoped_acquire gil;
     PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
 
-    controller->py_objects.at(handle).is_single_use = true;
+    controller->set_handle_suh(handle, true);
 
     RECOMP_RETURN(int, handle);
 }
@@ -130,7 +150,7 @@ RECOMP_DLL_FUNC(fname) { \
     py::gil_scoped_acquire gil; \
     c_type value = RECOMP_ARG(c_type, 0); \
     py::object obj = py_type(value); \
-    int new_handle = controller->create_py_handle(py_type(value)); \
+    int new_handle = controller->create_handle(py_type(value)); \
     RECOMP_RETURN(int, new_handle); \
 }
 
@@ -158,7 +178,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateStr) {
     std::u8string value = RECOMP_ARG_U8STR(0);
 
     py::str obj = py::str(value);
-    PyObjectHandle retVal = controller->create_py_handle(obj);
+    PyObjectHandle retVal = controller->create_handle(obj);
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
@@ -168,15 +188,15 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateStrN) {
     std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
 
     py::str obj = py::str(value);
-    PyObjectHandle retVal = controller->create_py_handle(obj);
+    PyObjectHandle retVal = controller->create_handle(obj);
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Prepare) {
     py::gil_scoped_acquire gil;
     py::str str = RECOMP_ARG_PYOBJECT(0);
-    controller->cached_return_u8string = str.cast<std::u8string>();
-    RECOMP_RETURN(unsigned int, controller->cached_return_u8string.size());
+    cached_return_u8string = str.cast<std::u8string>();
+    RECOMP_RETURN(unsigned int, cached_return_u8string.size());
 }
 
 RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Copy) {
@@ -185,7 +205,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Copy) {
     PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
 
     for (int i = 0; i < str_len; i++) {
-        MEM_B(str_ptr, i) = controller->cached_return_u8string.at(i);
+        MEM_B(str_ptr, i) = cached_return_u8string.at(i);
     }
 }
 
@@ -194,7 +214,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateBytes) {
     std::u8string value = RECOMP_ARG_U8STR(0);
 
     py::str obj = py::str(value);
-    PyObjectHandle retVal = controller->create_py_handle(obj);
+    PyObjectHandle retVal = controller->create_handle(obj);
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
@@ -204,15 +224,15 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateBytesN) {
     std::string value = RECOMP_ARG_STR_N(0, str_len);
 
     py::bytes obj = py::bytes(value);
-    PyObjectHandle retVal = controller->create_py_handle(obj);
+    PyObjectHandle retVal = controller->create_handle(obj);
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Prepare) {
     py::gil_scoped_acquire gil;
     py::str str = RECOMP_ARG_PYOBJECT(0);
-    controller->cached_return_string = str.cast<std::string>();
-    RECOMP_RETURN(unsigned int, controller->cached_return_string.size());
+    cached_return_string = str.cast<std::string>();
+    RECOMP_RETURN(unsigned int, cached_return_string.size());
 }
 
 RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Copy) {
@@ -221,7 +241,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Copy) {
     PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
 
     for (int i = 0; i < str_len; i++) {
-        MEM_B(str_ptr, i) = controller->cached_return_string.at(i);
+        MEM_B(str_ptr, i) = cached_return_string.at(i);
     }
 }
 
@@ -229,7 +249,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Copy) {
 RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
     py::gil_scoped_acquire gil;
 
-    PyObjectHandle new_handle = controller->create_py_handle(py::dict());
+    PyObjectHandle new_handle = controller->create_handle(py::dict());
 
     RECOMP_RETURN(PyObjectHandle, new_handle);
 }
@@ -241,7 +261,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Get) {
 
     py::object obj = d[key];
 
-    PyObjectHandle retVal = controller->create_py_handle(obj);
+    PyObjectHandle retVal = controller->create_handle(obj);
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
@@ -287,7 +307,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
         RECOMP_RETURN(int, 0);
     }
 
-    PyObjectHandle handle = controller->create_py_handle(bytecode);
+    PyObjectHandle handle = controller->create_handle(bytecode);
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
@@ -305,7 +325,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
         RECOMP_RETURN(int, 0);
     }
 
-    PyObjectHandle handle = controller->create_py_handle(bytecode);
+    PyObjectHandle handle = controller->create_handle(bytecode);
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
@@ -324,7 +344,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
         RECOMP_RETURN(int, 0);
     }
 
-    PyObjectHandle handle = controller->create_py_handle(bytecode);
+    PyObjectHandle handle = controller->create_handle(bytecode);
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
@@ -408,7 +428,7 @@ RECOMP_DLL_FUNC(PythonNative_Eval) {
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
-    PyObjectHandle handle = controller->create_py_handle(result);
+    PyObjectHandle handle = controller->create_handle(result);
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
@@ -431,7 +451,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
-    PyObjectHandle handle = controller->create_py_handle(result);
+    PyObjectHandle handle = controller->create_handle(result);
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
@@ -455,6 +475,6 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
-    PyObjectHandle handle = controller->create_py_handle(result);
+    PyObjectHandle handle = controller->create_handle(result);
     RECOMP_RETURN(PyObjectHandle, handle);
 }

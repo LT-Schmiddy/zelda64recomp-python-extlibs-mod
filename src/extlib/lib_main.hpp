@@ -16,18 +16,16 @@ class PyInterpreterController {
 public:
     PyThreadState* py_main_thread = NULL;
     std::unordered_map<int, PyObjectHandleEntry> py_objects;
-    std::u8string cached_return_u8string;
-    std::string cached_return_string;
 
     PyInterpreterController();
-
     ~PyInterpreterController();
 
+    // Handle Operations:
     PyObjectHandle get_new_handle_value();
-
-    int create_py_handle(py::object obj);
-
+    int create_handle(py::object obj);
     py::object get_py_object(PyObjectHandle handle);
+    void set_handle_suh(PyObjectHandle handle, bool is_single_use);
+    void release_handle(PyObjectHandle handle);
 
 };
 
