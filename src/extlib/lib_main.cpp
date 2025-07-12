@@ -61,7 +61,7 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 
     // start the interpreter and keep it alive
     py::initialize_interpreter(); 
-    {
+    // {
         py::gil_scoped_acquire gil;
         // Setting the module search path for the interpreter
         auto sys = py::module_::import("sys");
@@ -70,18 +70,19 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
         sys_path.attr("append")(mod_dir.string());
         sys_path.attr("append")(mod_dir_DLLs.string());
         sys_path.attr("append")(mod_dir_Lib.string());
-    }
+    // }
 
     collect_py_functions();
     // Release the GIL so that Python threads can run in the background.
     // This does mean that all other functions that operate on python will need to reaquire the GIL.
-    py_main_thread = PyEval_SaveThread();
+    PyThreadState* py_main_thread = PyEval_SaveThread();
     RECOMP_RETURN(int, 1);
 }
 // ======================================  General: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Object_Release) {
     py::gil_scoped_acquire gil;
     int handle = RECOMP_ARG(int, 0);
+
 
     py_objects.erase(handle);
 }
@@ -113,7 +114,7 @@ RECOMP_DLL_FUNC(PythonNative_LoadModuleN) {
     embedded_import::construct_module(module_name, code_string, true);
 }
 
-// ======================================  Casting: ======================================  
+// ====================================== Primative Casting: ======================================  
 #define PYTHON_OBJECT_CREATE(fname, c_type, py_type) \
 RECOMP_DLL_FUNC(fname) { \
     py::gil_scoped_acquire gil; \
@@ -140,10 +141,11 @@ PYTHON_OBJECT_CREATECAST(U32, unsigned int, py::int_);
 PYTHON_OBJECT_CREATECAST(S32, int, py::int_);
 PYTHON_OBJECT_CREATECAST(F32, float, py::float_);
 
+
+// ======================================  String Casting: ======================================
 RECOMP_DLL_FUNC(PythonNative_Object_CreateStr) {
     py::gil_scoped_acquire gil;
     std::u8string value = RECOMP_ARG_U8STR(0);
-    int scope_handle = RECOMP_ARG(int, 1);
 
     py::str obj = py::str(value);
     PyObjectHandle retVal = create_py_handle(obj);
@@ -154,7 +156,6 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateStrN) {
     py::gil_scoped_acquire gil;
     unsigned int str_len = RECOMP_ARG(unsigned int, 1);
     std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
-    PyObjectHandle scope_handle = RECOMP_ARG(int, 2);
 
     py::str obj = py::str(value);
     PyObjectHandle retVal = create_py_handle(obj);
@@ -178,35 +179,33 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Copy) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Scope_CreateBytes) {
+RECOMP_DLL_FUNC(PythonNative_Object_CreateBytes) {
     py::gil_scoped_acquire gil;
     std::u8string value = RECOMP_ARG_U8STR(0);
-    int scope_handle = RECOMP_ARG(int, 1);
 
     py::str obj = py::str(value);
     PyObjectHandle retVal = create_py_handle(obj);
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Scope_CreateBytesN) {
+RECOMP_DLL_FUNC(PythonNative_Object_CreateBytesN) {
     py::gil_scoped_acquire gil;
     unsigned int str_len = RECOMP_ARG(unsigned int, 1);
     std::string value = RECOMP_ARG_STR_N(0, str_len);
-    PyObjectHandle scope_handle = RECOMP_ARG(int, 2);
 
     py::bytes obj = py::bytes(value);
     PyObjectHandle retVal = create_py_handle(obj);
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Prepare) {
+RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Prepare) {
     py::gil_scoped_acquire gil;
     py::str str = RECOMP_ARG_PYOBJECT(0);
     cached_return_string = str.cast<std::string>();
     RECOMP_RETURN(unsigned int, cached_return_string.size());
 }
 
-RECOMP_DLL_FUNC(PythonNative_Scope_GetBytes_Copy) {
+RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Copy) {
     // Don't actually need the GIL for this one.
     int str_len = RECOMP_ARG(int, 0);
     PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
