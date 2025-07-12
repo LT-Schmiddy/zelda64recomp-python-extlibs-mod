@@ -269,6 +269,20 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Copy) {
         MEM_B(str_ptr, i) = cached_return_string.at(i);
     }
 }
+// ======================================  Tuple: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
+    py::gil_scoped_acquire gil;
+    unsigned int size = RECOMP_ARG(unsigned int, 0);
+    PyObjectHandle* va_args_ptr = RECOMP_ARG(PyObjectHandle*, 1);
+    
+    py::list tmp = py::list();
+    for (int i = 0; i < size; i++) {
+        tmp.append(controller->get_py_object(va_args_ptr[i]));
+    }
+
+    PyObjectHandle handle = controller->create_handle(py::tuple(tmp));
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
 
 // ======================================  Dicts: ======================================  
 RECOMP_DLL_FUNC(PythonNative_Dict_Create) {

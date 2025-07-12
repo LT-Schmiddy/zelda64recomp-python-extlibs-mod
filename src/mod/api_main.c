@@ -3,6 +3,7 @@
 #include "recomputils.h"
 #include "recompconfig.h"
 #include "recomp_incbin.h"
+#include "libc/stdarg.h"
 
 #include "extlib_functions.h"
 
@@ -107,6 +108,15 @@ RECOMP_EXPORT char* REPY_CastBytes(PyObjectHandle object) {
     char* retVal = recomp_alloc(len);
     PythonNative_Object_CastBytes_Copy(len, retVal);
     return retVal;
+}
+// Tuple Operations:
+RECOMP_EXPORT PyObjectHandle REPY_CreateTuple(u32 size, ...) {
+    va_list va;
+    va_start(va, size);
+    PyObjectHandle handle = PythonNative_Tuple_Create(size, va);
+    va_end(va);
+
+    return handle;
 }
 
 // Dict Operations:

@@ -4,8 +4,6 @@
 #include "modding.h"
 #include "global.h"
 
-
-
 /*! \file repy_api.h
     \version 1.0.0
     \brief The main header for Recomp External Python
@@ -166,6 +164,9 @@ REPY_IMPORT(char* REPY_CastStr(PyObjectHandle object));
 REPY_IMPORT(PyObjectHandle REPY_CreateBytes(const char* string));
 REPY_IMPORT(PyObjectHandle REPY_CreateBytesN(const char* string, u32 len));
 REPY_IMPORT(char* REPY_CastBytes(PyObjectHandle object));
+
+// Tuple:
+REPY_IMPORT(PyObjectHandle REPY_CreateTuple(u32 size, ...));
 
 // Dicts:
 REPY_IMPORT(PyObjectHandle REPY_CreateDict());

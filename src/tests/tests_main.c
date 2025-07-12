@@ -29,7 +29,7 @@ void inline_test() {
     REPY_Release(new_dict);
 
     REPY_FN_EXEC(
-        block1, 
+        inline_test_exec1, 
         "print(f'Hello Mr. {count=}')\n"
         "print(f'Hello Mr. {new_dict=}')\n"
         
@@ -50,7 +50,7 @@ void inline_test() {
 void file_access_test() {
     REPY_FN_SETUP;
     REPY_FN_EXEC(
-        file_read_block, 
+        file_access_test_exec1, 
         "from pathlib import Path\n"
         "sound_json_str = Path('sound.json').read_text()\n"
     );
@@ -62,13 +62,29 @@ void file_access_test() {
     REPY_FN_RETURN;
 }
 
+void tuple_test() {
+    REPY_FN_SETUP;
+    PyObjectHandle tuple = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
+    // PyObjectHandle tuple = REPY_CreateTuple(3, 33, 44, 55);
+
+    REPY_FN_SET("test_tuple", tuple);
+    REPY_FN_EXEC(
+        tuple_test_exec1, 
+        "print(0, 1, 2)\n"
+    );
+
+    REPY_FN_EVAL(tuple_test_get_print, "print", print_fn);
+    REPY_Call(print_fn, REPY_MakeSUH(REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)))), 0);
+    REPY_Release(print_fn);
+    REPY_FN_RETURN;
+}
 
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
-    inline_test();
-    file_access_test();
-
+    // inline_test();
+    // file_access_test();
+    tuple_test();
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 }
 

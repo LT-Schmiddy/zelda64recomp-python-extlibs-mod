@@ -3,6 +3,7 @@
 
 #include "modding.h"
 #include "global.h"
+#include "libc/stdarg.h"
 #include "repy_api.h"
 
 
@@ -36,6 +37,9 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBytes(const char* st
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBytesN(const char* string, u32 len));
 RECOMP_IMPORT(".", u32 PythonNative_Object_CastBytes_Prepare(PyObjectHandle py_object));
 RECOMP_IMPORT(".", void PythonNative_Object_CastBytes_Copy(u32 len, char* dst));
+
+// Tuple:
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_Create(u32 size, va_list va));
 
 // Dict Operations:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Create());
