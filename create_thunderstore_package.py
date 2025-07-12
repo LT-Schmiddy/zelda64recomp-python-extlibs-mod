@@ -167,8 +167,8 @@ def create_package():
     if not icon_file.is_file():
         fully_collected = copy_icon(info.project_root.joinpath("thumb.png"), icon_file) and fully_collected
     
-    mod_file = package_dir.joinpath(info.build_nrm_file.name)
-    fully_collected = copy_mod(info.build_nrm_file, mod_file) and fully_collected
+    mod_file = package_dir.joinpath(info.build_mod_nrm_file.name)
+    fully_collected = copy_mod(info.build_mod_nrm_file, mod_file) and fully_collected
     
     if extlib_name is not None:
         dll_file = package_dir.joinpath(info.runtime_dll_file.name)

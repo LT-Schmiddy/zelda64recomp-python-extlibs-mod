@@ -7,18 +7,24 @@ class ModInfo:
     mod_toml_file: Path
     mod_data: dict
     
-    def __init__(self, mod_toml_str: str, build_dir: str):
+    tests_toml_file: Path
+    tests_data: dict
+    
+    tests_info_set: bool = False
+    extlib_info_set: bool = False
+    
+    def __init__(self, mod_toml_str: str, mod_build_dir: str):
         self.project_root = Path(__file__).parent
-        self.mod_toml_file = self.project_root.joinpath(mod_toml_str)
         
+        self.mod_toml_file = self.project_root.joinpath(mod_toml_str)
         self.mod_data = tomllib.loads(self.mod_toml_file.read_text())
-        # print(mod_data)
-        self.build_dir = self.project_root.joinpath(build_dir)
-        self.build_nrm_file = self.build_dir.joinpath(f"{self.mod_data['inputs']['mod_filename']}.nrm")
+
+        self.mod_build_dir = self.project_root.joinpath(mod_build_dir)
+        self.build_mod_nrm_file = self.mod_build_dir.joinpath(f"{self.mod_data['inputs']['mod_filename']}.nrm")
         
         self.runtime_dir = self.project_root.joinpath("runtime")
         self.runtime_mods_dir = self.runtime_dir.joinpath("mods")
-        self.runtime_nrm_file = self.runtime_mods_dir.joinpath(f"{self.mod_data['inputs']['mod_filename']}.nrm")
+        self.runtime_mod_nrm_file = self.runtime_mods_dir.joinpath(f"{self.mod_data['inputs']['mod_filename']}.nrm")
         
         self.assets_archive_path =self.project_root.joinpath("assets_archive.zip")
         
@@ -31,6 +37,14 @@ class ModInfo:
         else:
             self.user_config = json.loads(self.user_config_path.read_text())
 
+        # Tests Info
+        self.tests_toml_file: Path = None
+        self.tests_data: dict = None
+        self.tests_build_dir: Path = None
+        self.build_tests_nrm_file: Path = None
+        self.runtime_tests_nrm_file: Path = None
+
+        # Extlib Info
         self.build_dll_file: Path = None
         self.build_pdb_file: Path = None
         self.build_dylib_file: Path = None
@@ -55,8 +69,23 @@ class ModInfo:
         self.runtime_python_dylib_file: Path = None
         self.runtime_python_so_file: Path = None
         self.runtime_python_native_file: Path = None
+    
+    def set_tests_info(self, test_toml_str: str, tests_build_dir: str):
+        self.tests_info_set = True
         
+        self.tests_toml_file = self.project_root.joinpath(test_toml_str)
+        self.tests_data = tomllib.loads(self.tests_toml_file.read_text())
+
+        self.tests_build_dir = self.project_root.joinpath(tests_build_dir)
+        self.build_tests_nrm_file = self.tests_build_dir.joinpath(f"{self.tests_data['inputs']['mod_filename']}.nrm")
+        
+        self.runtime_tests_nrm_file = self.runtime_mods_dir.joinpath(f"{self.tests_data['inputs']['mod_filename']}.nrm")
+    
+        return self
+    
     def set_extlib_info(self, windows_lib: str, macos_lib: str, linux_lib: str, native_lib: str):
+        self.extlib_info_set = True
+        
         self.build_dll_file = self.project_root.joinpath(windows_lib)
         self.build_pdb_file = self.build_dll_file.with_suffix(".pdb")
         self.build_dylib_file = self.project_root.joinpath(macos_lib)
@@ -145,10 +174,17 @@ class ModInfo:
         
     def get_mod_file(self):
         name = f"{self.mod_data['inputs']['mod_filename']}.nrm"
-        return self.print_and_return(self.build_dir.joinpath(name))
+        return self.print_and_return(self.mod_build_dir.joinpath(name))
     
     def get_mod_elf(self):
         return self.print_and_return(self.mod_toml_file.parent.joinpath(self.mod_data['inputs']['elf_path']))
+    
+    def get_tests_file(self):
+        name = f"{self.tests_data['inputs']['mod_filename']}.nrm"
+        return self.print_and_return(self.tests_build_dir.joinpath(name))
+    
+    def get_tests_elf(self):
+        return self.print_and_return(self.tests_toml_file.parent.joinpath(self.tests_data['inputs']['elf_path']))
         
     def get_mod_compiler(self):
         return self.print_and_return(self.user_config["mod_compiling"]["compiler"])
@@ -216,9 +252,13 @@ class ModInfo:
             portable_txt.write_text("")
             print(f"Created '{portable_txt}'.")
         
-        self.copy_if_exists(self.build_nrm_file, self.runtime_nrm_file)
+        self.copy_if_exists(self.build_mod_nrm_file, self.runtime_mod_nrm_file)
+        
+        if self.tests_info_set:
+            self.copy_if_exists(self.build_tests_nrm_file, self.runtime_tests_nrm_file)
+        
         # If no extlib is being built, we don't need to try to find these.
-        if 'extlib_compiling' in self.mod_data:
+        if self.extlib_info_set:
             self.copy_if_exists(self.build_dll_file, self.runtime_dll_file)
             self.copy_if_exists(self.build_pdb_file, self.runtime_pdb_file)
             self.copy_if_exists(self.build_dylib_file, self.runtime_dylib_file)
@@ -236,9 +276,13 @@ class ModInfo:
             portable_txt.write_text("")
             print(f"Created '{portable_txt}'.")
         
-        self.copy_if_exists(self.build_nrm_file, self.runtime_nrm_file)
+        self.copy_if_exists(self.build_mod_nrm_file, self.runtime_mod_nrm_file)
+        
+        if self.tests_info_set:
+            self.copy_if_exists(self.build_tests_nrm_file, self.runtime_tests_nrm_file)
+        
         # If no extlib is being built, we don't need to try to find these.
-        if 'extlib_compiling' in self.mod_data:
+        if self.extlib_info_set:
             self.copy_if_exists(self.build_native_file, self.runtime_native_file)
             self.copy_if_exists(self.build_native_pdb_file, self.runtime_native_pdb_file)
             
@@ -252,7 +296,7 @@ class ModInfo:
             print(f"'{src}' does not exist. Skipping.")
 
     def run_clean(self):
-        shutil.rmtree(self.build_dir)
+        shutil.rmtree(self.mod_build_dir)
         shutil.rmtree(self.project_root.joinpath("./N64Recomp/build"))
 
     def print_and_return(self, x):
