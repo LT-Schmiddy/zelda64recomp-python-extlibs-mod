@@ -71,7 +71,16 @@ void tuple_test() {
     );
 
     REPY_FN_EVAL(tuple_test_get_print, "print", print_fn);
-    REPY_Call(print_fn, REPY_MakeSUH(REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)))), 0);
+    PyObjectHandle args = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
+    PyObjectHandle index_2 = REPY_TupleGetMember(args, 2);
+    REPY_FN_SET("index_2", index_2);
+    REPY_FN_EXEC(
+        tuple_test_exec2, 
+        "print(f'{index_2=}')\n"
+    );
+
+    REPY_Call(print_fn, args, 0);
+    REPY_Release(args);
     REPY_Release(print_fn);
     REPY_FN_RETURN;
 }

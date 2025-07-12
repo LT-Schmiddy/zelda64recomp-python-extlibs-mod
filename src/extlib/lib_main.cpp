@@ -313,6 +313,15 @@ RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
+RECOMP_DLL_FUNC(PythonNative_Tuple_GetMember) {
+    py::gil_scoped_acquire gil;
+    py::tuple tuple = RECOMP_ARG_PYOBJECT(0); 
+    int index = RECOMP_ARG(int, 1); 
+
+    PyObjectHandle handle = controller->create_handle(tuple[index]);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
 // ======================================  Dicts: ======================================  
 RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
     py::gil_scoped_acquire gil;

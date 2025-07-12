@@ -131,6 +131,10 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateTuple(u32 size, ...) {
     return handle;
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index) {
+    return PythonNative_Tuple_GetMember(tuple, index);
+}
+
 // Dict Operations:
 RECOMP_EXPORT PyObjectHandle REPY_CreateDict() {
     return PythonNative_Dict_Create();

@@ -43,6 +43,7 @@ RECOMP_IMPORT(".", void PythonNative_Object_CastBytes_Copy(u32 len, char* dst));
 
 // Tuple:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_Create(u32 size, va_list va));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_GetMember(PyObjectHandle tuple, int index));
 
 // Dict Operations:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Create());

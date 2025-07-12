@@ -125,13 +125,13 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(RE
 
 
 // Scope Management - Strings
-#define REPY_FN_SCOPE_GET_BYTES(var_name) \
+#define REPY_FN_GET_BYTES(var_name) \
 REPY_CastStr(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateBytes(var_name)))))
 
-#define REPY_FN_SCOPE_SET_BYTES(var_name, value) \
+#define REPY_FN_SET_BYTES(var_name, value) \
 REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBytes(value)))
 
-#define REPY_FN_SCOPE_SET_BYTES_N(var_name, value, len) \
+#define REPY_FN_SET_BYTES_N(var_name, value, len) \
 REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBytes(value, len)))
 
 // ========== API: ==========
@@ -170,6 +170,7 @@ REPY_IMPORT(char* REPY_CastBytes(PyObjectHandle object));
 
 // Tuple:
 REPY_IMPORT(PyObjectHandle REPY_CreateTuple(u32 size, ...));
+REPY_IMPORT(PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index));
 
 // Dicts:
 REPY_IMPORT(PyObjectHandle REPY_CreateDict());
