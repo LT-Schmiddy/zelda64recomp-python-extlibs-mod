@@ -80,16 +80,61 @@ PyObjectHandle out_var = REPY_Eval(identifier ## _bytecode, _py_globals, _py_loc
 #define REPY_FN_EVAL_INLINE(code) \
 REPY_EvalCStr(code, _py_globals, _py_locals) 
 
-// Scope Management:
-#define REPY_FN_SCOPE_GET(var_name) \
-REPY_DictGet(_py_locals, py_object);
+// Scope Management - Modules:
+#define REPY_FN_IMPORT(module_name) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(module_name)), REPY_MakeSUH(REPY_ImportModule(module_name)))
 
-#define REPY_FN_SCOPE_SET_BOOL(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateBool(value)));
+// Scope Management - Primatives:
+#define REPY_FN_GET(var_name) \
+REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)));
 
-#define REPY_FN_SCOPE_SET(var_name, py_object) \
-REPY_DictSet(_py_locals, py_object);
+#define REPY_FN_SET(var_name, py_object) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), py_object)
 
+#define REPY_FN_GET_BOOL(var_name) \
+REPY_CastBool(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_BOOL(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBool(value)))
+
+#define REPY_FN_GET_U32(var_name) \
+REPY_CastU32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_U32(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU32(value)))
+
+#define REPY_FN_GET_S32(var_name) \
+REPY_CastS32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_S32(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS32(value)))
+
+#define REPY_FN_GET_F32(var_name) \
+REPY_CastF32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_F32(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateF32(value)))
+
+// Scope Management - Strings
+#define REPY_FN_GET_STR(var_name) \
+REPY_CastStr(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_STR(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateStr(value)))
+
+#define REPY_FN_SET_STR_N(var_name, value, len) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateStr(value, len)))
+
+
+// Scope Management - Strings
+#define REPY_FN_SCOPE_GET_BYTES(var_name) \
+REPY_CastStr(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateBytes(var_name)))))
+
+#define REPY_FN_SCOPE_SET_BYTES(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBytes(value)))
+
+#define REPY_FN_SCOPE_SET_BYTES_N(var_name, value, len) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBytes(value, len)))
 
 // ========== API: ==========
 // Events:
@@ -102,6 +147,7 @@ REPY_IMPORT(PyObjectHandle REPY_MakeSUH(PyObjectHandle py_object));
 // Modules:
 REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
 REPY_IMPORT(void REPY_LoadModuleN(const char* identifier, const char* code, u32 len));
+REPY_IMPORT(PyObjectHandle REPY_ImportModule(const char* identifier));
 
 // Primatives
 REPY_IMPORT(PyObjectHandle REPY_CreateBool(bool value));
@@ -138,5 +184,11 @@ REPY_IMPORT(bool REPY_ExecCStrN(const char* code, u32 len, PyObjectHandle global
 REPY_IMPORT(PyObjectHandle REPY_Eval(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope));
 REPY_IMPORT(PyObjectHandle REPY_EvalCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
 REPY_IMPORT(PyObjectHandle REPY_EvalCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
+
+// Python Functions
+REPY_IMPORT(bool REPY_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
+REPY_IMPORT(PyObjectHandle REPY_CallReturn(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
+REPY_IMPORT(bool REPY_CallAttr(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs));
+REPY_IMPORT(PyObjectHandle REPY_CallAttrReturn(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs));
 
 #endif

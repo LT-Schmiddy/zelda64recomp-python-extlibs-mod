@@ -90,6 +90,12 @@ native_libraries = [
         "PythonNative_Eval",
         "PythonNative_EvalCStr",
         "PythonNative_EvalCStrN",
+
+        # Python Functions
+        "PythonNative_Call",
+        "PythonNative_Call_Return",
+        "PythonNative_CallAttr",
+        "PythonNative_CallAttr_Return",
     ] }
 ]
 

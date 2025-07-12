@@ -23,7 +23,17 @@ static std::string cached_return_string;
 // ======================================  Handle Control: ====================================== 
 
 PyInterpreterController::PyInterpreterController() {
-    py::initialize_interpreter(); 
+    PyPreConfig preconfig;
+    PyPreConfig_InitPythonConfig(&preconfig);
+    Py_PreInitialize(&preconfig);
+
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+
+    config.parse_argv = 0;
+    config.install_signal_handlers = true;
+
+    py::initialize_interpreter(&config); 
     std::cout << "-> Python Interpreter Parent: INIT\n";
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
@@ -31,10 +41,14 @@ PyInterpreterController::PyInterpreterController() {
 
 PyInterpreterController::~PyInterpreterController() {
     // Restores the GIL to this thread.
-    PyEval_RestoreThread(py_main_thread);
+
     // The DLL unloading process seems to clean up the interpreter on it's own,
     // But it doesn't seem to like it when we have handles left over.
-    py_objects.clear();
+    {
+        py::gil_scoped_acquire gil;
+        py_objects.clear();
+    }
+    PyEval_RestoreThread(py_main_thread);
     std::cout << "-> Python Interpreter Parent: DEINIT\n";
 }
 
@@ -89,6 +103,7 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     fs::path mod_dir(mod_dir_text);
     fs::path mod_dir_DLLs = fs::path(mod_dir).append("DLLs");
     fs::path mod_dir_Lib = fs::path(mod_dir).append("Lib");
+    fs::path mod_dir_site = fs::path(mod_dir_Lib).append("site-packages");
 
     printf("Mod Folder: %s\n", (char*)mod_dir_text.c_str());
 
@@ -98,10 +113,12 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
         // Setting the module search path for the interpreter
         auto sys = py::module_::import("sys");
         auto sys_path = sys.attr("path");
+        py::print(sys_path);
         sys_path.attr("clear")();
         sys_path.attr("append")(mod_dir.string());
         sys_path.attr("append")(mod_dir_DLLs.string());
         sys_path.attr("append")(mod_dir_Lib.string());
+        sys_path.attr("append")(mod_dir_site.string());
     }
 
     collect_py_functions();
@@ -142,6 +159,14 @@ RECOMP_DLL_FUNC(PythonNative_LoadModuleN) {
     std::string code_string = RECOMP_ARG_STR_N(1, code_len);
 
     embedded_import::construct_module(module_name, code_string, true);
+}
+
+RECOMP_DLL_FUNC(PythonNative_ImportModule) {
+    py::gil_scoped_acquire gil;
+    std::string module_name = RECOMP_ARG_STR(0);
+
+    PyObjectHandle handle = controller->create_handle(py::module_::import(module_name.c_str()));
+    RECOMP_RETURN(PyObjectHandle, handle);
 }
 
 // ====================================== Primative Casting: ======================================  
@@ -470,6 +495,78 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
     py::object result;
     try {
         result = py_eval(code_string, globals, locals);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(PyObjectHandle, 0);
+    }
+
+    PyObjectHandle handle = controller->create_handle(result);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+// Python Functions
+RECOMP_DLL_FUNC(PythonNative_Call) {
+    py::gil_scoped_acquire gil;
+    py::function func = RECOMP_ARG_PYOBJECT(0);
+    py::tuple args = RECOMP_ARG(PyObjectHandle, 1) ? RECOMP_ARG_PYOBJECT(1) : py::tuple();
+    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::dict();
+
+    try {
+        func(*args, **kwargs);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(unsigned int, 0);
+    }
+
+    RECOMP_RETURN(unsigned int, 1);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Call_Return) {
+    py::gil_scoped_acquire gil;
+    py::function func = RECOMP_ARG_PYOBJECT(0);
+    py::tuple args = RECOMP_ARG(PyObjectHandle, 1) ? RECOMP_ARG_PYOBJECT(1) : py::tuple();
+    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::dict();
+
+    py::object result;
+    try {
+        result = func(*args, **kwargs);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(PyObjectHandle, 0);
+    }
+
+    PyObjectHandle handle = controller->create_handle(result);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+
+RECOMP_DLL_FUNC(PythonNative_CallAttr) {
+    py::gil_scoped_acquire gil;
+    py::object obj = RECOMP_ARG_PYOBJECT(0);
+    std::u8string name = RECOMP_ARG_U8STR(1);
+    py::tuple args = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::tuple();
+    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 3) ? RECOMP_ARG_PYOBJECT(3) : py::dict();
+
+    try {
+        obj.attr((char*)name.c_str())(*args, **kwargs);
+    } catch (py::error_already_set &e) {
+        std::cout << e.what();
+        RECOMP_RETURN(unsigned int, 0);
+    }
+
+    RECOMP_RETURN(unsigned int, 1);
+}
+
+RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
+    py::gil_scoped_acquire gil;
+    py::object obj = RECOMP_ARG_PYOBJECT(0);
+    std::u8string name = RECOMP_ARG_U8STR(1);
+    py::tuple args = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::tuple();
+    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 3) ? RECOMP_ARG_PYOBJECT(3) : py::dict();
+
+    py::object result;
+    try {
+        result = obj.attr((char*)name.c_str())(*args, **kwargs);
     } catch (py::error_already_set &e) {
         std::cout << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);

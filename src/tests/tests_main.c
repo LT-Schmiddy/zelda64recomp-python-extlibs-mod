@@ -18,26 +18,56 @@ void validate(char* case_name, bool case_stmt) {
 }
 
 void inline_test() {
-    // REPY_FN_SETUP;
-    // REPY_FN_EXEC(
-    //     block1, 
-    //     "print('Hello Alex')"
-    // );
+    REPY_FN_SETUP;
+    REPY_FN_IMPORT("os");
 
-    // static PyObjectHandle identifier_bytecode = 0; \
-    // if (identifier_bytecode == 0) { \
-    //     identifier_bytecode = REPY_CompileCStr("print('Hello Alex')", __FILE_NAME__ ", in " __FUNCTION__  ", " "identifier", PY_CODE_EXEC); \
-    // }
-    // u32 identifier_success = REPY_Exec(identifier_bytecode, _py_globals, _py_locals);
+    REPY_FN_SET_S32("count", 55);
 
-    // REPY_FN_RETURN;
+    PyObjectHandle new_dict = REPY_CreateDict();
+    REPY_DictSet(new_dict, REPY_MakeSUH(REPY_CreateStr("key_string")), REPY_MakeSUH(REPY_CreateStr("value_string")));
+    REPY_FN_SET("new_dict", new_dict);
+    REPY_Release(new_dict);
+
+    REPY_FN_EXEC(
+        block1, 
+        "print(f'Hello Mr. {count=}')\n"
+        "print(f'Hello Mr. {new_dict=}')\n"
+        
+        "for i in os.listdir():\n"
+        "    print('*', i)\n"
+    );
+
+    PyObjectHandle os_handle = REPY_FN_GET("os");
+    const char* os_name = REPY_CastStr(REPY_MakeSUH(REPY_CallAttrReturn(os_handle, "getcwd", 0, 0)));
+    recomp_printf("Python says the CWD is '%s'\n", os_name);
+
+    REPY_Release(os_handle);
+    recomp_free((void*)os_name);
+
+    REPY_FN_RETURN;
 }
+
+void file_access_test() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC(
+        file_read_block, 
+        "from pathlib import Path\n"
+        "sound_json_str = Path('sound.json').read_text()\n"
+    );
+
+    char* sound_json_str = REPY_FN_GET_STR("sound_json_str");
+    recomp_printf("Sound.json Content:\n%s\n", sound_json_str);
+    recomp_free(sound_json_str);
+
+    REPY_FN_RETURN;
+}
+
 
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
     inline_test();
-
+    file_access_test();
 
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 }

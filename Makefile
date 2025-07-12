@@ -216,25 +216,25 @@ else
 	mkdir -p $@
 endif
 
+clean:
+ifeq ($(OS),Windows_NT)
+	- rmdir "$(BUILD_ROOT)" /s /q
+else
+	- rm -rf $(BUILD_ROOT)
+endif
+
 distclean:
 ifeq ($(OS),Windows_NT)
-	- rmdir "$(MOD_BUILD_DIR)" /s /q
+	- rmdir "$(BUILD_ROOT)" /s /q
 	- rmdir "$(N64RECOMP_BUILD_DIR)" /s /q
 	- rmdir "$(ASSETS_EXTRACTED_DIR)" /s /q
 else
-	- rm -rf $(MOD_BUILD_DIR)
+	- rm -rf $(BUILD_ROOT)
 	- rm -rf $(N64RECOMP_BUILD_DIR)
 	- rm -rf $(ASSETS_EXTRACTED_DIR)
-endif
-
-clean:
-ifeq ($(OS),Windows_NT)
-	- rmdir "$(MOD_BUILD_DIR)" /s /q
-else
-	- rm -rf $(MOD_BUILD_DIR)
 endif
 
 -include $(MOD_C_DEPS)
 -include $(TESTS_C_DEPS)
 
-.PHONY: all native windows macos linux runtime mod_nrm offline extlib-all extlib-win extlib-macos extlib-linux extlib-native clean clean-build
+.PHONY: all native windows macos linux runtime mod_nrm offline extlib-all extlib-win extlib-macos extlib-linux extlib-native clean distclean

@@ -41,6 +41,10 @@ RECOMP_EXPORT void REPY_LoadModuleN(const char* identifier, const char* code, u3
     PythonNative_LoadModuleN(identifier, code, len);
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_ImportModule(const char* identifier) {
+    return PythonNative_ImportModule(identifier);
+}
+
 // Primatives:
 RECOMP_EXPORT PyObjectHandle REPY_CreateBool(bool value) {
     return PythonNative_Object_CreateBool(value);
@@ -161,4 +165,21 @@ RECOMP_EXPORT PyObjectHandle REPY_EvalCStr(const char* code, PyObjectHandle glob
 
 RECOMP_EXPORT PyObjectHandle REPY_EvalCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope) {
     return PythonNative_EvalCStrN(code, len, global_scope, local_scope);
+}
+
+// Python Functions
+RECOMP_EXPORT bool REPY_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs) {
+    return PythonNative_Call(func, args, kwargs);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CallReturn(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs) {
+    return PythonNative_Call_Return(func, args, kwargs);
+}
+
+RECOMP_EXPORT bool REPY_CallAttr(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs) {
+    return PythonNative_CallAttr(func, name, args, kwargs);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CallAttrReturn(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs) {
+    return PythonNative_CallAttr_Return(func, name, args, kwargs);
 }

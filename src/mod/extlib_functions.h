@@ -14,6 +14,7 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_MakeSUH(PyObjectHandle py_
 // Modules:
 RECOMP_IMPORT(".", void PythonNative_LoadModule(const char* identifier, const char* code));
 RECOMP_IMPORT(".", void PythonNative_LoadModuleN(const char* identifier, const char* code, u32 len));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_ImportModule(const char* identifier));
 
 // Casting Primatives:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBool(bool value));
@@ -53,5 +54,9 @@ RECOMP_IMPORT(".", bool PythonNative_ExecCStrN(const char* code, u32 len, PyObje
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Eval(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_EvalCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_EvalCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
+RECOMP_IMPORT(".", bool PythonNative_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Call_Return(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
+RECOMP_IMPORT(".", bool PythonNative_CallAttr(PyObjectHandle func, const char* name, PyObjectHandle args, PyObjectHandle kwargs));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_CallAttr_Return(PyObjectHandle func, const char* name, PyObjectHandle args, PyObjectHandle kwargs));
 
 #endif

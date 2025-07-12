@@ -3,8 +3,11 @@
 #include <filesystem>
 #include <stdio.h>
 
+
 #ifdef _DEBUG
 #undef _DEBUG
+// Need to turn this off for debug builds, otherwise we get an error on shutdown debug builds.
+#define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
 #include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
