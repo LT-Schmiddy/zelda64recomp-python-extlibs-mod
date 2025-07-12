@@ -64,10 +64,7 @@ void file_access_test() {
 
 void tuple_test() {
     REPY_FN_SETUP;
-    PyObjectHandle tuple = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
-    // PyObjectHandle tuple = REPY_CreateTuple(3, 33, 44, 55);
 
-    REPY_FN_SET("test_tuple", tuple);
     REPY_FN_EXEC(
         tuple_test_exec1, 
         "print(0, 1, 2)\n"

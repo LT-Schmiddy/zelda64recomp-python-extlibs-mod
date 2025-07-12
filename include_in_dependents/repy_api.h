@@ -60,7 +60,7 @@ static PyObjectHandle identifier ## _bytecode = 0; \
 if (identifier ## _bytecode == 0) { \
     identifier ## _bytecode = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier" #identifier " ", PY_CODE_EXEC); \
 } \
-u32 identifier ## success = REPY_Exec(identifier ## _bytecode, _py_globals, _py_locals) 
+u32 identifier ## _success = REPY_Exec(identifier ## _bytecode, _py_globals, _py_locals) 
 
 
 #define REPY_FN_EXEC_INLINE(code) \
@@ -141,6 +141,9 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(RE
 // General:
 REPY_IMPORT(void REPY_Release(PyObjectHandle py_object));
 REPY_IMPORT(PyObjectHandle REPY_MakeSUH(PyObjectHandle py_object));
+REPY_IMPORT(bool REPY_GetSUH(PyObjectHandle py_object));
+REPY_IMPORT(void REPY_SetSUH(PyObjectHandle py_object, bool value));
+REPY_IMPORT(PyObjectHandle REPY_CopyHandle(PyObjectHandle py_object));
 
 // Modules:
 REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));

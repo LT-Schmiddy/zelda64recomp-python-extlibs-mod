@@ -24,6 +24,7 @@ public:
     PyObjectHandle get_new_handle_value();
     int create_handle(py::object obj);
     py::object get_py_object(PyObjectHandle handle);
+    bool get_handle_suh(PyObjectHandle handle);
     void set_handle_suh(PyObjectHandle handle, bool is_single_use);
     void release_handle(PyObjectHandle handle);
 

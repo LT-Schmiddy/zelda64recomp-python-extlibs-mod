@@ -82,11 +82,15 @@ py::object PyInterpreterController::get_py_object(PyObjectHandle handle) {
     return retVal;
 }
 
+bool PyInterpreterController::get_handle_suh(PyObjectHandle handle) {
+    PyObjectHandleEntry* entry = &py_objects.at(handle);
+    return entry->is_single_use;
+}
 
 void PyInterpreterController::set_handle_suh(PyObjectHandle handle, bool is_single_use) {
     PyObjectHandleEntry* entry = &py_objects.at(handle);
     entry->is_single_use = is_single_use;
-    printf("-> PyObjectHandle %i is now Single Use\n", handle);
+    printf("-> PyObjectHandle %i Setting SUH = %i\n", handle, is_single_use);
 }
 
 
@@ -140,7 +144,32 @@ RECOMP_DLL_FUNC(PythonNative_Object_MakeSUH) {
 
     controller->set_handle_suh(handle, true);
 
-    RECOMP_RETURN(int, handle);
+    RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_GetSUH) {
+    py::gil_scoped_acquire gil;
+    PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
+
+    RECOMP_RETURN(unsigned int, (unsigned int) controller->get_handle_suh(handle));
+}
+
+
+RECOMP_DLL_FUNC(PythonNative_Object_SetSUH) {
+    py::gil_scoped_acquire gil;
+    PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
+    PyObjectHandle value = RECOMP_ARG(unsigned int, 1);
+
+    controller->set_handle_suh(handle, value);
+}
+
+
+RECOMP_DLL_FUNC(PythonNative_Object_CopyHandle) {
+    py::gil_scoped_acquire gil;
+    py::object object = RECOMP_ARG_PYOBJECT(0);
+    PyObjectHandle new_handle = controller->create_handle(object);
+
+    RECOMP_RETURN(PyObjectHandle, new_handle);
 }
 
 // ======================================  Modules: ====================================== 

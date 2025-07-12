@@ -33,6 +33,18 @@ RECOMP_EXPORT PyObjectHandle REPY_MakeSUH(PyObjectHandle py_object) {
     return PythonNative_Object_MakeSUH(py_object);
 }
 
+RECOMP_EXPORT bool REPY_GetSUH(PyObjectHandle py_object) {
+    return PythonNative_Object_GetSUH(py_object);
+}
+
+RECOMP_EXPORT void REPY_SetSUH(PyObjectHandle py_object, bool value) {
+    PythonNative_Object_SetSUH(py_object, value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CopyHandle(PyObjectHandle py_object) {
+    return PythonNative_Object_CopyHandle(py_object);
+}
+
 // Modules:
 RECOMP_EXPORT void REPY_LoadModule(const char* identifier, const char* code) {
     PythonNative_LoadModule(identifier, code);
