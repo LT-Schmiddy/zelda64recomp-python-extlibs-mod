@@ -51,6 +51,7 @@ native_libraries = [
         # Modules
         "PythonNative_LoadModule",
         "PythonNative_LoadModuleN",
+        "PythonNative_ImportModule",
 
         # Primatives
         "PythonNative_Object_CreateBool",
@@ -136,14 +137,14 @@ library_name = "PythonForRecompNative"
 # the make variables `NATIVE_CMAKE_CONFIGURE_PRESET` and `NATIVE_CMAKE_BUILD_PRESET`.
 
 # CMake presets for Debug builds. 
-windows_debug_configure_preset = "zig-windows-x64-RelWithDebInfo"
-windows_debug_build_preset = "zig-windows-x64-RelWithDebInfo"
+windows_debug_configure_preset = "zig-windows-x64-Debug"
+windows_debug_build_preset = "zig-windows-x64-Debug"
 
-macos_debug_configure_preset = "zig-macos-aarch64-RelWithDebInfo"
-macos_debug_build_preset = "zig-macos-aarch64-RelWithDebInfo"
+macos_debug_configure_preset = "zig-macos-aarch64-Debug"
+macos_debug_build_preset = "zig-macos-aarch64-Debug"
 
-linux_debug_configure_preset = "zig-linux-x64-RelWithDebInfo"
-linux_debug_build_preset = "zig-linux-x64-RelWithDebInfo"
+linux_debug_configure_preset = "zig-linux-x64-Debug"
+linux_debug_build_preset = "zig-linux-x64-Debug"
 
 # CMake presets for Release builds. Used to contruct preset groups in `user_build_config.json`.
 windows_release_configure_preset = "zig-windows-x64-Release"

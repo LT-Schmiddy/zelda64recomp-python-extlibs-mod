@@ -2,8 +2,18 @@
 #include <iostream>
 #include <filesystem>
 #include <stdio.h>
+
+#ifdef _DEBUG
+#undef _DEBUG
+#include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#define _DEBUG
+#else 
+#include <Python.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
+#endif
 
 namespace py = pybind11;
 namespace fs = std::filesystem;
