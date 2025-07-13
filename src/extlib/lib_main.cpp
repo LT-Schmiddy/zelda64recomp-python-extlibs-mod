@@ -3,10 +3,7 @@
 #include <unordered_map>
 #include <plog/Log.h> // Step1: include the headers
 
-
 #include "lib_main.hpp"
-#include "utils.hpp"
-#include "embedded_import.hpp"
 
 extern "C" {
     DLLEXPORT uint32_t recomp_api_version = 1;
@@ -21,94 +18,6 @@ static const char* code_type_strs[] = {
 static std::u8string cached_return_u8string;
 static std::string cached_return_string;
 
-// ======================================  Handle Control: ====================================== 
-
-PyInterpreterController::PyInterpreterController(plog::Severity severity) {
-    file_appender = new plog::RollingFileAppender<plog::TxtFormatter>("REPY.log");
-    console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
-    log = &plog::init((plog::Severity)severity);
-    log->addAppender(file_appender);
-    log->addAppender(console_appender);
-
-    PyPreConfig preconfig;
-    PyPreConfig_InitPythonConfig(&preconfig);
-    Py_PreInitialize(&preconfig);
-
-    PyConfig config;
-    PyConfig_InitPythonConfig(&config);
-
-    config.parse_argv = 0;
-    config.install_signal_handlers = true;
-
-    py::initialize_interpreter(&config); 
-    PLOGI << "-> Python Interpreter Parent: INIT";
-    // Allow other threads to have the GIL.
-    py_main_thread = PyEval_SaveThread();
-};
-
-PyInterpreterController::~PyInterpreterController() {
-    // Restores the GIL to this thread.
-
-    // The DLL unloading process seems to clean up the interpreter on it's own,
-    // But it doesn't seem to like it when we have handles left over.
-    {
-        py::gil_scoped_acquire gil;
-        py_objects.clear();
-    }
-    PyEval_RestoreThread(py_main_thread);
-    PLOGI << "-> Python Interpreter Parent: DEINIT";
-}
-
-PyObjectHandle PyInterpreterController::get_new_handle_value() {
-    py::gil_scoped_acquire gil;
-    PyObjectHandle new_handle = 0;
-    while (py_objects.contains(new_handle) || new_handle == 0) {
-        new_handle = random_in_range(1, INT_MAX);
-    }
-    return new_handle;
-}
-
-int PyInterpreterController::create_handle(py::object obj) {
-    py::gil_scoped_acquire gil;
-    PyObjectHandle new_handle = get_new_handle_value();
-    py_objects.insert({new_handle, {obj, false}});
-
-    PLOGD.printf("-> PyObjectHandle %i Created", new_handle);
-    return new_handle;
-}
-
-py::object PyInterpreterController::get_py_object(PyObjectHandle handle) {
-    PyObjectHandleEntry* entry = &py_objects.at(handle);
-    py::object retVal = entry->py_object;
-    if (entry->is_single_use) {
-        py_objects.erase(handle);
-        PLOGD.printf("-> PyObjectHandle %i Accessed and Released (SUH)", handle);
-    } else {
-        PLOGD.printf("-> PyObjectHandle %i Accessed", handle);
-    }
-    return retVal;
-}
-
-bool PyInterpreterController::get_handle_suh(PyObjectHandle handle) {
-    PyObjectHandleEntry* entry = &py_objects.at(handle);
-    return entry->is_single_use;
-}
-
-void PyInterpreterController::set_handle_suh(PyObjectHandle handle, bool is_single_use) {
-    PyObjectHandleEntry* entry = &py_objects.at(handle);
-    entry->is_single_use = is_single_use;
-    PLOGD.printf("-> PyObjectHandle %i Setting SUH = %i", handle, is_single_use);
-}
-
-
-void PyInterpreterController::release_handle(PyObjectHandle handle) {
-    py_objects.erase(handle);
-    PLOGD.printf("-> PyObjectHandle %i Released", handle);
-}
-
-
-
-std::shared_ptr<PyInterpreterController> controller = NULL;
 
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
@@ -116,15 +25,9 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(1);
 
     fs::path mod_dir(mod_dir_text);
-    fs::path py_log_file = fs::path(mod_dir).append("REPY.log");
-    plog::init(plog::debug, py_log_file.c_str());
-
-    fs::path mod_dir_DLLs = fs::path(mod_dir).append("DLLs");
-    fs::path mod_dir_Lib = fs::path(mod_dir).append("Lib");
-    fs::path mod_dir_site = fs::path(mod_dir_Lib).append("site-packages");
 
     // Set up logging:
-    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level);
+    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level, mod_dir);
 
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
@@ -132,17 +35,8 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     {
         py::gil_scoped_acquire gil;
         // Setting the module search path for the interpreter
-        auto sys = py::module_::import("sys");
-        auto sys_path = sys.attr("path");
-        py::print(sys_path);
-        sys_path.attr("clear")();
-        sys_path.attr("append")(mod_dir.string());
-        sys_path.attr("append")(mod_dir_DLLs.string());
-        sys_path.attr("append")(mod_dir_Lib.string());
-        sys_path.attr("append")(mod_dir_site.string());
-    }
 
-    collect_py_functions();
+    }
     // Release the GIL so that Python threads can run in the background.
     // This does mean that all other functions that operate on python will need to reaquire the GIL.
     RECOMP_RETURN(int, 1);
@@ -195,7 +89,7 @@ RECOMP_DLL_FUNC(PythonNative_LoadModule) {
     std::string module_name = RECOMP_ARG_STR(0);
     std::string code_string = RECOMP_ARG_STR(1);
 
-    embedded_import::construct_module(module_name, code_string, true);
+    controller->construct_module(module_name, code_string, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_LoadModuleN) {
@@ -204,7 +98,7 @@ RECOMP_DLL_FUNC(PythonNative_LoadModuleN) {
     unsigned int code_len = RECOMP_ARG(unsigned int, 2);
     std::string code_string = RECOMP_ARG_STR_N(1, code_len);
 
-    embedded_import::construct_module(module_name, code_string, true);
+    controller->construct_module(module_name, code_string, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ImportModule) {
@@ -395,7 +289,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
 
     py::object bytecode;
     try {
-        bytecode = py_compile(code_str, identifier_str, type_str);
+        bytecode = controller->py_compile(code_str, identifier_str, type_str);
     } catch (py::error_already_set &e) {
        PLOGE << e.what();
         RECOMP_RETURN(int, 0);
@@ -413,7 +307,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
 
     py::object bytecode;
     try {
-        bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
+        bytecode = controller->py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
        PLOGE << e.what();
         RECOMP_RETURN(int, 0);
@@ -432,7 +326,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
 
     py::object bytecode;
     try {
-        bytecode = py_compile(code_str, identifier, code_type_strs[code_type]);
+        bytecode = controller->py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
        PLOGE << e.what();
         RECOMP_RETURN(int, 0);
@@ -454,7 +348,7 @@ RECOMP_DLL_FUNC(PythonNative_Exec) {
     }
 
     try {
-        py_exec(bytecode, globals, locals);
+        controller->py_exec(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
        PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
@@ -474,7 +368,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     }
 
     try {
-        py_exec(code_string, globals, locals);
+        controller->py_exec(code_string, globals, locals);
     } catch (py::error_already_set &e) {
        PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
@@ -495,7 +389,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     }
 
     try {
-        py_exec(code_string, globals, locals);
+        controller->py_exec(code_string, globals, locals);
     } catch (py::error_already_set &e) {
         PLOGE << e.what();
         RECOMP_RETURN(unsigned int, 0);
@@ -516,7 +410,7 @@ RECOMP_DLL_FUNC(PythonNative_Eval) {
     
     py::object result;
     try {
-        result = py_eval(bytecode, globals, locals);
+        result = controller->py_eval(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
         PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
@@ -539,7 +433,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
 
     py::object result;
     try {
-        result = py_eval(code_string, globals, locals);
+        result = controller->py_eval(code_string, globals, locals);
     } catch (py::error_already_set &e) {
         PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
@@ -563,7 +457,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
 
     py::object result;
     try {
-        result = py_eval(code_string, globals, locals);
+        result = controller->py_eval(code_string, globals, locals);
     } catch (py::error_already_set &e) {
         PLOGE << e.what();
         RECOMP_RETURN(PyObjectHandle, 0);
