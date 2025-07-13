@@ -84,12 +84,31 @@ void tuple_test() {
     REPY_FN_RETURN;
 }
 
+void mem_test() {
+    REPY_FN_SETUP;
+    const char* addr_test = "Hello Alex";
+    REPY_FN_SET_S32("addr_test", (s32)addr_test);
+    REPY_FN_EXEC(
+        mem_test_exec1, 
+        "import recomp_mem\n"
+        "print(type(addr_test))\n"
+        "byte_info = recomp_mem.read_bytes_n(addr_test, 11)\n"
+        "print(byte_info)\n"
+        "recomp_mem.write_bytes(addr_test, b'Perfect\\x00')\n"
+    );
+
+    recomp_printf("addr_test = %s\n", addr_test);
+    REPY_FN_RETURN;
+}
+
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
     // inline_test();
     // file_access_test();
-    tuple_test();
+    // tuple_test();
+    mem_test();
+
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 }
 

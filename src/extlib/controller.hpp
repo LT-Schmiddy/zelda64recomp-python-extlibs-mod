@@ -28,6 +28,8 @@ public:
     py::object py_exec;
     py::object py_eval;
 
+    uint8_t* rdram;
+
     PyInterpreterController(plog::Severity severity, fs::path mod_dir);
     ~PyInterpreterController();
 
@@ -41,6 +43,8 @@ public:
 
     py::module_ construct_module(std::string module_name, std::string module_code, bool add_to_sys); 
     int random_in_range(int low, int high);
+
+    void set_rdram(uint8_t* p_rdram);
 
 };
 

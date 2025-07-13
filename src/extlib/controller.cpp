@@ -129,4 +129,8 @@ int PyInterpreterController::random_in_range(int low, int high) {
     return rand() % (high - low + 1) + low;
 }
 
+void PyInterpreterController::set_rdram(uint8_t* p_rdram) {
+    rdram = p_rdram;
+}
+
 std::shared_ptr<PyInterpreterController> controller = NULL;

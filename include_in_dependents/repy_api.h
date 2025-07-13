@@ -58,7 +58,7 @@ REPY_Release(_py_locals); return
 #define REPY_FN_EXEC(identifier, code) \
 static PyObjectHandle identifier ## _bytecode = 0; \
 if (identifier ## _bytecode == 0) { \
-    identifier ## _bytecode = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier" #identifier " ", PY_CODE_EXEC); \
+    identifier ## _bytecode = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier '" #identifier "' ", PY_CODE_EXEC); \
 } \
 u32 identifier ## _success = REPY_Exec(identifier ## _bytecode, _py_globals, _py_locals) 
 
@@ -70,7 +70,7 @@ REPY_ExecCStr(code, _py_globals, _py_locals)
 #define REPY_FN_EVAL(identifier, code, out_var) \
 static PyObjectHandle identifier ## _bytecode = 0; \
 if (identifier ## _bytecode == 0) { \
-    identifier ## _bytecode = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier" #identifier " ", PY_CODE_EVAL); \
+    identifier ## _bytecode = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier '" #identifier "' ", PY_CODE_EVAL); \
 } \
 PyObjectHandle out_var = REPY_Eval(identifier ## _bytecode, _py_globals, _py_locals)
 

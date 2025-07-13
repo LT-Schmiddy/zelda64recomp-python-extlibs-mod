@@ -228,10 +228,12 @@ ifeq ($(OS),Windows_NT)
 	- rmdir "$(BUILD_ROOT)" /s /q
 	- rmdir "$(N64RECOMP_BUILD_DIR)" /s /q
 	- rmdir "$(ASSETS_EXTRACTED_DIR)" /s /q
+	- rm user_build_config.json
 else
 	- rm -rf $(BUILD_ROOT)
 	- rm -rf $(N64RECOMP_BUILD_DIR)
 	- rm -rf $(ASSETS_EXTRACTED_DIR)
+	- rm user_build_config.json
 endif
 
 -include $(MOD_C_DEPS)
