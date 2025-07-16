@@ -76,10 +76,10 @@ int PyInterpreterController::create_handle(py::object obj) {
 
 py::object PyInterpreterController::get_py_object(PyObjectHandle handle) {
     PyObjectHandleEntry* entry = &py_objects.at(handle);
-    py::object retVal = entry->py_object;
+    py::object retVal = py::reinterpret_borrow<py::object>(entry->py_object);
     if (entry->is_single_use) {
-        py_objects.erase(handle);
-        PLOGD.printf("-> PyObjectHandle %i Accessed and Released (SUH)", handle);
+        suh_release_queue.push(handle);
+        PLOGD.printf("-> PyObjectHandle %i Accessed (SUH)", handle);
     } else {
         PLOGD.printf("-> PyObjectHandle %i Accessed", handle);
     }
@@ -97,6 +97,14 @@ void PyInterpreterController::set_handle_suh(PyObjectHandle handle, bool is_sing
     PLOGD.printf("-> PyObjectHandle %i Setting SUH = %i", handle, is_single_use);
 }
 
+void PyInterpreterController::release_suh_handles() {
+    while (suh_release_queue.size() > 0) {
+        PyObjectHandle handle = suh_release_queue.front();
+        suh_release_queue.pop();
+        py_objects.erase(handle);
+        PLOGD.printf("-> PyObjectHandle %i Released (SUH)", handle);
+    }
+}
 
 void PyInterpreterController::release_handle(PyObjectHandle handle) {
     py_objects.erase(handle);
@@ -137,8 +145,6 @@ void PyInterpreterController::handle_exception(py::error_already_set* e) {
     last_error_type = e->type();
     last_error_trace = e->trace();
     last_error_value = e->value();
-    // Technically deprecated, but I still wanna call it.
-    e->clear();
 }
 
 PyObjectHandle PyInterpreterController::get_py_error_type_handle() {

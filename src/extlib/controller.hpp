@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <queue>
 #include <plog/Log.h>
 #include <plog/Formatters/TxtFormatter.h>// Step1: include the headers
 #include <plog/Appenders/ColorConsoleAppender.h>// Step1: include the headers
@@ -19,6 +20,7 @@ class PyInterpreterController {
 public:
     PyThreadState* py_main_thread = NULL;
     std::unordered_map<PyObjectHandle, PyObjectHandleEntry> py_objects;
+    std::queue<PyObjectHandle> suh_release_queue;
 
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
     plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
@@ -44,6 +46,7 @@ public:
     py::object get_py_object(PyObjectHandle handle);
     bool get_handle_suh(PyObjectHandle handle);
     void set_handle_suh(PyObjectHandle handle, bool is_single_use);
+    void release_suh_handles();
     void release_handle(PyObjectHandle handle);
 
     // Error Operations:
