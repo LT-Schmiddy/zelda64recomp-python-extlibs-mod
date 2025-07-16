@@ -97,11 +97,19 @@ native_libraries = [
         "PythonNative_EvalCStr",
         "PythonNative_EvalCStrN",
 
-        # Python Functions
+        # Python Function Calls
         "PythonNative_Call",
         "PythonNative_Call_Return",
         "PythonNative_CallAttr",
         "PythonNative_CallAttr_Return",
+        
+        # Exception Handling
+        "PythonNative_IsErrorSet",
+        "PythonNative_GetErrorType",
+        "PythonNative_GetErrorTrace",
+        "PythonNative_GetErrorValue",
+        "PythonNative_ClearError",
+
     ] }
 ]
 

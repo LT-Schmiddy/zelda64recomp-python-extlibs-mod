@@ -209,3 +209,28 @@ RECOMP_EXPORT bool REPY_CallAttr(PyObjectHandle func, char* name, PyObjectHandle
 RECOMP_EXPORT PyObjectHandle REPY_CallAttrReturn(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs) {
     return PythonNative_CallAttr_Return(func, name, args, kwargs);
 }
+
+// Exception Handling:
+RECOMP_EXPORT bool REPY_IsErrorSet() {
+    return PythonNative_IsErrorSet();
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_GetErrorType() {
+    return PythonNative_GetErrorType();
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_GetErrorTrace() {
+    return PythonNative_GetErrorTrace();
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_GetErrorValue() {
+    return PythonNative_GetErrorValue();
+}
+
+RECOMP_EXPORT void REPY_ClearError() {
+    PythonNative_ClearError();
+}
+
+
+
+

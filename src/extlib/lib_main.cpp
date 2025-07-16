@@ -32,11 +32,20 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
 
+    
     {
         py::gil_scoped_acquire gil;
-        // Setting the module search path for the interpreter
 
+        try {
+            controller->py_exec("priont('This will error')", py::dict());
+        } catch (py::error_already_set &e) {
+            PLOGE << e.what();
+            // RECOMP_RETURN(int, 0);
+        }
+
+        controller->py_exec("print('This will not error')", py::dict());
     }
+
     // Release the GIL so that Python threads can run in the background.
     // This does mean that all other functions that operate on python will need to reaquire the GIL.
     RECOMP_RETURN(int, 1);
@@ -320,7 +329,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
     try {
         bytecode = controller->py_compile(code_str, identifier_str, type_str);
     } catch (py::error_already_set &e) {
-       PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(int, 0);
     }
 
@@ -339,7 +348,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
     try {
         bytecode = controller->py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
-       PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(int, 0);
     }
 
@@ -359,7 +368,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
     try {
         bytecode = controller->py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
-       PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(int, 0);
     }
 
@@ -382,7 +391,7 @@ RECOMP_DLL_FUNC(PythonNative_Exec) {
     try {
         controller->py_exec(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
-       PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(unsigned int, 0);
     }
     RECOMP_RETURN(unsigned int, 1);
@@ -403,7 +412,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     try {
         controller->py_exec(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-       PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(unsigned int, 0);
     }
     RECOMP_RETURN(unsigned int, 1);
@@ -425,7 +434,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     try {
         controller->py_exec(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(unsigned int, 0);
     }
     RECOMP_RETURN(unsigned int, 1);
@@ -447,7 +456,7 @@ RECOMP_DLL_FUNC(PythonNative_Eval) {
     try {
         result = controller->py_eval(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -471,7 +480,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
     try {
         result = controller->py_eval(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -496,7 +505,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
     try {
         result = controller->py_eval(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -515,7 +524,7 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
     try {
         func(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(unsigned int, 0);
     }
 
@@ -533,7 +542,7 @@ RECOMP_DLL_FUNC(PythonNative_Call_Return) {
     try {
         result = func(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
@@ -553,7 +562,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     try {
         obj.attr((char*)name.c_str())(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(unsigned int, 0);
     }
 
@@ -572,10 +581,45 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
     try {
         result = obj.attr((char*)name.c_str())(*args, **kwargs);
     } catch (py::error_already_set &e) {
-        PLOGE << e.what();
+        controller->handle_exception(&e);
         RECOMP_RETURN(PyObjectHandle, 0);
     }
 
     PyObjectHandle handle = controller->create_handle(result);
     RECOMP_RETURN(PyObjectHandle, handle);
+}
+
+// ====================================== Execution: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_IsErrorSet) {
+    controller->set_rdram(rdram);
+
+    RECOMP_RETURN(unsigned int, controller->is_error_set());
+}
+
+RECOMP_DLL_FUNC(PythonNative_GetErrorType) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+
+    RECOMP_RETURN(PyObjectHandle, controller->get_py_error_type_handle());
+}
+
+RECOMP_DLL_FUNC(PythonNative_GetErrorTrace) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+
+    RECOMP_RETURN(PyObjectHandle, controller->get_py_error_trace_handle());
+}
+
+RECOMP_DLL_FUNC(PythonNative_GetErrorValue) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+
+    RECOMP_RETURN(PyObjectHandle, controller->get_py_error_value_handle());
+}
+
+RECOMP_DLL_FUNC(PythonNative_ClearError) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    controller->clear_py_error();
+
 }

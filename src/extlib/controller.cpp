@@ -125,6 +125,53 @@ py::module_ PyInterpreterController::construct_module(std::string module_name, s
     return new_mod;
 };
 
+// Error Stuff
+bool PyInterpreterController::is_error_set() {
+    return is_py_error_set;
+}
+
+void PyInterpreterController::handle_exception(py::error_already_set* e) {
+    is_py_error_set = true;
+
+    PLOGE << e->what();
+    last_error_type = e->type();
+    last_error_trace = e->trace();
+    last_error_value = e->value();
+    // Technically deprecated, but I still wanna call it.
+    e->clear();
+}
+
+PyObjectHandle PyInterpreterController::get_py_error_type_handle() {
+    if(!is_py_error_set) {
+        return 0;
+    }
+
+    return create_handle(last_error_type);
+}
+
+PyObjectHandle PyInterpreterController::get_py_error_trace_handle() {
+    if(!is_py_error_set) {
+        return 0;
+    }
+
+    return create_handle(last_error_trace);
+}
+
+PyObjectHandle PyInterpreterController::get_py_error_value_handle() {
+    if(!is_py_error_set) {
+        return 0;
+    }
+
+    return create_handle(last_error_value);
+}
+
+void PyInterpreterController::clear_py_error() {
+    is_py_error_set = false;
+    last_error_type = py::none();
+    last_error_trace = py::none();
+    last_error_value = py::none();
+}
+
 int PyInterpreterController::random_in_range(int low, int high) {
     return rand() % (high - low + 1) + low;
 }

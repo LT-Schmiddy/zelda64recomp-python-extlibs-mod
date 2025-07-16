@@ -67,4 +67,11 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_Call_Return(PyObjectHandle func, 
 RECOMP_IMPORT(".", bool PythonNative_CallAttr(PyObjectHandle func, const char* name, PyObjectHandle args, PyObjectHandle kwargs));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_CallAttr_Return(PyObjectHandle func, const char* name, PyObjectHandle args, PyObjectHandle kwargs));
 
+// Exception Handling:
+RECOMP_IMPORT(".", bool PythonNative_IsErrorSet());
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_GetErrorType());
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_GetErrorTrace());
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_GetErrorValue());
+RECOMP_IMPORT(".", void PythonNative_ClearError());
+
 #endif

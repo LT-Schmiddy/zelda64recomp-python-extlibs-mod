@@ -18,15 +18,20 @@ struct PyObjectHandleEntry {
 class PyInterpreterController {
 public:
     PyThreadState* py_main_thread = NULL;
-    std::unordered_map<int, PyObjectHandleEntry> py_objects;
+    std::unordered_map<PyObjectHandle, PyObjectHandleEntry> py_objects;
 
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
     plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
     plog::Logger<0>* log = NULL;
 
-    py::object py_compile;
-    py::object py_exec;
-    py::object py_eval;
+    bool is_py_error_set = false;
+    py::object last_error_type = py::none();
+    py::object last_error_trace = py::none();
+    py::object last_error_value = py::none();
+
+    py::function py_compile;
+    py::function py_exec;
+    py::function py_eval;
 
     uint8_t* rdram;
 
@@ -40,6 +45,14 @@ public:
     bool get_handle_suh(PyObjectHandle handle);
     void set_handle_suh(PyObjectHandle handle, bool is_single_use);
     void release_handle(PyObjectHandle handle);
+
+    // Error Operations:
+    bool is_error_set();
+    void handle_exception(py::error_already_set* e);
+    PyObjectHandle get_py_error_type_handle();
+    PyObjectHandle get_py_error_trace_handle();
+    PyObjectHandle get_py_error_value_handle();
+    void clear_py_error();
 
     py::module_ construct_module(std::string module_name, std::string module_code, bool add_to_sys); 
     int random_in_range(int low, int high);
