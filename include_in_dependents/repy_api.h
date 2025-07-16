@@ -190,10 +190,17 @@ REPY_IMPORT(PyObjectHandle REPY_Eval(PyObjectHandle code, PyObjectHandle global_
 REPY_IMPORT(PyObjectHandle REPY_EvalCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
 REPY_IMPORT(PyObjectHandle REPY_EvalCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
 
-// Python Functions
+// Python Function Calls
 REPY_IMPORT(bool REPY_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
 REPY_IMPORT(PyObjectHandle REPY_CallReturn(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
 REPY_IMPORT(bool REPY_CallAttr(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs));
 REPY_IMPORT(PyObjectHandle REPY_CallAttrReturn(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs));
+
+// Error Handling
+REPY_IMPORT(bool REPY_IsErrorSet());
+REPY_IMPORT(PyObjectHandle REPY_GetErrorType());
+REPY_IMPORT(PyObjectHandle REPY_GetErrorTrace());
+REPY_IMPORT(PyObjectHandle REPY_GetErrorValue());
+REPY_IMPORT(void REPY_ClearError());
 
 #endif
