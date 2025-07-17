@@ -1,5 +1,5 @@
 #include "controller.hpp"
-
+#include "embed_handler.hpp"
 
 // This allows for multiple zips to be copied, but only one ended up being used.
 // There may be a use case for multiple zips in the future.
@@ -30,16 +30,16 @@ void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 
 // ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir) {
-    // fs::path mod_dir_Lib = fs::path(mod_dir).append("python313.zip");
-    fs::path mod_dir_Lib = fs::path(mod_dir).append("Lib");
-    fs::path mod_dir_DLLs = fs::path(mod_dir).append("DLLs");
-    // fs::path mod_dir_site = fs::path(mod_dir_Lib).append("site-packages");
-
     file_appender = new plog::RollingFileAppender<plog::TxtFormatter>("REPY.log");
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
     log = &plog::init((plog::Severity)severity);
     log->addAppender(file_appender);
     log->addAppender(console_appender);
+
+    fs::path mod_dir_Lib = fs::path(mod_dir).append("python313.zip");
+    fs::path mod_dir_DLLs = fs::path(mod_dir);
+    extract_python_stdlib(mod_dir_Lib);
+    setup_python_stdlib_dlls(mod_dir);
 
     PyPreConfig preconfig;
     PyPreConfig_InitPythonConfig(&preconfig);

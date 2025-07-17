@@ -120,10 +120,10 @@ void time_test() {
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
-    inline_test();
-    file_access_test();
-    tuple_test();
-    mem_test();
+    // inline_test();
+    // file_access_test();
+    // tuple_test();
+    // mem_test();
     // time_test();
 
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);

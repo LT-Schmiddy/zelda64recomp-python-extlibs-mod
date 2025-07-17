@@ -1,12 +1,12 @@
 #pragma once
 #include <memory>
 #include <queue>
-#include <plog/Log.h>
+#include "globals.hpp"
 #include <plog/Formatters/TxtFormatter.h>// Step1: include the headers
 #include <plog/Appenders/ColorConsoleAppender.h>// Step1: include the headers
 #include <plog/Initializers/RollingFileInitializer.h>
 
-#include "globals.hpp"
+
 #include "lib_recomp.hpp"
 
 typedef int PyObjectHandle;

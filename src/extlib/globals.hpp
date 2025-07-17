@@ -18,6 +18,8 @@
 #include <pybind11/embed.h>
 #endif
 
+#include <plog/Log.h>
+
 namespace py = pybind11;
 namespace fs = std::filesystem;
 
@@ -26,6 +28,8 @@ namespace fs = std::filesystem;
 #define INCBIN_STYLE INCBIN_STYLE_SNAKE
 #define INCBIN_PREFIX 
 #include <incbin.h>
+
+
 
 // #define INCLUDE_PYTHON_SRC_MODULE(module_name, module_file) \
 // INCTXT(module_name ## _code, module_file); \

@@ -1,0 +1,7 @@
+{
+    "name": "Python_for_Zelda64Recompiled",
+    "version_number": "1.0.0",
+    "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
+    "description": "This is an example mod for Majora's Mask: Recompiled.",
+    "dependencies": []
+}

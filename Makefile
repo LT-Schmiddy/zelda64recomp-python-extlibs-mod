@@ -183,14 +183,14 @@ $(TESTS_C_OBJS): $(TESTS_BUILD_DIR)/%.o : %.c | $(ASSETS_INCLUDE_DIR) $(TESTS_BU
 # Recomp Tools Recipes:
 $(RECOMP_MOD_TOOL): $(N64RECOMP_BUILD_DIR) 
 	cmake -DCMAKE_TOOLCHAIN_FILE="../zig_toolchain.cmake" -DZIG_TARGET="$(MOD_TOOL_ZIG_TRIPLET)" -G Ninja \
-		-DCMAKE_BUILD_TYPE=Release -S $(N64RECOMP_DIR) -B $(N64RECOMP_BUILD_DIR) 
+		-DCMAKE_BUILD_TYPE=Release -S $(N64RECOMP_DIR) -B $(N64RECOMP_BUILD_DIR) -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE
 	cmake --build $(N64RECOMP_BUILD_DIR)
 
 # Extlib Recipes:
 extlib-all: extlib-win extlib-macos extlib-linux
 
 extlib-win:
-	cmake --preset=$(ZIG_WINDOWS_CONFIGURE_PRESET) -DLIB_NAME=$(EXTLIB_NAME) .
+	cmake --preset=$(ZIG_WINDOWS_CONFIGURE_PRESET) -DLIB_NAME=$(EXTLIB_NAME)  .
 	cmake --build --preset=$(ZIG_WINDOWS_BUILD_PRESET)
 
 extlib-macos:

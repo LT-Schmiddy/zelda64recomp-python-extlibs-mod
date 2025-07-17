@@ -12,7 +12,8 @@
             "description": "Default build using Ninja generator",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "generator": "Ninja",
-            "cacheVariables": { 
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS":true
             }
         },
         {
