@@ -28,7 +28,7 @@ void inline_test() {
     REPY_FN_SET("new_dict", new_dict);
     REPY_Release(new_dict);
 
-    REPY_FN_EXEC(
+    REPY_FN_EXEC_BLOCK(
         inline_test_exec1, 
         "print(f'Hello Mr. {count=}')\n"
         "print(f'Hello Mr. {new_dict=}')\n"
@@ -49,7 +49,7 @@ void inline_test() {
 
 void file_access_test() {
     REPY_FN_SETUP;
-    REPY_FN_EXEC(
+    REPY_FN_EXEC_BLOCK(
         file_access_test_exec1, 
         "from pathlib import Path\n"
         "sound_json_str = Path('sound.json').read_text()\n"
@@ -65,15 +65,15 @@ void file_access_test() {
 void tuple_test() {
     REPY_FN_SETUP;
 
-    REPY_FN_EXEC(
+    REPY_FN_EXEC_BLOCK(
         tuple_test_exec1, 
         "print(0, 1, 2)\n"
     );
 
-    REPY_FN_EVAL(tuple_test_get_print, "print", print_fn);
+    REPY_FN_EVAL_BLOCK(tuple_test_get_print, "print", print_fn);
     PyObjectHandle args = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
     REPY_FN_SET("index_2", REPY_MakeSUH(REPY_TupleGetMember(args, 2)));
-    REPY_FN_EXEC(
+    REPY_FN_EXEC_BLOCK(
         tuple_test_exec2, 
         "print(f'{index_2=}')\n"
     );
@@ -88,7 +88,7 @@ void mem_test() {
     REPY_FN_SETUP;
     const char* addr_test = "Hello Alex";
     REPY_FN_SET_S32("addr_test", (s32)addr_test);
-    REPY_FN_EXEC(
+    REPY_FN_EXEC_BLOCK(
         mem_test_exec1, 
         "import recomp_mem\n"
         "print(type(addr_test))\n"
@@ -101,14 +101,35 @@ void mem_test() {
     REPY_FN_RETURN;
 }
 
+void time_test() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_BLOCK(
+        time_start1,
+        "import time\n"
+        "start_time = time.time()\n"
+    );
+    inline_test();
+    file_access_test();
+    tuple_test();
+    mem_test();
+
+
+    REPY_FN_EXEC_BLOCK(
+        time_end1,
+        "end_time = time.time() - start_time\n"
+        "print(f'{end_time=}')\n"
+    );
+    REPY_FN_RETURN;
+}
+
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
     // inline_test();
     // file_access_test();
     // tuple_test();
-    mem_test();
+    // mem_test();
+    time_test();
 
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 }
-
