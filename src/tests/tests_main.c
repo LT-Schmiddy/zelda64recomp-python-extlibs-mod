@@ -28,14 +28,14 @@ void inline_test() {
     REPY_FN_SET("new_dict", new_dict);
     REPY_Release(new_dict);
 
-    REPY_FN_EXEC_BLOCK(
-        inline_test_exec1, 
-        // "print(f'Hello Mr. {count=}')\n"
-        // "print(f'Hello Mr. {new_dict=}')\n"
+    // REPY_FN_EXEC_BLOCK(
+    //     inline_test_exec1, 
+    //     "print(f'Hello Mr. {count=}')\n"
+    //     "print(f'Hello Mr. {new_dict=}')\n"
         
-        "for i in os.listdir():\n"
-        // "    print('*', i)\n"
-    );
+    //     "for i in os.listdir():\n"
+    //     "    print('*', i)\n"
+    // );
 
     PyObjectHandle os_handle = REPY_FN_GET("os");
     const char* os_name = REPY_CastStr(REPY_MakeSUH(REPY_CallAttrReturn(os_handle, "getcwd", 0, 0)));
@@ -101,7 +101,7 @@ void time_test() {
         "start_time = time.time()\n"
     );
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 100; i++) {
         inline_test();
         file_access_test();
         tuple_test();
@@ -120,11 +120,11 @@ void time_test() {
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
-    // inline_test();
-    // file_access_test();
-    // tuple_test();
-    // mem_test();
-    time_test();
+    inline_test();
+    file_access_test();
+    tuple_test();
+    mem_test();
+    // time_test();
 
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 }

@@ -22,6 +22,8 @@ public:
     std::unordered_map<PyObjectHandle, PyObjectHandleEntry> py_objects;
     std::queue<PyObjectHandle> suh_release_queue;
 
+    PyObjectHandle next_handle_val = 1;
+
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
     plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
     plog::Logger<0>* log = NULL;

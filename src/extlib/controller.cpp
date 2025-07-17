@@ -58,11 +58,10 @@ PyInterpreterController::~PyInterpreterController() {
 
 PyObjectHandle PyInterpreterController::get_new_handle_value() {
     py::gil_scoped_acquire gil;
-    PyObjectHandle new_handle = 0;
-    while (py_objects.contains(new_handle) || new_handle == 0) {
-        new_handle = random_in_range(1, INT_MAX);
+    while (py_objects.contains(next_handle_val) || next_handle_val == 0) {
+        next_handle_val++;
     }
-    return new_handle;
+    return next_handle_val++;
 }
 
 PyObjectHandle PyInterpreterController::create_handle_and_steal(py::object* obj) {
@@ -186,10 +185,6 @@ void PyInterpreterController::clear_py_error() {
     last_error_type = py::none();
     last_error_trace = py::none();
     last_error_value = py::none();
-}
-
-int PyInterpreterController::random_in_range(int low, int high) {
-    return rand() % (high - low + 1) + low;
 }
 
 void PyInterpreterController::set_rdram(uint8_t* p_rdram) {
