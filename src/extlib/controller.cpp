@@ -1,10 +1,39 @@
 #include "controller.hpp"
-// ======================================  Handle Control: ====================================== 
 
+
+// This allows for multiple zips to be copied, but only one ended up being used.
+// There may be a use case for multiple zips in the future.
+std::string path_to_string_utf8(const std::filesystem::path& path) {
+    std::u8string path_u8string = path.u8string();
+    std::string to_escape{ reinterpret_cast<const char*>(path_u8string.c_str()), path_u8string.size() };
+
+    std::string ret{};
+    ret.reserve(to_escape.size());
+    for (char c : to_escape) {
+        // Escape backslashes
+        if (c == '\\') {
+            ret += '\\';
+        }
+        ret += c;
+    }
+    return ret;
+}
+
+void py_preinit_add_search_path(PyConfig* config, fs::path path) {
+    PyStatus status;
+
+    wchar_t* pathstr = nullptr;
+    status = PyConfig_SetBytesString(config, &pathstr, path_to_string_utf8(path).c_str());
+    PyWideStringList_Append(&config->module_search_paths, pathstr);
+    PyMem_RawFree(pathstr);
+}
+
+// ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir) {
-    fs::path mod_dir_DLLs = fs::path(mod_dir).append("DLLs");
+    // fs::path mod_dir_Lib = fs::path(mod_dir).append("python313.zip");
     fs::path mod_dir_Lib = fs::path(mod_dir).append("Lib");
-    fs::path mod_dir_site = fs::path(mod_dir_Lib).append("site-packages");
+    fs::path mod_dir_DLLs = fs::path(mod_dir).append("DLLs");
+    // fs::path mod_dir_site = fs::path(mod_dir_Lib).append("site-packages");
 
     file_appender = new plog::RollingFileAppender<plog::TxtFormatter>("REPY.log");
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
@@ -19,6 +48,14 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
 
+    PyConfig_SetBytesString(&config, &config.program_name, "Zelda64Recompiled");
+    
+    py_preinit_add_search_path(&config, mod_dir_Lib);
+    py_preinit_add_search_path(&config, mod_dir_DLLs);
+    // py_preinit_add_search_path(&config, mod_dir_site);
+
+    config.module_search_paths_set = 1;
+
     config.parse_argv = 0;
     config.install_signal_handlers = true;
 
@@ -28,11 +65,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     auto sys = py::module_::import("sys");
     auto sys_path = sys.attr("path");
 
-    sys_path.attr("clear")();
-    sys_path.attr("append")(mod_dir.string());
-    sys_path.attr("append")(mod_dir_DLLs.string());
-    sys_path.attr("append")(mod_dir_Lib.string());
-    sys_path.attr("append")(mod_dir_site.string());
+    py::print(sys_path);
 
     auto builtins = py::module_::import("builtins");
     py_compile = builtins.attr("compile");
@@ -49,10 +82,11 @@ PyInterpreterController::~PyInterpreterController() {
     // The DLL unloading process seems to clean up the interpreter on it's own,
     // But it doesn't seem to like it when we have handles left over.
     {
-        py::gil_scoped_acquire gil;
-        py_objects.clear();
+        // py::gil_scoped_acquire gil;
+        // py_objects.clear();
     }
     PyEval_RestoreThread(py_main_thread);
+    py_objects.clear();
     PLOGI << "-> Python Interpreter Parent: DEINIT";
 }
 

@@ -64,7 +64,6 @@ public:
     int random_in_range(int low, int high);
 
     void set_rdram(uint8_t* p_rdram);
-
 };
 
 extern std::shared_ptr<PyInterpreterController> controller;
