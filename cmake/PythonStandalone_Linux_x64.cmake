@@ -50,3 +50,17 @@ endfunction()
 
 set(PYTHON_EXE "${PYTHON_ROOT}/bin/python3.13" CACHE PATH "Python executable")
 set(PYTHON_STANDALONE_ROOT "${PYTHON_ROOT}" CACHE PATH "Root of extracted Python standalone distribution")
+
+# Create Standard Library Archive:
+set(PYTHON_INCBIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/inbin/" CACHE PATH "Any data file that needs to be included in the binary will be generated here.")
+make_directory("${PYTHON_INCBIN_DIR}")
+include_directories("${PYTHON_INCBIN_DIR}")
+
+file(GLOB_RECURSE PYTHON_STDLIB "${PYTHON_STANDALONE_ROOT}/lib/python3.13/**")
+file(ARCHIVE_CREATE 
+    OUTPUT "${PYTHON_INCBIN_DIR}/python313_stdlib.zip" 
+    PATHS ${PYTHON_STDLIB}
+    WORKING_DIRECTORY "${PYTHON_STANDALONE_ROOT}/lib/python3.13"
+    FORMAT "zip"
+
+)
