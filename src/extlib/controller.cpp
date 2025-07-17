@@ -77,7 +77,8 @@ PyObjectHandle PyInterpreterController::create_handle_and_steal(py::object* obj)
 PyObjectHandle PyInterpreterController::create_handle(py::object* obj) {
     py::gil_scoped_acquire gil;
     PyObjectHandle new_handle = get_new_handle_value();
-    py_objects.insert({new_handle, {*obj, false}});
+    // py::object in_obj = (*obj);
+    py_objects.insert({new_handle, {(*obj), false}});
 
     PLOGD.printf("-> PyObjectHandle %i Created", new_handle);
     return new_handle;

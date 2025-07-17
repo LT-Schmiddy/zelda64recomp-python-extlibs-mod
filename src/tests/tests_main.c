@@ -35,6 +35,7 @@ void inline_test() {
         
         "for i in os.listdir():\n"
         "    print('*', i)\n"
+        "print('cwdcheck')\n"
     );
 
     PyObjectHandle os_handle = REPY_FN_GET("os");
@@ -108,9 +109,9 @@ void mem_test() {
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
-    // inline_test();
-    // file_access_test();
-    // tuple_test();
+    inline_test();
+    file_access_test();
+    tuple_test();
     mem_test();
 
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);

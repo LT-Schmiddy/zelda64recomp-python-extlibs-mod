@@ -32,31 +32,6 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
 
-    {
-        py::gil_scoped_acquire gil;
-        py::dict d = py::dict();
-        PLOGV.printf("1) d.ref_count() = %u", d.ref_count());
-
-        { 
-            py::dict e = d;
-            PLOGV.printf("2) d.ref_count() = %u", d.ref_count());
-        }
-        PLOGV.printf("3) d.ref_count() = %u", d.ref_count());
-
-        { 
-            py::dict f = py::reinterpret_borrow<py::dict>(d);
-            PLOGV.printf("4) d.ref_count() = %u", d.ref_count());
-            PLOGV.printf("4.1) f.ref_count() = %u", f.ref_count());
-        }
-        PLOGV.printf("5) d.ref_count() = %u", d.ref_count());
-
-        { 
-            py::dict g = py::reinterpret_steal<py::dict>(d);
-            PLOGV.printf("6) d.ref_count() = %u", d.ref_count());
-        }
-        PLOGV.printf("7) d.ref_count() = %u", d.ref_count());
-    }
-
     // Release the GIL so that Python threads can run in the background.
     // This does mean that all other functions that operate on python will need to reaquire the GIL.
     RECOMP_RETURN(int, 1);
@@ -98,7 +73,6 @@ RECOMP_DLL_FUNC(PythonNative_Object_SetSUH) {
     PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
     PyObjectHandle value = RECOMP_ARG(unsigned int, 1);
 
-    controller->release_suh_handles();
     controller->set_handle_suh(handle, value);
 }
 
@@ -149,7 +123,7 @@ RECOMP_DLL_FUNC(fname) { \
     py::gil_scoped_acquire gil; \
     c_type value = RECOMP_ARG(c_type, 0); \
     py_type obj = py_type(value); \
-    int new_handle = controller->create_handle((py::object*)&value); \
+    int new_handle = controller->create_handle((py::object*)&obj); \
     RECOMP_RETURN(int, new_handle); \
 }
 
@@ -279,7 +253,8 @@ RECOMP_DLL_FUNC(PythonNative_Tuple_GetMember) {
     py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
     int index = RECOMP_ARG(int, 1); 
 
-    PyObjectHandle handle = controller->create_handle(&tuple[index]);
+    py::object obj = (*tuple)[index];
+    PyObjectHandle handle = controller->create_handle(&obj);
     controller->release_suh_handles();
     RECOMP_RETURN(PyObjectHandle, handle);
 }
@@ -357,7 +332,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
         controller->release_suh_handles();
         RECOMP_RETURN(int, 0);
     }
-
+    
     PyObjectHandle handle = controller->create_handle(&bytecode);
     controller->release_suh_handles();
     RECOMP_RETURN(PyObjectHandle, handle);
@@ -605,8 +580,8 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     std::u8string name = RECOMP_ARG_U8STR(1);
     py::tuple empty_tuple = py::tuple();
     py::dict empty_dict = py::dict();
-    py::tuple* args = RECOMP_ARG(PyObjectHandle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
-    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
+    py::tuple* args = RECOMP_ARG(PyObjectHandle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
+    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
     
     try {
         obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
@@ -627,11 +602,13 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
     std::u8string name = RECOMP_ARG_U8STR(1);
     py::tuple empty_tuple = py::tuple();
     py::dict empty_dict = py::dict();
-    py::tuple* args = RECOMP_ARG(PyObjectHandle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
-    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
+    PyObjectHandle h1 = RECOMP_ARG(PyObjectHandle, 2) ;
+    PyObjectHandle h2 = RECOMP_ARG(PyObjectHandle, 3) ;
+    py::tuple* args = h1 ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : &empty_tuple;
+    py::dict* kwargs = h2 ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : &empty_dict;
     py::object result;
     try {
-        obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
+        result = obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
