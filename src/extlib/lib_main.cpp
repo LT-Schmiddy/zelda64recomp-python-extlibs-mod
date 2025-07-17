@@ -32,18 +32,29 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
 
-    
     {
         py::gil_scoped_acquire gil;
+        py::dict d = py::dict();
+        PLOGV.printf("1) d.ref_count() = %u", d.ref_count());
 
-        try {
-            controller->py_exec("priont('This will error')", py::dict());
-        } catch (py::error_already_set &e) {
-            PLOGE << e.what();
-            // RECOMP_RETURN(int, 0);
+        { 
+            py::dict e = d;
+            PLOGV.printf("2) d.ref_count() = %u", d.ref_count());
         }
+        PLOGV.printf("3) d.ref_count() = %u", d.ref_count());
 
-        controller->py_exec("print('This will not error')", py::dict());
+        { 
+            py::dict f = py::reinterpret_borrow<py::dict>(d);
+            PLOGV.printf("4) d.ref_count() = %u", d.ref_count());
+            PLOGV.printf("4.1) f.ref_count() = %u", f.ref_count());
+        }
+        PLOGV.printf("5) d.ref_count() = %u", d.ref_count());
+
+        { 
+            py::dict g = py::reinterpret_steal<py::dict>(d);
+            PLOGV.printf("6) d.ref_count() = %u", d.ref_count());
+        }
+        PLOGV.printf("7) d.ref_count() = %u", d.ref_count());
     }
 
     // Release the GIL so that Python threads can run in the background.
@@ -95,8 +106,8 @@ RECOMP_DLL_FUNC(PythonNative_Object_SetSUH) {
 RECOMP_DLL_FUNC(PythonNative_Object_CopyHandle) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::object object = RECOMP_ARG_PYOBJECT(0);
-    PyObjectHandle new_handle = controller->create_handle(object);
+    py::object* object = RECOMP_ARG_PYOBJECT(0);
+    PyObjectHandle new_handle = controller->create_handle(*object);
     controller->release_suh_handles();
     RECOMP_RETURN(PyObjectHandle, new_handle);
 }
@@ -145,8 +156,8 @@ RECOMP_DLL_FUNC(fname) { \
 RECOMP_DLL_FUNC(fname) { \
     controller->set_rdram(rdram); \
     py::gil_scoped_acquire gil; \
-    py_type obj = RECOMP_ARG_PYOBJECT(0); \
-    c_type retVal = obj.cast<c_type>(); \
+    py_type* obj = (py_type*)RECOMP_ARG_PYOBJECT(0); \
+    c_type retVal = obj->cast<c_type>(); \
     controller->release_suh_handles(); \
     RECOMP_RETURN(c_type, retVal); \
 }
@@ -186,8 +197,8 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateStrN) {
 RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Prepare) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::str str = RECOMP_ARG_PYOBJECT(0);
-    cached_return_u8string = str.cast<std::u8string>();
+    py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
+    cached_return_u8string = str->cast<std::u8string>();
     controller->release_suh_handles();
     RECOMP_RETURN(unsigned int, cached_return_u8string.size());
 }
@@ -227,8 +238,8 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateBytesN) {
 RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Prepare) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::str str = RECOMP_ARG_PYOBJECT(0);
-    cached_return_string = str.cast<std::string>();
+    py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
+    cached_return_string = str->cast<std::string>();
     controller->release_suh_handles();
     RECOMP_RETURN(unsigned int, cached_return_string.size());
 }
@@ -263,7 +274,7 @@ RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
 RECOMP_DLL_FUNC(PythonNative_Tuple_GetMember) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::tuple tuple = RECOMP_ARG_PYOBJECT(0); 
+    py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
     int index = RECOMP_ARG(int, 1); 
 
     PyObjectHandle handle = controller->create_handle(tuple[index]);
@@ -284,10 +295,10 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
 RECOMP_DLL_FUNC(PythonNative_Dict_Get) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::dict d = RECOMP_ARG_PYOBJECT(0);
-    py::object key = RECOMP_ARG_PYOBJECT(1);
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
 
-    py::object obj = d[key];
+    py::object obj = (*d)[*key];
 
     PyObjectHandle retVal = controller->create_handle(obj);
     controller->release_suh_handles();
@@ -297,21 +308,21 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Get) {
 RECOMP_DLL_FUNC(PythonNative_Dict_Set) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::dict d = RECOMP_ARG_PYOBJECT(0);
-    py::object key = RECOMP_ARG_PYOBJECT(1);
-    py::object value = RECOMP_ARG_PYOBJECT(2);
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+    py::object* value = RECOMP_ARG_PYOBJECT(2);
 
-    d[key] = value;
+    (*d)[*key] = value;
     controller->release_suh_handles();
 }
 
 RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::dict d = RECOMP_ARG_PYOBJECT(0);
-    py::object key = RECOMP_ARG_PYOBJECT(1);
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
 
-    unsigned int retVal = d.contains(key);
+    unsigned int retVal = d->contains(key);
     controller->release_suh_handles();
     RECOMP_RETURN(unsigned int, retVal);
 }
@@ -319,10 +330,10 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
 RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::dict d = RECOMP_ARG_PYOBJECT(0);
-    py::object key = RECOMP_ARG_PYOBJECT(1);
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
 
-    d.attr("pop")(key);
+    d->attr("pop")(key);
     controller->release_suh_handles();
 }
 
@@ -331,9 +342,9 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
 RECOMP_DLL_FUNC(PythonNative_Compile) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::str code_str = RECOMP_ARG_PYOBJECT(0);
-    py::str identifier_str = RECOMP_ARG_PYOBJECT(1);
-    py::str type_str = RECOMP_ARG_PYOBJECT(2);
+    py::str* code_str = (py::str*)RECOMP_ARG_PYOBJECT(0);
+    py::str* identifier_str = (py::str*)RECOMP_ARG_PYOBJECT(1);
+    py::str* type_str = (py::str*)RECOMP_ARG_PYOBJECT(2);
 
     py::object bytecode;
     try {
@@ -392,13 +403,13 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
 RECOMP_DLL_FUNC(PythonNative_Exec) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::object bytecode = RECOMP_ARG_PYOBJECT(0);
-    py::dict globals = RECOMP_ARG_PYOBJECT(1);
-    py::dict locals;
+    py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
+    py::dict* globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+    py::dict* locals;
     if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
         locals = globals;
     } else {
-        locals = RECOMP_ARG_PYOBJECT(2);
+        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
     }
 
     try {
@@ -416,12 +427,12 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::string code_string = RECOMP_ARG_STR(0);
-    py::dict globals = RECOMP_ARG_PYOBJECT(1);
-    py::dict locals;
+    py::dict* globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+    py::dict* locals;
     if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
         locals = globals;
     } else {
-        locals = RECOMP_ARG_PYOBJECT(2);
+        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
     }
 
     try {
@@ -440,12 +451,12 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     py::gil_scoped_acquire gil;
     unsigned int code_len = RECOMP_ARG(unsigned int, 1);
     std::string code_string = RECOMP_ARG_STR_N(0, code_len);
-    py::dict globals = RECOMP_ARG_PYOBJECT(2);
-    py::dict locals;
+    py::dict* globals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+    py::dict* locals;
     if (RECOMP_ARG(PyObjectHandle, 3) == 0) {
         locals = globals;
     } else {
-        locals = RECOMP_ARG_PYOBJECT(3);
+        locals = (py::dict*)RECOMP_ARG_PYOBJECT(3);
     }
 
     try {
@@ -462,13 +473,13 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
 RECOMP_DLL_FUNC(PythonNative_Eval) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::object bytecode = RECOMP_ARG_PYOBJECT(0);
-    py::dict globals = RECOMP_ARG_PYOBJECT(1);
-    py::dict locals;
+    py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
+    py::dict* globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+    py::dict* locals;
     if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
         locals = globals;
     } else {
-        locals = RECOMP_ARG_PYOBJECT(2);
+        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
     }
     
     py::object result;
@@ -489,12 +500,12 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::string code_string = RECOMP_ARG_STR(0);
-    py::dict globals = RECOMP_ARG_PYOBJECT(1);
-    py::dict locals;
+    py::dict* globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+    py::dict* locals;
     if (RECOMP_ARG(PyObjectHandle, 2) == 0) {
         locals = globals;
     } else {
-        locals = RECOMP_ARG_PYOBJECT(2);
+        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
     }
 
     py::object result;
@@ -516,12 +527,12 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
     py::gil_scoped_acquire gil;
     unsigned int code_len = RECOMP_ARG(unsigned int, 1);
     std::string code_string = RECOMP_ARG_STR_N(0, code_len);
-    py::dict globals = RECOMP_ARG_PYOBJECT(2);
-    py::dict locals;
+    py::dict* globals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+    py::dict* locals;
     if (RECOMP_ARG(PyObjectHandle, 3) == 0) {
         locals = globals;
     } else {
-        locals = RECOMP_ARG_PYOBJECT(3);
+        locals = (py::dict*)RECOMP_ARG_PYOBJECT(3);
     }
 
     py::object result;
@@ -542,12 +553,14 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
 RECOMP_DLL_FUNC(PythonNative_Call) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::function func = RECOMP_ARG_PYOBJECT(0);
-    py::tuple args = RECOMP_ARG(PyObjectHandle, 1) ? RECOMP_ARG_PYOBJECT(1) : py::tuple();
-    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::dict();
+    py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
+    py::tuple empty_tuple = py::tuple();
+    py::dict empty_dict = py::dict();
+    py::tuple* args = RECOMP_ARG(PyObjectHandle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
+    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
 
     try {
-        func(*args, **kwargs);
+        (*func)(*(*args), **(*kwargs));
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
@@ -561,13 +574,15 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
 RECOMP_DLL_FUNC(PythonNative_Call_Return) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::function func = RECOMP_ARG_PYOBJECT(0);
-    py::tuple args = RECOMP_ARG(PyObjectHandle, 1) ? RECOMP_ARG_PYOBJECT(1) : py::tuple();
-    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::dict();
+    py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
+    py::tuple empty_tuple = py::tuple();
+    py::dict empty_dict = py::dict();
+    py::tuple* args = RECOMP_ARG(PyObjectHandle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
+    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
 
     py::object result;
     try {
-        result = func(*args, **kwargs);
+        (*func)(*(*args), **(*kwargs));
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
@@ -583,13 +598,15 @@ RECOMP_DLL_FUNC(PythonNative_Call_Return) {
 RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::object obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
     std::u8string name = RECOMP_ARG_U8STR(1);
-    py::tuple args = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::tuple();
-    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 3) ? RECOMP_ARG_PYOBJECT(3) : py::dict();
+    py::tuple empty_tuple = py::tuple();
+    py::dict empty_dict = py::dict();
+    py::tuple* args = RECOMP_ARG(PyObjectHandle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
+    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
     
     try {
-        obj.attr((char*)name.c_str())(*args, **kwargs);
+        obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
@@ -603,16 +620,18 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
 RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-    py::object obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
     std::u8string name = RECOMP_ARG_U8STR(1);
-    py::tuple args = RECOMP_ARG(PyObjectHandle, 2) ? RECOMP_ARG_PYOBJECT(2) : py::tuple();
-    py::dict kwargs = RECOMP_ARG(PyObjectHandle, 3) ? RECOMP_ARG_PYOBJECT(3) : py::dict();
-
+    py::tuple empty_tuple = py::tuple();
+    py::dict empty_dict = py::dict();
+    py::tuple* args = RECOMP_ARG(PyObjectHandle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
+    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
     py::object result;
     try {
-        result = obj.attr((char*)name.c_str())(*args, **kwargs);
+        obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
+        controller->release_suh_handles();
         RECOMP_RETURN(PyObjectHandle, 0);
     }
     

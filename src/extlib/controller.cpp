@@ -74,16 +74,16 @@ int PyInterpreterController::create_handle(py::object obj) {
     return new_handle;
 }
 
-py::object PyInterpreterController::get_py_object(PyObjectHandle handle) {
+py::object* PyInterpreterController::get_py_object(PyObjectHandle handle) {
     PyObjectHandleEntry* entry = &py_objects.at(handle);
-    py::object retVal = py::reinterpret_borrow<py::object>(entry->py_object);
     if (entry->is_single_use) {
         suh_release_queue.push(handle);
         PLOGD.printf("-> PyObjectHandle %i Accessed (SUH)", handle);
     } else {
         PLOGD.printf("-> PyObjectHandle %i Accessed", handle);
     }
-    return retVal;
+    
+    return &entry->py_object;
 }
 
 bool PyInterpreterController::get_handle_suh(PyObjectHandle handle) {
