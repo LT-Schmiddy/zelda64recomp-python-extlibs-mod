@@ -65,10 +65,19 @@ PyObjectHandle PyInterpreterController::get_new_handle_value() {
     return new_handle;
 }
 
-int PyInterpreterController::create_handle(py::object obj) {
+PyObjectHandle PyInterpreterController::create_handle_and_steal(py::object* obj) {
     py::gil_scoped_acquire gil;
     PyObjectHandle new_handle = get_new_handle_value();
-    py_objects.insert({new_handle, {obj, false}});
+    py_objects.insert({new_handle, {py::reinterpret_steal<py::object>(*obj), false}});
+
+    PLOGD.printf("-> PyObjectHandle %i Created", new_handle);
+    return new_handle;
+}
+
+PyObjectHandle PyInterpreterController::create_handle(py::object* obj) {
+    py::gil_scoped_acquire gil;
+    PyObjectHandle new_handle = get_new_handle_value();
+    py_objects.insert({new_handle, {*obj, false}});
 
     PLOGD.printf("-> PyObjectHandle %i Created", new_handle);
     return new_handle;
@@ -82,7 +91,7 @@ py::object* PyInterpreterController::get_py_object(PyObjectHandle handle) {
     } else {
         PLOGD.printf("-> PyObjectHandle %i Accessed", handle);
     }
-    
+
     return &entry->py_object;
 }
 
@@ -152,7 +161,7 @@ PyObjectHandle PyInterpreterController::get_py_error_type_handle() {
         return 0;
     }
 
-    return create_handle(last_error_type);
+    return create_handle(&last_error_type);
 }
 
 PyObjectHandle PyInterpreterController::get_py_error_trace_handle() {
@@ -160,7 +169,7 @@ PyObjectHandle PyInterpreterController::get_py_error_trace_handle() {
         return 0;
     }
 
-    return create_handle(last_error_trace);
+    return create_handle(&last_error_trace);
 }
 
 PyObjectHandle PyInterpreterController::get_py_error_value_handle() {
@@ -168,7 +177,7 @@ PyObjectHandle PyInterpreterController::get_py_error_value_handle() {
         return 0;
     }
 
-    return create_handle(last_error_value);
+    return create_handle(&last_error_value);
 }
 
 void PyInterpreterController::clear_py_error() {
