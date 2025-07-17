@@ -30,11 +30,11 @@ void inline_test() {
 
     REPY_FN_EXEC_BLOCK(
         inline_test_exec1, 
-        "print(f'Hello Mr. {count=}')\n"
-        "print(f'Hello Mr. {new_dict=}')\n"
+        // "print(f'Hello Mr. {count=}')\n"
+        // "print(f'Hello Mr. {new_dict=}')\n"
         
         "for i in os.listdir():\n"
-        "    print('*', i)\n"
+        // "    print('*', i)\n"
     );
 
     PyObjectHandle os_handle = REPY_FN_GET("os");
@@ -65,18 +65,10 @@ void file_access_test() {
 void tuple_test() {
     REPY_FN_SETUP;
 
-    REPY_FN_EXEC_BLOCK(
-        tuple_test_exec1, 
-        "print(0, 1, 2)\n"
-    );
 
     REPY_FN_EVAL_BLOCK(tuple_test_get_print, "print", print_fn);
     PyObjectHandle args = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
     REPY_FN_SET("index_2", REPY_MakeSUH(REPY_TupleGetMember(args, 2)));
-    REPY_FN_EXEC_BLOCK(
-        tuple_test_exec2, 
-        "print(f'{index_2=}')\n"
-    );
 
     REPY_Call(print_fn, args, 0);
     REPY_Release(args);
@@ -93,7 +85,7 @@ void mem_test() {
         "import recomp_mem\n"
         "print(type(addr_test))\n"
         "byte_info = recomp_mem.read_bytes_n(addr_test, 11)\n"
-        "print(byte_info)\n"
+        // "print(byte_info)\n"
         "recomp_mem.write_bytes(addr_test, b'Perfect\\x00')\n"
     );
 
@@ -108,10 +100,13 @@ void time_test() {
         "import time\n"
         "start_time = time.time()\n"
     );
-    inline_test();
-    file_access_test();
-    tuple_test();
-    mem_test();
+
+    for (int i = 0; i < 10000; i++) {
+        inline_test();
+        file_access_test();
+        tuple_test();
+        mem_test();
+    }
 
 
     REPY_FN_EXEC_BLOCK(
