@@ -117,23 +117,64 @@ void time_test() {
     REPY_FN_RETURN;
 }
 
-void combined_dict_build_test() {
-    REPY_FN_SETUP;
+void print_dict_test_no_code() {
+    PyObjectHandle builtins = REPY_ImportModule("builtins");
+
     PyObjectHandle my_dict = REPY_CreateDict(4,
-        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key1")), REPY_MakeSUH(REPY_CreateStr("Value1")))),
-        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key2")), REPY_MakeSUH(REPY_CreateStr("Value2")))),
-        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key3")), REPY_MakeSUH(REPY_CreateStr("Value3")))),
-        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key4")), REPY_MakeSUH(REPY_CreateStr("Value4"))))
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key1"), REPY_CreateStr_SUH("Value1")),
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key2"), REPY_CreateStr_SUH("Value2")),
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key3"), REPY_CreateStr_SUH("Value3")),
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key4"), REPY_CreateStr_SUH("Value4"))
     );
 
-    REPY_FN_SET("test_dict", my_dict);
-    REPY_FN_EXEC_BLOCK(
-        print_dict_test,
-        "print(f'{test_dict=}')\n"
-    );
-
+    REPY_CallAttr(builtins, "print", REPY_CreateTuple_SUH(1, my_dict), 0);
+    REPY_Release(builtins);
     REPY_Release(my_dict);
+}
 
+void print_dict_test_code() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_BLOCK(
+        code_test1, 
+        "import builtins\n"
+        "my_dict = {\n"
+        "   'Key1': 'Value1',\n"
+        "   'Key2': 'Value2',\n"
+        "   'Key3': 'Value3',\n"
+        "   'Key4': 'Value4'\n"
+        "}\n"
+        "builtins.print(my_dict)\n"
+    );
+    REPY_FN_RETURN;
+}
+
+void no_code_block_test() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_BLOCK(
+        time_start1,
+        "import time\n"
+        "nc_start_time = time.time()\n"
+    );
+
+    for (int i = 0; i < 1000; i++) {
+        print_dict_test_no_code();
+    }
+
+    REPY_FN_EXEC_BLOCK(
+        time_end1,
+        "nc_run_time = time.time() - nc_start_time\n"
+        "c_start_time = time.time()\n"
+    );
+
+    for (int i = 0; i < 1000; i++) {
+        print_dict_test_code();
+    }
+
+    REPY_FN_EXEC_BLOCK(
+        time_end2,
+        "c_run_time = time.time() - c_start_time\n"
+        "print(f'{nc_run_time=}, {c_run_time=}')\n"
+    );
     REPY_FN_RETURN;
 }
 
@@ -145,7 +186,7 @@ REPY_ON_INIT void REPY_Tests() {
     // tuple_test();
     // mem_test();
     // time_test();
-    combined_dict_build_test();
+    no_code_block_test();
 
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 }

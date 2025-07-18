@@ -63,12 +63,21 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateBool(bool value) {
     return PythonNative_Object_CreateBool(value);
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_CreateBool_SUH(bool value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateBool(value));
+}
+
+
 RECOMP_EXPORT bool REPY_CastBool(PyObjectHandle object) {
     return PythonNative_Object_CastBool(object);
 }
 
 RECOMP_EXPORT PyObjectHandle REPY_CreateU32(u32 value) {
     return PythonNative_Object_CreateU32(value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateU32_SUH(u32 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateU32(value));
 }
 
 RECOMP_EXPORT u32 REPY_CastU32(PyObjectHandle object) {
@@ -79,12 +88,20 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateS32(s32 value) {
     return PythonNative_Object_CreateS32(value);
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_CreateS32_SUH(s32 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateS32(value));
+}
+
 RECOMP_EXPORT s32 REPY_CastS32(PyObjectHandle object) {
     return PythonNative_Object_CastS32(object);
 }
 
 RECOMP_EXPORT PyObjectHandle REPY_CreateF32(f32 value) {
     return PythonNative_Object_CreateF32(value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateF32_SUH(f32 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateF32(value));
 }
 
 RECOMP_EXPORT f32 REPY_CastF32(PyObjectHandle object) {
@@ -96,8 +113,16 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateStr(const char* string) {
     return PythonNative_Object_CreateStr(string);
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_CreateStr_SUH(const char* string) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateStr(string));
+}
+
 RECOMP_EXPORT PyObjectHandle REPY_CreateStrN(const char* string, u32 len) {
     return PythonNative_Object_CreateStrN(string, len);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateStrN_SUH(const char* string, u32 len) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateStrN(string, len));
 }
 
 RECOMP_EXPORT char* REPY_CastStr(PyObjectHandle object) {
@@ -111,8 +136,16 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateBytes(const char* string) {
     return PythonNative_Object_CreateBytes(string);
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_CreateBytes_SUH(const char* string) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateBytes(string));
+}
+
 RECOMP_EXPORT PyObjectHandle REPY_CreateBytesN(const char* string, u32 len) {
     return PythonNative_Object_CreateBytesN(string, len);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateBytesN_SUH(const char* string, u32 len) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateBytesN(string, len));
 }
 
 RECOMP_EXPORT char* REPY_CastBytes(PyObjectHandle object) {
@@ -131,8 +164,21 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateTuple(u32 size, ...) {
     return handle;
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_CreateTuple_SUH(u32 size, ...) {
+    va_list va;
+    va_start(va, size);
+    PyObjectHandle handle = PythonNative_Tuple_Create(size, va);
+    va_end(va);
+
+    return PythonNative_Object_MakeSUH(handle);
+}
+
 RECOMP_EXPORT PyObjectHandle REPY_CreatePair(PyObjectHandle key, PyObjectHandle value) {
     return REPY_CreateTuple(2, key, value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreatePair_SUH(PyObjectHandle key, PyObjectHandle value) {
+    return REPY_CreateTuple_SUH(2, key, value);
 }
 
 RECOMP_EXPORT PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index) {
@@ -144,6 +190,10 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateEmptyDict() {
     return PythonNative_Dict_Create(0, NULL);
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_CreateEmptyDict_SUH() {
+    return PythonNative_Object_MakeSUH(PythonNative_Dict_Create(0, NULL));
+}
+
 RECOMP_EXPORT PyObjectHandle REPY_CreateDict(u32 size, ...) {
     va_list va;
     va_start(va, size);
@@ -151,6 +201,15 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateDict(u32 size, ...) {
     va_end(va);
 
     return handle;
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateDict_SUH(u32 size, ...) {
+    va_list va;
+    va_start(va, size);
+    PyObjectHandle handle = PythonNative_Dict_Create(size, va);
+    va_end(va);
+
+    return PythonNative_Object_MakeSUH(handle);
 }
 
 RECOMP_EXPORT PyObjectHandle REPY_DictGet(PyObjectHandle dict, PyObjectHandle key) {

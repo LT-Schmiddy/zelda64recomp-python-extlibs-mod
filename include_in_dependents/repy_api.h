@@ -50,6 +50,8 @@ PyObjectHandle _py_locals = _py_globals \
 PyObjectHandle _py_globals = globals; \
 PyObjectHandle _py_locals = REPY_CreateEmptyDict() \
 
+#define REPY_FN_CLEANUP \
+REPY_Release(_py_locals)
 
 #define REPY_FN_RETURN \
 REPY_Release(_py_locals); return
@@ -170,30 +172,41 @@ REPY_IMPORT(PyObjectHandle REPY_ImportModule(const char* identifier));
 
 // Primatives
 REPY_IMPORT(PyObjectHandle REPY_CreateBool(bool value));
+REPY_IMPORT(PyObjectHandle REPY_CreateBool_SUH(bool value));
 REPY_IMPORT(bool REPY_CastBool(PyObjectHandle object));
 REPY_IMPORT(PyObjectHandle REPY_CreateU32(u32 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateU32_SUH(u32 value));
 REPY_IMPORT(u32 REPY_CastU32(PyObjectHandle object));
 REPY_IMPORT(PyObjectHandle REPY_CreateS32(s32 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateS32_SUH(s32 value));
 REPY_IMPORT(s32 REPY_CastS32(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateF32(f32 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateF32_SUH(f32 value));
 REPY_IMPORT(f32 REPY_CastF32(PyObjectHandle object));
 
 // Strings:
 REPY_IMPORT(PyObjectHandle REPY_CreateStr(const char* string));
+REPY_IMPORT(PyObjectHandle REPY_CreateStr_SUH(const char* string));
 REPY_IMPORT(PyObjectHandle REPY_CreateStrN(const char* string, u32 len) );
+REPY_IMPORT(PyObjectHandle REPY_CreateStrN_SUH(const char* string, u32 len) );
 REPY_IMPORT(char* REPY_CastStr(PyObjectHandle object));
 REPY_IMPORT(PyObjectHandle REPY_CreateBytes(const char* string));
+REPY_IMPORT(PyObjectHandle REPY_CreateBytes_SUH(const char* string));
 REPY_IMPORT(PyObjectHandle REPY_CreateBytesN(const char* string, u32 len));
+REPY_IMPORT(PyObjectHandle REPY_CreateBytesN_SUH(const char* string, u32 len));
 REPY_IMPORT(char* REPY_CastBytes(PyObjectHandle object));
 
 // Tuple:
 REPY_IMPORT(PyObjectHandle REPY_CreateTuple(u32 size, ...));
+REPY_IMPORT(PyObjectHandle REPY_CreateTuple_SUH(u32 size, ...));
 REPY_IMPORT(PyObjectHandle REPY_CreatePair(PyObjectHandle key, PyObjectHandle value));
+REPY_IMPORT(PyObjectHandle REPY_CreatePair_SUH(PyObjectHandle key, PyObjectHandle value));
 REPY_IMPORT(PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index));
 
 // Dicts:
 REPY_IMPORT(PyObjectHandle REPY_CreateEmptyDict());
+REPY_IMPORT(PyObjectHandle REPY_CreateEmptyDict_SUH());
 REPY_IMPORT(PyObjectHandle REPY_CreateDict(u32 size, ...));
+REPY_IMPORT(PyObjectHandle REPY_CreateDict_SUH(u32 size, ...));
 REPY_IMPORT(PyObjectHandle REPY_DictGet(PyObjectHandle dict, PyObjectHandle key));
 REPY_IMPORT(void REPY_DictSet(PyObjectHandle dict, PyObjectHandle key, PyObjectHandle value));
 REPY_IMPORT(PyObjectHandle REPY_DictHas(PyObjectHandle dict, PyObjectHandle key));

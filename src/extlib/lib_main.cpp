@@ -589,8 +589,8 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     std::u8string name = RECOMP_ARG_U8STR(1);
     py::tuple empty_tuple = py::tuple();
     py::dict empty_dict = py::dict();
-    py::tuple* args = RECOMP_ARG(PyObjectHandle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : &empty_tuple;
-    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : &empty_dict;
+    py::tuple* args = RECOMP_ARG(PyObjectHandle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : &empty_tuple;
+    py::dict* kwargs = RECOMP_ARG(PyObjectHandle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : &empty_dict;
     
     try {
         obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
