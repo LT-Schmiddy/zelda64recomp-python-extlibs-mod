@@ -129,7 +129,7 @@ void combined_dict_build_test() {
     REPY_FN_SET("test_dict", my_dict);
     REPY_FN_EXEC_BLOCK(
         print_dict_test,
-        "print('{test_dict=}')\n"
+        "print(f'{test_dict=}')\n"
     );
 
     REPY_Release(my_dict);
@@ -140,7 +140,7 @@ void combined_dict_build_test() {
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
-    inline_test();
+    // inline_test();
     // file_access_test();
     // tuple_test();
     // mem_test();

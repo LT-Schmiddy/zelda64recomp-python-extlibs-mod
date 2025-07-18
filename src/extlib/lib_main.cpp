@@ -270,7 +270,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
     
     for (int i = 0; i < size; i++) {
         py::tuple* pair = (py::tuple*)controller->get_py_object(va_args_ptr[i]);
-        new_dict[pair[0]] = pair[1];
+        new_dict[(*pair)[0]] = (*pair)[1];
     }
 
 
