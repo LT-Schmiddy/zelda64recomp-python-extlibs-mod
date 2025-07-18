@@ -263,8 +263,17 @@ RECOMP_DLL_FUNC(PythonNative_Tuple_GetMember) {
 RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
-
     py::dict new_dict = py::dict();
+
+    unsigned int size = RECOMP_ARG(unsigned int, 0);
+    PyObjectHandle* va_args_ptr = RECOMP_ARG(PyObjectHandle*, 1);
+    
+    for (int i = 0; i < size; i++) {
+        py::tuple* pair = (py::tuple*)controller->get_py_object(va_args_ptr[i]);
+        new_dict[pair[0]] = pair[1];
+    }
+
+
     PyObjectHandle new_handle = controller->create_handle(&new_dict);
     controller->release_suh_handles();
     RECOMP_RETURN(PyObjectHandle, new_handle);

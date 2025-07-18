@@ -23,7 +23,7 @@ void inline_test() {
 
     REPY_FN_SET_S32("count", 55);
 
-    PyObjectHandle new_dict = REPY_CreateDict();
+    PyObjectHandle new_dict = REPY_CreateEmptyDict();
     REPY_DictSet(new_dict, REPY_MakeSUH(REPY_CreateStr("key_string")), REPY_MakeSUH(REPY_CreateStr("value_string")));
     REPY_FN_SET("new_dict", new_dict);
     REPY_Release(new_dict);
@@ -117,6 +117,26 @@ void time_test() {
     REPY_FN_RETURN;
 }
 
+void combined_dict_build_test() {
+    REPY_FN_SETUP;
+    PyObjectHandle my_dict = REPY_CreateDict(4,
+        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key1")), REPY_MakeSUH(REPY_CreateStr("Value1")))),
+        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key2")), REPY_MakeSUH(REPY_CreateStr("Value2")))),
+        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key3")), REPY_MakeSUH(REPY_CreateStr("Value3")))),
+        REPY_MakeSUH(REPY_CreatePair(REPY_MakeSUH(REPY_CreateStr("Key4")), REPY_MakeSUH(REPY_CreateStr("Value4"))))
+    );
+
+    REPY_FN_SET("test_dict", my_dict);
+    REPY_FN_EXEC_BLOCK(
+        print_dict_test,
+        "print('{test_dict=}')\n"
+    );
+
+    REPY_Release(my_dict);
+
+    REPY_FN_RETURN;
+}
+
 // Patches a function in the base game that's used to check if the player should quickspin.
 REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
@@ -125,6 +145,7 @@ REPY_ON_INIT void REPY_Tests() {
     // tuple_test();
     // mem_test();
     // time_test();
+    combined_dict_build_test();
 
     recomp_printf("Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 }

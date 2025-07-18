@@ -42,13 +42,13 @@ typedef enum PythonCodeMode {
 
 // ========== Macros: ==========
 #define REPY_FN_SETUP \
-PyObjectHandle _py_globals = REPY_CreateDict(); \
+PyObjectHandle _py_globals = REPY_CreateEmptyDict(); \
 PyObjectHandle _py_locals = _py_globals \
 
 
 #define REPY_FN_SETUP_WITH_GLOBALS(globals) \
 PyObjectHandle _py_globals = globals; \
-PyObjectHandle _py_locals = REPY_CreateDict() \
+PyObjectHandle _py_locals = REPY_CreateEmptyDict() \
 
 
 #define REPY_FN_RETURN \
@@ -188,10 +188,12 @@ REPY_IMPORT(char* REPY_CastBytes(PyObjectHandle object));
 
 // Tuple:
 REPY_IMPORT(PyObjectHandle REPY_CreateTuple(u32 size, ...));
+REPY_IMPORT(PyObjectHandle REPY_CreatePair(PyObjectHandle key, PyObjectHandle value));
 REPY_IMPORT(PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index));
 
 // Dicts:
-REPY_IMPORT(PyObjectHandle REPY_CreateDict());
+REPY_IMPORT(PyObjectHandle REPY_CreateEmptyDict());
+REPY_IMPORT(PyObjectHandle REPY_CreateDict(u32 size, ...));
 REPY_IMPORT(PyObjectHandle REPY_DictGet(PyObjectHandle dict, PyObjectHandle key));
 REPY_IMPORT(void REPY_DictSet(PyObjectHandle dict, PyObjectHandle key, PyObjectHandle value));
 REPY_IMPORT(PyObjectHandle REPY_DictHas(PyObjectHandle dict, PyObjectHandle key));

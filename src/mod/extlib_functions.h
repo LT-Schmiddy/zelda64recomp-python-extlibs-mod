@@ -46,7 +46,7 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_Create(u32 size, va_list va
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_GetMember(PyObjectHandle tuple, int index));
 
 // Dict Operations:
-RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Create());
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Create(u32 size, va_list va));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Get(PyObjectHandle dict, PyObjectHandle key));
 RECOMP_IMPORT(".", void PythonNative_Dict_Set(PyObjectHandle dict, PyObjectHandle key, PyObjectHandle value));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Has(PyObjectHandle dict, PyObjectHandle key));

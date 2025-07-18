@@ -131,13 +131,26 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateTuple(u32 size, ...) {
     return handle;
 }
 
+RECOMP_EXPORT PyObjectHandle REPY_CreatePair(PyObjectHandle key, PyObjectHandle value) {
+    return REPY_CreateTuple(2, key, value);
+}
+
 RECOMP_EXPORT PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index) {
     return PythonNative_Tuple_GetMember(tuple, index);
 }
 
 // Dict Operations:
-RECOMP_EXPORT PyObjectHandle REPY_CreateDict() {
-    return PythonNative_Dict_Create();
+RECOMP_EXPORT PyObjectHandle REPY_CreateEmptyDict() {
+    return PythonNative_Dict_Create(0, NULL);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateDict(u32 size, ...) {
+    va_list va;
+    va_start(va, size);
+    PyObjectHandle handle = PythonNative_Dict_Create(size, va);
+    va_end(va);
+
+    return handle;
 }
 
 RECOMP_EXPORT PyObjectHandle REPY_DictGet(PyObjectHandle dict, PyObjectHandle key) {
