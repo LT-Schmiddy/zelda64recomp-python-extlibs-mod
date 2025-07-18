@@ -26,7 +26,7 @@
                 "_LANGUAGE_C",
                 "MIPS",
                 "COMBINED_INTELLISENSE",
-                "MASK_DESTRUCTOR",
+                "RECOMP_INCBIN_EXTERN_ONLY",
             ],
             // "compilerPath": "clang",
             "cStandard": "c99",
