@@ -22,7 +22,7 @@ void extract_python_stdlib(fs::path output_file) {
 }
 
 #ifdef _WIN32
-const char* dll_modules[] = {
+static const char* dll_modules[] = {
     "pyexpat.dll",
     "select.dll",
     "unicodedata.dll",
@@ -68,14 +68,19 @@ void setup_python_stdlib_dlls(fs::path dll_dir) {
         fs::path target_module = fs::path(dll_dir).append(dll_modules[i]);
         fs::path renamed_module = fs::path(target_module).replace_extension(PY_NATIVE_EXTENSION);
 
-        if (fs::exists(renamed_module)) {
+        if (!fs::exists(target_module) && fs::exists(renamed_module)) {
             PLOGD.printf("No rename required for native module '%s'.", renamed_module.string().c_str());
             continue;
         }
 
-        if (!fs::exists(target_module)) {
+        else if (!fs::exists(target_module) && !fs::exists(renamed_module)) {
             PLOGD.printf("Renamed native module from '%s' missing.", target_module.string().c_str());
             continue;
+        }
+
+        else if (fs::exists(target_module) && fs::exists(renamed_module)) {
+            fs::remove(renamed_module);
+            PLOGD.printf("Deleted old renamed native module '%s'", renamed_module.string().c_str());
         }
 
         fs::rename(target_module, renamed_module);

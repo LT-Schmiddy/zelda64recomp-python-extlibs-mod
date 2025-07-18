@@ -3,7 +3,7 @@ from pathlib import Path
 
 import make_python_functions as bm
 
-info = bm.ModInfo("./mod.toml", "build")
+info = bm.ModInfo("./mod.toml", "build/mod")
 extlib_name = info.get_extlib_name();
 if extlib_name is not None:
     info.set_extlib_info(

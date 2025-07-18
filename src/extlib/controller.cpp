@@ -38,6 +38,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
 
     fs::path mod_dir_Lib = fs::path(mod_dir).append("python313.zip");
     fs::path mod_dir_DLLs = fs::path(mod_dir);
+    // fs::path mod_dir_nrm = fs::path(mod_dir).append("MM_Recomp_External_Python_API.nrm");
     extract_python_stdlib(mod_dir_Lib);
     setup_python_stdlib_dlls(mod_dir);
 
@@ -52,6 +53,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     
     py_preinit_add_search_path(&config, mod_dir_Lib);
     py_preinit_add_search_path(&config, mod_dir_DLLs);
+    // py_preinit_add_search_path(&config, mod_dir_nrm);
     // py_preinit_add_search_path(&config, mod_dir_site);
 
     config.module_search_paths_set = 1;

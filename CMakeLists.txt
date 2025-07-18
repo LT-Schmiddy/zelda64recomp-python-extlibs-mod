@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.20)
 
 project(recomp_mod_native_lib)
 set(CMAKE_C_STANDARD 23)
