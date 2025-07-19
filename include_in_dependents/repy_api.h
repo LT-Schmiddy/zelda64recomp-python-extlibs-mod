@@ -56,7 +56,7 @@ typedef enum PythonCodeMode {
     extern u8 identifier##_end[]
 
 #else
-#define REPY_INCBIN_PYFILE(identifier, filename)        \
+#define REPY_INCBIN_PYFILE(identifier, filename)      \
     asm(".pushsection .rodata\n"                      \
         "\t.globl " #identifier "\n"                  \
         "\t.type " #identifier ", @object\n"          \
@@ -123,8 +123,8 @@ REPY_Exec(bytecode_handle, _py_globals, _py_locals)
 REPY_ExecCStr(code_str, _py_globals, _py_locals) 
 
 #define REPY_FN_EXEC_BLOCK(identifier, code_str) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EXEC, code_str) \
-u32 identifier ## _success = REPY_FN_EXEC(identifier ## _bytecode) 
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EXEC, code_str) \
+u32 identifier ## _success = REPY_FN_EXEC(identifier) 
 
 // FN - Eval Bytecode:
 #define REPY_FN_EVAL(bytecode_handle) \
@@ -190,44 +190,44 @@ REPY_CastBytes(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
 // FN - Eval Cache Block:
 #define REPY_FN_EVAL_BLOCK(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-PyObjectHandle out_var = REPY_FN_EVAL(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+PyObjectHandle out_var = REPY_FN_EVAL(identifier)
 
 #define REPY_FN_EVAL_BLOCK_BOOL(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-bool out_var = REPY_FN_EVAL_BOOL(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+bool out_var = REPY_FN_EVAL_BOOL(identifier)
 
 #define REPY_FN_EVAL_BLOCK_U32(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-u32 out_var = REPY_FN_EVAL_U32(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+u32 out_var = REPY_FN_EVAL_U32(identifier)
 
 #define REPY_FN_EVAL_BLOCK_S32(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-s32 out_var = REPY_FN_EVAL_S32(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+s32 out_var = REPY_FN_EVAL_S32(identifier)
 
 #define REPY_FN_EVAL_BLOCK_F32(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-f32 out_var = REPY_FN_EVAL_F32(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+f32 out_var = REPY_FN_EVAL_F32(identifier)
 
 #define REPY_FN_EVAL_BLOCK_U64(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-u64 out_var = REPY_FN_EVAL_U64(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+u64 out_var = REPY_FN_EVAL_U64(identifier)
 
 #define REPY_FN_EVAL_BLOCK_S64(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-s64 out_var = REPY_FN_EVAL_S64(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+s64 out_var = REPY_FN_EVAL_S64(identifier)
 
 #define REPY_FN_EVAL_BLOCK_F64(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-f64 out_var = REPY_FN_EVAL_F64(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+f64 out_var = REPY_FN_EVAL_F64(identifier)
 
 #define REPY_FN_EVAL_BLOCK_STR(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-char* out_var = REPY_FN_EVAL_STR(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+char* out_var = REPY_FN_EVAL_STR(identifier)
 
 #define REPY_FN_EVAL_BLOCK_BYTESTR(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier ## _bytecode, PY_CODE_EVAL, code_str) \
-char* out_var = REPY_FN_EVAL_BYTESTR(identifier ## _bytecode)
+REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+char* out_var = REPY_FN_EVAL_BYTESTR(identifier)
 
 
 // Scope Management - Modules:

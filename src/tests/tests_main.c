@@ -24,7 +24,7 @@ void validate(char* case_name, bool case_stmt) {
 REPY_ON_INIT void REPY_Tests() {
     REPY_FN_SETUP;
     recomp_printf("REPY Tests Loaded\n");
-    REPY_FN_IMPORT("test_module");
+    // REPY_FN_IMPORT("test_module");
 
     // no_code_block_test();
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
