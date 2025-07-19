@@ -229,11 +229,11 @@ REPY_IMPORT(PyObjectHandle REPY_CreateStr_SUH(const char* string));
 REPY_IMPORT(PyObjectHandle REPY_CreateStrN(const char* string, u32 len) );
 REPY_IMPORT(PyObjectHandle REPY_CreateStrN_SUH(const char* string, u32 len) );
 REPY_IMPORT(char* REPY_CastStr(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateBytes(const char* string));
-REPY_IMPORT(PyObjectHandle REPY_CreateBytes_SUH(const char* string));
-REPY_IMPORT(PyObjectHandle REPY_CreateBytesN(const char* string, u32 len));
-REPY_IMPORT(PyObjectHandle REPY_CreateBytesN_SUH(const char* string, u32 len));
-REPY_IMPORT(char* REPY_CastBytes(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateByteStr(const char* string));
+REPY_IMPORT(PyObjectHandle REPY_CreateByteStr_SUH(const char* string));
+REPY_IMPORT(PyObjectHandle REPY_CreateByteStrN(const char* string, u32 len));
+REPY_IMPORT(PyObjectHandle REPY_CreateByteStrN_SUH(const char* string, u32 len));
+REPY_IMPORT(char* REPY_CastByteStr(PyObjectHandle object));
 
 // Tuple:
 REPY_IMPORT(PyObjectHandle REPY_CreateTuple(u32 size, ...));

@@ -42,10 +42,10 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateStrN(const char* str
 RECOMP_IMPORT(".", u32 PythonNative_Object_CastStr_Prepare(PyObjectHandle py_object));
 RECOMP_IMPORT(".", void PythonNative_Object_CastStr_Copy(u32 len, char* dst));
 
-RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBytes(const char* string));
-RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBytesN(const char* string, u32 len));
-RECOMP_IMPORT(".", u32 PythonNative_Object_CastBytes_Prepare(PyObjectHandle py_object));
-RECOMP_IMPORT(".", void PythonNative_Object_CastBytes_Copy(u32 len, char* dst));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateByteStr(const char* string));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateByteStrN(const char* string, u32 len));
+RECOMP_IMPORT(".", u32 PythonNative_Object_CastByteStr_Prepare(PyObjectHandle py_object));
+RECOMP_IMPORT(".", void PythonNative_Object_CastByteStr_Copy(u32 len, char* dst));
 
 // Tuple:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_Create(u32 size, va_list va));

@@ -18,6 +18,7 @@ static const char* code_type_strs[] = {
 static std::u8string cached_return_u8string;
 static std::string cached_return_string;
 
+static uint8_t* cached_mem = NULL;
 
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
@@ -276,7 +277,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Copy) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CreateBytes) {
+RECOMP_DLL_FUNC(PythonNative_Object_CreateByteStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::u8string value = RECOMP_ARG_U8STR(0);
@@ -286,7 +287,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateBytes) {
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CreateBytesN) {
+RECOMP_DLL_FUNC(PythonNative_Object_CreateByteStrN) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     int32_t str_len = RECOMP_ARG(int32_t, 1);
@@ -297,7 +298,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateBytesN) {
     RECOMP_RETURN(PyObjectHandle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Prepare) {
+RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Prepare) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
@@ -306,7 +307,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Prepare) {
     RECOMP_RETURN(int32_t, cached_return_string.size());
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CastBytes_Copy) {
+RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Copy) {
     controller->set_rdram(rdram);
     // Don't actually need the GIL for this one.
     int str_len = RECOMP_ARG(int, 0);

@@ -178,26 +178,26 @@ RECOMP_EXPORT char* REPY_CastStr(PyObjectHandle object) {
     return retVal;
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateBytes(const char* string) {
-    return PythonNative_Object_CreateBytes(string);
+RECOMP_EXPORT PyObjectHandle REPY_CreateByteStr(const char* string) {
+    return PythonNative_Object_CreateByteStr(string);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateBytes_SUH(const char* string) {
-    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateBytes(string));
+RECOMP_EXPORT PyObjectHandle REPY_CreateByteStr_SUH(const char* string) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateByteStr(string));
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateBytesN(const char* string, u32 len) {
-    return PythonNative_Object_CreateBytesN(string, len);
+RECOMP_EXPORT PyObjectHandle REPY_CreateByteStrN(const char* string, u32 len) {
+    return PythonNative_Object_CreateByteStrN(string, len);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateBytesN_SUH(const char* string, u32 len) {
-    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateBytesN(string, len));
+RECOMP_EXPORT PyObjectHandle REPY_CreateByteStrN_SUH(const char* string, u32 len) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateByteStrN(string, len));
 }
 
-RECOMP_EXPORT char* REPY_CastBytes(PyObjectHandle object) {
-    u32 len = PythonNative_Object_CastBytes_Prepare(object);
+RECOMP_EXPORT char* REPY_CastByteStr(PyObjectHandle object) {
+    u32 len = PythonNative_Object_CastByteStr_Prepare(object);
     char* retVal = recomp_alloc(len);
-    PythonNative_Object_CastBytes_Copy(len, retVal);
+    PythonNative_Object_CastByteStr_Copy(len, retVal);
     return retVal;
 }
 // Tuple Operations:

@@ -4,7 +4,7 @@
 
 PYBIND11_EMBEDDED_MODULE(recomp_mem, m) {
 
-    m.def("write_bytes", [](int ptr, py::bytes bytes) {
+    m.def("write_bytes", [](int32_t ptr, py::bytes bytes) {
         uint8_t* rdram = controller->rdram;
 
         for (auto byte : bytes) {
@@ -12,14 +12,12 @@ PYBIND11_EMBEDDED_MODULE(recomp_mem, m) {
         }
     });
 
-    m.def("read_bytes_n", [](int ptr, int size) {
+    m.def("read_bytes_n", [](int32_t ptr, int size) {
         uint8_t* rdram = controller->rdram;
 
         uint8_t* buf = new uint8_t[size];
 
-        for (int i = 0; i < size; i++) {
-            buf[i] = MEM_B(ptr, i);
-        }
+        memcpy_from_recomp(rdram, buf, ptr, size);
 
         py::bytes retVal = py::bytes((char*)buf);
         delete[] buf;

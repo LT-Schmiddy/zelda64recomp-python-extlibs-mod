@@ -77,10 +77,10 @@ native_libraries = [
         "PythonNative_Object_CreateStrN",
         "PythonNative_Object_CastStr_Prepare",
         "PythonNative_Object_CastStr_Copy",
-        "PythonNative_Object_CreateBytes",
-        "PythonNative_Object_CreateBytesN",
-        "PythonNative_Object_CastBytes_Prepare",
-        "PythonNative_Object_CastBytes_Copy",
+        "PythonNative_Object_CreateByteStr",
+        "PythonNative_Object_CreateByteStrN",
+        "PythonNative_Object_CastByteStr_Prepare",
+        "PythonNative_Object_CastByteStr_Copy",
 
         # Tuple
         "PythonNative_Tuple_Create",
