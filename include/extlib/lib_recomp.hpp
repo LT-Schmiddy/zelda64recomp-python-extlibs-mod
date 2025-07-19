@@ -154,6 +154,30 @@ void _return(recomp_context* ctx, T val) {
     }
 }
 
+inline void memcpy_from_recomp(uint8_t* rdram, uint8_t* dst, PTR(uint8_t) src, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        dst[i] = MEM_B(src, i);
+    }
+}
+
+inline void memcpy_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, uint8_t* src, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        MEM_B(dst, i) = src[i];
+    }
+}
+
+inline void memcpy_rev_from_recomp(uint8_t* rdram, uint8_t* dst, PTR(uint8_t) src, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        dst[size - i - 1] = MEM_B(src, i);
+    }
+}
+
+inline void memcpy_rev_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, uint8_t* src, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        MEM_B(dst, i) = src[size - i - 1];
+    }
+}
+
 #define NO_EXTERN_RECOMP_DLL_FUNC(_f_name) RECOMP_EXPORT void _f_name(uint8_t* rdram, recomp_context* ctx)
 #define RECOMP_DLL_FUNC(_f_name) extern "C" NO_EXTERN_RECOMP_DLL_FUNC(_f_name)
 #define RECOMP_ARG(_type, _pos) _arg<_pos, _type>(rdram, ctx)

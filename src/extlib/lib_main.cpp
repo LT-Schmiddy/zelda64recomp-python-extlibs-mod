@@ -18,31 +18,6 @@ static const char* code_type_strs[] = {
 static std::u8string cached_return_u8string;
 static std::string cached_return_string;
 
-void memcpy_from_recomp(uint8_t* rdram, uint8_t* dst, PTR(uint8_t) src, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-        dst[i] = MEM_B(src, i);
-    }
-}
-
-void memcpy_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, uint8_t* src, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-        MEM_B(dst, i) = src[i];
-    }
-}
-
-void memcpy_rev_from_recomp(uint8_t* rdram, uint8_t* dst, PTR(uint8_t) src, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-        dst[size - i - 1] = MEM_B(src, i);
-    }
-}
-
-void memcpy_rev_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, uint8_t* src, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-        MEM_B(dst, i) = src[size - i - 1];
-    }
-}
-
-
 
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
