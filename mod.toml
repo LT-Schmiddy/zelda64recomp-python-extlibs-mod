@@ -65,6 +65,11 @@ native_libraries = [
         "PythonNative_Object_CastS32",
         "PythonNative_Object_CreateF32",
         "PythonNative_Object_CastF32",
+
+        # 64-bit Primatives
+        "PythonNative_Object_U64Operation",
+        "PythonNative_Object_S64Operation",
+        "PythonNative_Object_F64Operation",
         
         # Strings
         "PythonNative_Object_CreateStr",

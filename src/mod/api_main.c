@@ -108,6 +108,50 @@ RECOMP_EXPORT f32 REPY_CastF32(PyObjectHandle object) {
     return PythonNative_Object_CastF32(object);
 }
 
+// 64-bit Primatives:
+RECOMP_EXPORT PyObjectHandle REPY_CreateU64(u64 value) {
+    return PythonNative_Object_U64Operation(&value, 0);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateU64_SUH(u64 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_U64Operation(&value, 0));
+}
+
+RECOMP_EXPORT u64 REPY_CastU64(PyObjectHandle object) {
+    u64 retVal;
+    PythonNative_Object_U64Operation(&retVal, object);
+    return retVal;
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateS64(s64 value) {
+    return PythonNative_Object_S64Operation(&value, 0);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateS64_SUH(s64 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_S64Operation(&value, 0));
+}
+
+RECOMP_EXPORT s64 REPY_CastS64(PyObjectHandle object) {
+    s64 retVal;
+    PythonNative_Object_S64Operation(&retVal, object);
+    return retVal;
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateF64(f64 value) {
+    return PythonNative_Object_F64Operation(&value, 0);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateF64_SUH(f64 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_F64Operation(&value, 0));
+}
+
+RECOMP_EXPORT f64 REPY_CastF64(PyObjectHandle object) {
+    f64 retVal;
+    PythonNative_Object_F64Operation(&retVal, object);
+    return retVal;
+}
+
+
 // Strings:
 RECOMP_EXPORT PyObjectHandle REPY_CreateStr(const char* string) {
     return PythonNative_Object_CreateStr(string);

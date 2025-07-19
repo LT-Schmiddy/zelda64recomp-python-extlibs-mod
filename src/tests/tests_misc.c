@@ -1,0 +1,167 @@
+#include "modding.h"
+#include "global.h"
+#include "recomputils.h"
+
+#include "repy_api.h"
+/*
+void inline_test() {
+    REPY_FN_SETUP;
+    REPY_FN_IMPORT("os");
+
+    REPY_FN_SET_S32("count", 55);
+
+    PyObjectHandle new_dict = REPY_CreateEmptyDict();
+    REPY_DictSet(new_dict, REPY_MakeSUH(REPY_CreateStr("key_string")), REPY_MakeSUH(REPY_CreateStr("value_string")));
+    REPY_FN_SET("new_dict", new_dict);
+    REPY_Release(new_dict);
+
+    // REPY_FN_EXEC_BLOCK(
+    //     inline_test_exec1, 
+    //     "print(f'Hello Mr. {count=}')\n"
+    //     "print(f'Hello Mr. {new_dict=}')\n"
+        
+    //     "for i in os.listdir():\n"
+    //     "    print('*', i)\n"
+    // );
+
+    PyObjectHandle os_handle = REPY_FN_GET("os");
+    const char* os_name = REPY_CastStr(REPY_MakeSUH(REPY_CallAttrReturn(os_handle, "getcwd", 0, 0)));
+    recomp_printf("Python says the CWD is '%s'\n", os_name);
+
+    REPY_Release(os_handle);
+    recomp_free((void*)os_name);
+
+    REPY_FN_RETURN;
+}
+
+void file_access_test() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_BLOCK(
+        file_access_test_exec1, 
+        "from pathlib import Path\n"
+        "sound_json_str = Path('sound.json').read_text()\n"
+    );
+
+    char* sound_json_str = REPY_FN_GET_STR("sound_json_str");
+    recomp_printf("Sound.json Content:\n%s\n", sound_json_str);
+    recomp_free(sound_json_str);
+
+    REPY_FN_RETURN;
+}
+
+void tuple_test() {
+    REPY_FN_SETUP;
+
+
+    REPY_FN_EVAL_BLOCK(tuple_test_get_print, "print", print_fn);
+    PyObjectHandle args = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
+    REPY_FN_SET("index_2", REPY_MakeSUH(REPY_TupleGetMember(args, 2)));
+
+    REPY_Call(print_fn, args, 0);
+    REPY_Release(args);
+    REPY_Release(print_fn);
+    REPY_FN_RETURN;
+}
+
+void mem_test() {
+    REPY_FN_SETUP;
+    const char* addr_test = "Hello Alex";
+    REPY_FN_SET_S32("addr_test", (s32)addr_test);
+    REPY_FN_EXEC_BLOCK(
+        mem_test_exec1, 
+        "import recomp_mem\n"
+        "print(type(addr_test))\n"
+        "byte_info = recomp_mem.read_bytes_n(addr_test, 11)\n"
+        // "print(byte_info)\n"
+        "recomp_mem.write_bytes(addr_test, b'Perfect\\x00')\n"
+    );
+
+    recomp_printf("addr_test = %s\n", addr_test);
+    REPY_FN_RETURN;
+}
+
+void time_test() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_BLOCK(
+        time_start1,
+        "import time\n"
+        "start_time = time.time()\n"
+    );
+
+    for (int i = 0; i < 100; i++) {
+        inline_test();
+        file_access_test();
+        tuple_test();
+        mem_test();
+    }
+
+
+    REPY_FN_EXEC_BLOCK(
+        time_end1,
+        "end_time = time.time() - start_time\n"
+        "print(f'{end_time=}')\n"
+    );
+    REPY_FN_RETURN;
+}
+
+void print_dict_test_no_code() {
+    PyObjectHandle builtins = REPY_ImportModule("builtins");
+
+    PyObjectHandle my_dict = REPY_CreateDict(4,
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key1"), REPY_CreateStr_SUH("Value1")),
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key2"), REPY_CreateStr_SUH("Value2")),
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key3"), REPY_CreateStr_SUH("Value3")),
+        REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key4"), REPY_CreateStr_SUH("Value4"))
+    );
+
+    REPY_CallAttr(builtins, "print", REPY_CreateTuple_SUH(1, my_dict), 0);
+    REPY_Release(builtins);
+    REPY_Release(my_dict);
+}
+
+void print_dict_test_code() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_BLOCK(
+        code_test1, 
+        "import builtins\n"
+        "my_dict = {\n"
+        "   'Key1': 'Value1',\n"
+        "   'Key2': 'Value2',\n"
+        "   'Key3': 'Value3',\n"
+        "   'Key4': 'Value4'\n"
+        "}\n"
+        "builtins.print(my_dict)\n"
+    );
+    REPY_FN_RETURN;
+}
+
+void no_code_block_test() {
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_BLOCK(
+        time_start1,
+        "import time\n"
+        "nc_start_time = time.time()\n"
+    );
+
+    for (int i = 0; i < 1000; i++) {
+        print_dict_test_no_code();
+    }
+
+    REPY_FN_EXEC_BLOCK(
+        time_end1,
+        "nc_run_time = time.time() - nc_start_time\n"
+        "c_start_time = time.time()\n"
+    );
+
+    for (int i = 0; i < 1000; i++) {
+        print_dict_test_code();
+    }
+
+    REPY_FN_EXEC_BLOCK(
+        time_end2,
+        "c_run_time = time.time() - c_start_time\n"
+        "print(f'{nc_run_time=}, {c_run_time=}')\n"
+    );
+    REPY_FN_RETURN;
+}
+*/

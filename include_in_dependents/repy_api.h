@@ -84,13 +84,22 @@ REPY_EvalCStr(code, _py_globals, _py_locals)
 REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
 #define REPY_FN_EVAL_U32(code) \
-REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
+REPY_CastU32(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
 #define REPY_FN_EVAL_S32(code) \
-REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
+REPY_CastS32(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
 #define REPY_FN_EVAL_F32(code) \
-REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
+REPY_CastF32(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
+
+#define REPY_FN_EVAL_U64(code) \
+REPY_CastU64(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
+
+#define REPY_FN_EVAL_S64(code) \
+REPY_CastS64(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
+
+#define REPY_FN_EVAL_F64(code) \
+REPY_CastF64(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
 #define REPY_FN_EVAL_STR(code) \
 REPY_CastStr(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
@@ -132,6 +141,24 @@ REPY_CastF32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(v
 
 #define REPY_FN_SET_F32(var_name, value) \
 REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateF32(value)))
+
+#define REPY_FN_GET_U64(var_name) \
+REPY_CastU64(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_U64(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU64(value)))
+
+#define REPY_FN_GET_S64(var_name) \
+REPY_CastS64(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_S64(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS64(value)))
+
+#define REPY_FN_GET_F64(var_name) \
+REPY_CastF64(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_F64(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateF64(value)))
 
 // Scope Management - Strings
 #define REPY_FN_GET_STR(var_name) \
@@ -180,8 +207,20 @@ REPY_IMPORT(u32 REPY_CastU32(PyObjectHandle object));
 REPY_IMPORT(PyObjectHandle REPY_CreateS32(s32 value));
 REPY_IMPORT(PyObjectHandle REPY_CreateS32_SUH(s32 value));
 REPY_IMPORT(s32 REPY_CastS32(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateF32(f32 value));
 REPY_IMPORT(PyObjectHandle REPY_CreateF32_SUH(f32 value));
 REPY_IMPORT(f32 REPY_CastF32(PyObjectHandle object));
+
+// 64-bit Primatives
+REPY_IMPORT(PyObjectHandle REPY_CreateU64(u64 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateU64_SUH(u64 value));
+REPY_IMPORT(u64 REPY_CastU64(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateS64(s64 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateS64_SUH(s64 value));
+REPY_IMPORT(s64 REPY_CastS64(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateF64(f64 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateF64_SUH(f64 value));
+REPY_IMPORT(f64 REPY_CastF64(PyObjectHandle object));
 
 // Strings:
 REPY_IMPORT(PyObjectHandle REPY_CreateStr(const char* string));

@@ -30,6 +30,11 @@ RECOMP_IMPORT(".", s32 PythonNative_Object_CastS32(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateF32(f32 value));
 RECOMP_IMPORT(".", f32 PythonNative_Object_CastF32(PyObjectHandle py_object));
 
+// 64-bit Primatives:
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_U64Operation(u64* location, PyObjectHandle handle));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_S64Operation(s64* location, PyObjectHandle handle));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_F64Operation(f64* location, PyObjectHandle handle));
+
 // Casting Strings
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateStr(const char* string));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateStrN(const char* string, u32 len));
