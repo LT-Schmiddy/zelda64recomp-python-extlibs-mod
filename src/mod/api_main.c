@@ -33,6 +33,10 @@ RECOMP_EXPORT PyObjectHandle REPY_MakeSUH(PyObjectHandle py_object) {
     return PythonNative_Object_MakeSUH(py_object);
 }
 
+RECOMP_EXPORT bool REPY_IsValidHandle(PyObjectHandle py_object) {
+    return PythonNative_Object_IsValidHandle(py_object);
+}
+
 RECOMP_EXPORT bool REPY_GetSUH(PyObjectHandle py_object) {
     return PythonNative_Object_GetSUH(py_object);
 }
@@ -66,7 +70,6 @@ RECOMP_EXPORT PyObjectHandle REPY_CreateBool(bool value) {
 RECOMP_EXPORT PyObjectHandle REPY_CreateBool_SUH(bool value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateBool(value));
 }
-
 
 RECOMP_EXPORT bool REPY_CastBool(PyObjectHandle object) {
     return PythonNative_Object_CastBool(object);

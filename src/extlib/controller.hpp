@@ -47,6 +47,7 @@ public:
     PyObjectHandle create_handle_and_steal(py::object* obj);
     PyObjectHandle create_handle(py::object* obj);
     py::object* get_py_object(PyObjectHandle handle);
+    bool is_valid_handle(PyObjectHandle handle);
     bool get_handle_suh(PyObjectHandle handle);
     void set_handle_suh(PyObjectHandle handle, bool is_single_use);
     void release_suh_handles();

@@ -82,6 +82,14 @@ RECOMP_DLL_FUNC(PythonNative_Object_MakeSUH) {
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
+RECOMP_DLL_FUNC(PythonNative_Object_IsValidHandle) {
+    controller->set_rdram(rdram);
+    // Don't need the GIL for this.
+    PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
+
+    RECOMP_RETURN(int32_t, (int32_t) controller->is_valid_handle(handle));
+}
+
 RECOMP_DLL_FUNC(PythonNative_Object_GetSUH) {
     controller->set_rdram(rdram);
 

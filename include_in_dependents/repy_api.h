@@ -188,6 +188,7 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(RE
 // General:
 REPY_IMPORT(void REPY_Release(PyObjectHandle py_object));
 REPY_IMPORT(PyObjectHandle REPY_MakeSUH(PyObjectHandle py_object));
+REPY_IMPORT(bool REPY_IsValidHandle(PyObjectHandle py_object));
 REPY_IMPORT(bool REPY_GetSUH(PyObjectHandle py_object));
 REPY_IMPORT(void REPY_SetSUH(PyObjectHandle py_object, bool value));
 REPY_IMPORT(PyObjectHandle REPY_CopyHandle(PyObjectHandle py_object));

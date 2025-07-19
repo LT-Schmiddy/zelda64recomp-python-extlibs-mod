@@ -11,6 +11,7 @@
 RECOMP_IMPORT(".", int PythonNative_Init(u32 log_level, const unsigned char* str));
 RECOMP_IMPORT(".", void PythonNative_Object_Release(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_MakeSUH(PyObjectHandle py_object));
+RECOMP_IMPORT(".", bool PythonNative_Object_IsValidHandle(PyObjectHandle py_object));
 RECOMP_IMPORT(".", bool PythonNative_Object_GetSUH(PyObjectHandle py_object));
 RECOMP_IMPORT(".", void PythonNative_Object_SetSUH(PyObjectHandle py_object, bool suh_status));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CopyHandle(PyObjectHandle py_object));

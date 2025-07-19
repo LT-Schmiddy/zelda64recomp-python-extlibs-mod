@@ -47,6 +47,7 @@ native_libraries = [
         "PythonNative_Init",
         "PythonNative_Object_Release",
         "PythonNative_Object_MakeSUH",
+        "PythonNative_Object_IsValidHandle",
         "PythonNative_Object_GetSUH",
         "PythonNative_Object_SetSUH",
         "PythonNative_Object_CopyHandle",
@@ -80,6 +81,7 @@ native_libraries = [
         "PythonNative_Object_CreateBytesN",
         "PythonNative_Object_CastBytes_Prepare",
         "PythonNative_Object_CastBytes_Copy",
+
         # Tuple
         "PythonNative_Tuple_Create",
         "PythonNative_Tuple_GetMember",

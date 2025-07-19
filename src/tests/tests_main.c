@@ -13,7 +13,7 @@ void validate(char* case_name, bool case_stmt) {
     if (case_stmt) {
         _test_cases_passed++;
     }
-
+    
     recomp_printf("Case %s %s\n", case_name, case_stmt ? "Passed" : "Failed!");
 }
 

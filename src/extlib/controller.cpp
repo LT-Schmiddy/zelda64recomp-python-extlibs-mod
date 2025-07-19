@@ -131,6 +131,11 @@ py::object* PyInterpreterController::get_py_object(PyObjectHandle handle) {
     return &entry->py_object;
 }
 
+bool PyInterpreterController::is_valid_handle(PyObjectHandle handle) {
+    return py_objects.contains(handle);
+}
+
+
 bool PyInterpreterController::get_handle_suh(PyObjectHandle handle) {
     PyObjectHandleEntry* entry = &py_objects.at(handle);
     return entry->is_single_use;
