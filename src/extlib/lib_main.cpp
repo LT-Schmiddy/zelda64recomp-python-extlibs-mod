@@ -421,7 +421,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
     py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
     py::object* key = RECOMP_ARG_PYOBJECT(1);
 
-    int32_t retVal = d->contains(key);
+    uint32_t retVal = d->contains(key);
     controller->release_suh_handles();
     RECOMP_RETURN(uint32_t, retVal);
 }
@@ -436,6 +436,59 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
     controller->release_suh_handles();
 }
 
+// ====================================== Object Attributes: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_Object_GetAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+    
+    py::object r;
+    // If a default was passed:
+    if (RECOMP_ARG(uint32_t, 2)) {
+        py::object* default_r = RECOMP_ARG_PYOBJECT(2);
+        r = py::getattr(*obj, *key, *default_r);
+    } else {
+        r = py::getattr(*obj, *key);
+    }
+    
+    PyObjectHandle retVal = controller->create_handle(&r);
+    controller->release_suh_handles();
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_SetAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+    py::object* value = RECOMP_ARG_PYOBJECT(2);
+
+    py::setattr(*obj, *key, *value);
+    controller->release_suh_handles();
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_HasAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+
+    uint32_t retVal = py::hasattr(*obj, *key);
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_DelAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+
+    py::delattr(*obj, *key);
+    
+    controller->release_suh_handles();
+}
 
 // ====================================== Execution: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Compile) {
@@ -775,56 +828,3 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
     controller->clear_py_error();
 }
 
-// ====================================== Object Attributes: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_Object_GetAttr) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    py::object* key = RECOMP_ARG_PYOBJECT(1);
-    
-    py::object r;
-    // If a default was passed:
-    if (RECOMP_ARG(uint32_t, 2)) {
-        py::object* default_r = RECOMP_ARG_PYOBJECT(2);
-        r = py::getattr(*obj, *key, *default_r);
-    } else {
-        r = py::getattr(*obj, *key);
-    }
-    
-    PyObjectHandle retVal = controller->create_handle(&r);
-    controller->release_suh_handles();
-    RECOMP_RETURN(PyObjectHandle, retVal);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Object_SetAttr) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    py::object* key = RECOMP_ARG_PYOBJECT(1);
-    py::object* value = RECOMP_ARG_PYOBJECT(2);
-
-    py::setattr(*obj, *key, *value);
-    controller->release_suh_handles();
-}
-
-RECOMP_DLL_FUNC(PythonNative_Object_HasAttr) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    py::object* key = RECOMP_ARG_PYOBJECT(1);
-
-    uint32_t retVal = py::hasattr(*obj, *key);
-    controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, retVal);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Object_RemoveAttr) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    py::object* key = RECOMP_ARG_PYOBJECT(1);
-
-    py::delattr(*obj, *key);
-    
-    controller->release_suh_handles();
-}

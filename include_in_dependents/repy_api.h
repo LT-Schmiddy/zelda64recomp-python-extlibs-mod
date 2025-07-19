@@ -249,7 +249,7 @@ REPY_IMPORT(PyObjectHandle REPY_CreateDict(u32 size, ...));
 REPY_IMPORT(PyObjectHandle REPY_CreateDict_SUH(u32 size, ...));
 REPY_IMPORT(PyObjectHandle REPY_DictGet(PyObjectHandle dict, PyObjectHandle key));
 REPY_IMPORT(void REPY_DictSet(PyObjectHandle dict, PyObjectHandle key, PyObjectHandle value));
-REPY_IMPORT(PyObjectHandle REPY_DictHas(PyObjectHandle dict, PyObjectHandle key));
+REPY_IMPORT(bool REPY_DictHas(PyObjectHandle dict, PyObjectHandle key));
 REPY_IMPORT(void REPY_DictDel(PyObjectHandle dict, PyObjectHandle key));
 
 // Execution:

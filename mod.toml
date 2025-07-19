@@ -92,6 +92,12 @@ native_libraries = [
         "PythonNative_Dict_Set",
         "PythonNative_Dict_Has",
         "PythonNative_Dict_Remove",
+
+        # Object Attributes
+        "PythonNative_Object_GetAttr",
+        "PythonNative_Object_SetAttr",
+        "PythonNative_Object_HasAttr",
+        "PythonNative_Object_DelAttr",
         
         # Execution
         "PythonNative_Compile",

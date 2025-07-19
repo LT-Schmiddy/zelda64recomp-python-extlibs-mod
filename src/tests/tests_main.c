@@ -22,6 +22,8 @@ REPY_ON_INIT void REPY_Tests() {
     REPY_FN_SETUP;
     recomp_printf("REPY Tests Loaded\n");
 
+    recomp_printf("bool size %u\n", sizeof(bool));
+
     REPY_FN_SET_U64("u64val1", 99);
     REPY_FN_SET_S64("s64val1", -99);
     REPY_FN_SET_F64("f64val1", 99.5);
@@ -34,7 +36,7 @@ REPY_ON_INIT void REPY_Tests() {
         "s64val2 = -33\n"
         "f64val2 = 33.0\n"
     );
-
+    
     u64 u64val2 = REPY_FN_GET_U64("u64val2");
     s64 s64val2 = REPY_FN_GET_S64("s64val2");
     f64 f64val2 = REPY_FN_GET_F64("f64val2");

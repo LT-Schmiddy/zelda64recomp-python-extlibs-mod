@@ -11,9 +11,9 @@
 RECOMP_IMPORT(".", int PythonNative_Init(u32 log_level, const unsigned char* str));
 RECOMP_IMPORT(".", void PythonNative_Object_Release(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_MakeSUH(PyObjectHandle py_object));
-RECOMP_IMPORT(".", bool PythonNative_Object_IsValidHandle(PyObjectHandle py_object));
-RECOMP_IMPORT(".", bool PythonNative_Object_GetSUH(PyObjectHandle py_object));
-RECOMP_IMPORT(".", void PythonNative_Object_SetSUH(PyObjectHandle py_object, bool suh_status));
+RECOMP_IMPORT(".", u32 PythonNative_Object_IsValidHandle(PyObjectHandle py_object));
+RECOMP_IMPORT(".", u32 PythonNative_Object_GetSUH(PyObjectHandle py_object));
+RECOMP_IMPORT(".", void PythonNative_Object_SetSUH(PyObjectHandle py_object, u32 suh_status));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CopyHandle(PyObjectHandle py_object));
 
 // Modules:
@@ -22,8 +22,8 @@ RECOMP_IMPORT(".", void PythonNative_LoadModuleN(const char* identifier, const c
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_ImportModule(const char* identifier));
 
 // Casting Primatives:
-RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBool(bool value));
-RECOMP_IMPORT(".", bool PythonNative_Object_CastBool(PyObjectHandle py_object));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBool(u32 value));
+RECOMP_IMPORT(".", u32 PythonNative_Object_CastBool(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateU32(u32 value));
 RECOMP_IMPORT(".", u32 PythonNative_Object_CastU32(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateS32(s32 value));
@@ -55,26 +55,32 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_GetMember(PyObjectHandle tu
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Create(u32 size, va_list va));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Get(PyObjectHandle dict, PyObjectHandle key));
 RECOMP_IMPORT(".", void PythonNative_Dict_Set(PyObjectHandle dict, PyObjectHandle key, PyObjectHandle value));
-RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Has(PyObjectHandle dict, PyObjectHandle key));
-RECOMP_IMPORT(".", PyObjectHandle PythonNative_Dict_Remove(PyObjectHandle dict, PyObjectHandle key));
+RECOMP_IMPORT(".", u32 PythonNative_Dict_Has(PyObjectHandle dict, PyObjectHandle key));
+RECOMP_IMPORT(".", void PythonNative_Dict_Remove(PyObjectHandle dict, PyObjectHandle key));
+
+// Object Attribute Operations:
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_GetAttr(PyObjectHandle object, PyObjectHandle key, PyObjectHandle default_value));
+RECOMP_IMPORT(".", void PythonNative_Object_SetAttr(PyObjectHandle object, PyObjectHandle key, PyObjectHandle value));
+RECOMP_IMPORT(".", u32 PythonNative_Object_HasAttr(PyObjectHandle object, PyObjectHandle key));
+RECOMP_IMPORT(".", void PythonNative_Object_DelAttr(PyObjectHandle object, PyObjectHandle key));
 
 // Execution Operations:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Compile(PyObjectHandle code, PyObjectHandle itentifier, PyObjectHandle mode));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_CompileCStr(const char* code, const char* identifier, PythonCodeMode mode));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_CompileCStrN(const char* code, u32 len,  const char* identifier, PythonCodeMode mode));
-RECOMP_IMPORT(".", bool PythonNative_Exec(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope));
-RECOMP_IMPORT(".", bool PythonNative_ExecCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
-RECOMP_IMPORT(".", bool PythonNative_ExecCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
+RECOMP_IMPORT(".", u32 PythonNative_Exec(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope));
+RECOMP_IMPORT(".", u32 PythonNative_ExecCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
+RECOMP_IMPORT(".", u32 PythonNative_ExecCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Eval(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_EvalCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_EvalCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
-RECOMP_IMPORT(".", bool PythonNative_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
+RECOMP_IMPORT(".", u32 PythonNative_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Call_Return(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
-RECOMP_IMPORT(".", bool PythonNative_CallAttr(PyObjectHandle func, const char* name, PyObjectHandle args, PyObjectHandle kwargs));
+RECOMP_IMPORT(".", u32 PythonNative_CallAttr(PyObjectHandle func, const char* name, PyObjectHandle args, PyObjectHandle kwargs));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_CallAttr_Return(PyObjectHandle func, const char* name, PyObjectHandle args, PyObjectHandle kwargs));
 
 // Exception Handling:
-RECOMP_IMPORT(".", bool PythonNative_IsErrorSet());
+RECOMP_IMPORT(".", u32 PythonNative_IsErrorSet());
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_GetErrorType());
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_GetErrorTrace());
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_GetErrorValue());

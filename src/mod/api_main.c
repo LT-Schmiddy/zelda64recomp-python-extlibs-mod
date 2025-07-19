@@ -266,7 +266,7 @@ RECOMP_EXPORT void REPY_DictSet(PyObjectHandle dict, PyObjectHandle key, PyObjec
     PythonNative_Dict_Set(dict, key, value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_DictHas(PyObjectHandle dict, PyObjectHandle key) {
+RECOMP_EXPORT bool REPY_DictHas(PyObjectHandle dict, PyObjectHandle key) {
     return PythonNative_Dict_Has(dict, key);
 }
 
