@@ -154,7 +154,6 @@ RECOMP_EXPORT f64 REPY_CastF64(PyObjectHandle object) {
     return retVal;
 }
 
-
 // Strings:
 RECOMP_EXPORT PyObjectHandle REPY_CreateStr(const char* string) {
     return PythonNative_Object_CreateStr(string);

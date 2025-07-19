@@ -87,7 +87,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_IsValidHandle) {
     // Don't need the GIL for this.
     PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
 
-    RECOMP_RETURN(int32_t, (int32_t) controller->is_valid_handle(handle));
+    RECOMP_RETURN(uint32_t, (uint32_t) controller->is_valid_handle(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_Object_GetSUH) {
@@ -96,7 +96,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_GetSUH) {
     py::gil_scoped_acquire gil;
     PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
 
-    RECOMP_RETURN(int32_t, (int32_t) controller->get_handle_suh(handle));
+    RECOMP_RETURN(uint32_t, (uint32_t) controller->get_handle_suh(handle));
 }
 
 
@@ -104,7 +104,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_SetSUH) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     PyObjectHandle handle = RECOMP_ARG(PyObjectHandle, 0);
-    PyObjectHandle value = RECOMP_ARG(int32_t, 1);
+    PyObjectHandle value = RECOMP_ARG(uint32_t, 1);
 
     controller->set_handle_suh(handle, value);
 }
@@ -423,7 +423,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
 
     int32_t retVal = d->contains(key);
     controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, retVal);
+    RECOMP_RETURN(uint32_t, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
@@ -451,7 +451,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(int, 0);
+        RECOMP_RETURN(PyObjectHandle, 0);
     }
     
     PyObjectHandle handle = controller->create_handle(&bytecode);
@@ -471,7 +471,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
         bytecode = controller->py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
-        RECOMP_RETURN(int, 0);
+        RECOMP_RETURN(PyObjectHandle, 0);
     }
 
     PyObjectHandle handle = controller->create_handle(&bytecode);
@@ -492,7 +492,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
         bytecode = controller->py_compile(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
-        RECOMP_RETURN(int, 0);
+        RECOMP_RETURN(PyObjectHandle, 0);
     }
 
     PyObjectHandle handle = controller->create_handle(&bytecode);
@@ -516,10 +516,10 @@ RECOMP_DLL_FUNC(PythonNative_Exec) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(int32_t, 0);
+        RECOMP_RETURN(uint32_t, 0);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, 1);
+    RECOMP_RETURN(uint32_t, 1);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
@@ -539,10 +539,10 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(int32_t, 0);
+        RECOMP_RETURN(uint32_t, 0);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, 1);
+    RECOMP_RETURN(uint32_t, 1);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
@@ -563,10 +563,10 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(int32_t, 0);
+        RECOMP_RETURN(uint32_t, 0);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, 1);
+    RECOMP_RETURN(uint32_t, 1);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Eval) {
@@ -663,11 +663,11 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(int32_t, 0);
+        RECOMP_RETURN(uint32_t, 0);
     }
 
     controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, 1);
+    RECOMP_RETURN(uint32_t, 1);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Call_Return) {
@@ -709,11 +709,11 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(int32_t, 0);
+        RECOMP_RETURN(uint32_t, 0);
     }
 
     controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, 1);
+    RECOMP_RETURN(uint32_t, 1);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
@@ -741,7 +741,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
     RECOMP_RETURN(PyObjectHandle, handle);
 }
 
-// ====================================== Execution: ====================================== 
+// ====================================== Errors: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_IsErrorSet) {
     controller->set_rdram(rdram);
 
@@ -773,5 +773,58 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     controller->clear_py_error();
+}
 
+// ====================================== Object Attributes: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_Object_GetAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+    
+    py::object r;
+    // If a default was passed:
+    if (RECOMP_ARG(uint32_t, 2)) {
+        py::object* default_r = RECOMP_ARG_PYOBJECT(2);
+        r = py::getattr(*obj, *key, *default_r);
+    } else {
+        r = py::getattr(*obj, *key);
+    }
+    
+    PyObjectHandle retVal = controller->create_handle(&r);
+    controller->release_suh_handles();
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_SetAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+    py::object* value = RECOMP_ARG_PYOBJECT(2);
+
+    py::setattr(*obj, *key, *value);
+    controller->release_suh_handles();
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_HasAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+
+    uint32_t retVal = py::hasattr(*obj, *key);
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_RemoveAttr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* key = RECOMP_ARG_PYOBJECT(1);
+
+    py::delattr(*obj, *key);
+    
+    controller->release_suh_handles();
 }
