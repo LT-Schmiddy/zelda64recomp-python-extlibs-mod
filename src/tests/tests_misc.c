@@ -53,7 +53,7 @@ void tuple_test() {
     REPY_FN_SETUP;
 
 
-    REPY_FN_EVAL_BLOCK(tuple_test_get_print, "print", print_fn);
+    REPY_FN_EVAL_CACHE(tuple_test_get_print, "print", print_fn);
     PyObjectHandle args = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
     REPY_FN_SET("index_2", REPY_MakeSUH(REPY_TupleGetMember(args, 2)));
 

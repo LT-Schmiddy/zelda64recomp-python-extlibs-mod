@@ -4,7 +4,15 @@
 
 PYBIND11_EMBEDDED_MODULE(recomp_mem, m) {
 
-    m.def("write_bytes", [](int32_t ptr, py::bytes bytes) {
+    m.def("write_bytes_n", [](int32_t ptr, py::bytes bytes) {
+        uint8_t* rdram = controller->rdram;
+
+        for (auto byte : bytes) {
+            MEM_B(ptr++, 0) = byte.cast<uint8_t>();
+        }
+    });
+
+    m.def("write_bytes_n", [](int32_t ptr, py::bytearray bytes) {
         uint8_t* rdram = controller->rdram;
 
         for (auto byte : bytes) {
