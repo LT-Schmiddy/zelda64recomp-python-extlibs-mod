@@ -141,7 +141,7 @@ data_reference_syms_files = [ "Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "Zel
 
 # Additional files to include in the mod.
 additional_files = [ 
-    "test_module.py"
+    # "test_module.py"
 ]
 
 # Info for building the extlib. If this mod will have no extlib, remove this section and

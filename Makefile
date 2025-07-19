@@ -163,7 +163,7 @@ $(MOD_ELF): $(MOD_C_OBJS) $(LDSCRIPT) | $(MOD_BUILD_DIR) $(ASSETS_INCLUDE_DIR)
 
 
 $(MOD_C_OBJS): $(MOD_BUILD_DIR)/%.o : %.c | $(ASSETS_INCLUDE_DIR) $(MOD_BUILD_DIR) $(MOD_BUILD_DIR)/src $(MOD_BUILD_DIR)/src/mod
-	$(CC) $(CFLAGS) $(CPPFLAGS) $< -DRECOMP_PY_BUILD_MODE -MMD -MF $(@:.o=.d) -c -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I src/mod $< -DRECOMP_PY_BUILD_MODE -MMD -MF $(@:.o=.d) -c -o $@
 
 
 # Test Recipes
@@ -178,7 +178,7 @@ $(TESTS_ELF): $(TESTS_C_OBJS) $(LDSCRIPT) | $(TESTS_BUILD_DIR) $(ASSETS_INCLUDE_
 	$(LD) $(TESTS_C_OBJS) $(LDFLAGS) -o $@
 
 $(TESTS_C_OBJS): $(TESTS_BUILD_DIR)/%.o : %.c | $(ASSETS_INCLUDE_DIR) $(TESTS_BUILD_DIR) $(TESTS_BUILD_DIR)/src $(TESTS_BUILD_DIR)/src/tests
-	$(CC) $(CFLAGS) $(CPPFLAGS) $< -MMD -MF $(@:.o=.d) -c -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -I src/tests $< -MMD -MF $(@:.o=.d) -c -o $@
 
 # Recomp Tools Recipes:
 $(RECOMP_MOD_TOOL): $(N64RECOMP_BUILD_DIR) 

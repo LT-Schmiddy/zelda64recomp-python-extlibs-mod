@@ -42,11 +42,42 @@ typedef enum PythonCodeMode {
 
 // ========== API: ==========
 // Events:
-#define REPY_ON_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInit)
+#define REPY_ON_LOAD_MODULES RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnLoadModules)
 #define REPY_ON_MAKE_GLOBAL_CACHES RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnMakeGlobalCaches)
+#define REPY_ON_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInit)
+
 
 // ========== Macros: ==========
 // Startup Code Caching.
+
+#ifdef REPY_SILENCE_INCBIN_SQUIGGLES
+#define REPY_INCBIN_PYFILE(identifier, filename)      \
+    extern u8 identifier[];                           \
+    extern u8 identifier##_end[]
+
+#else
+#define REPY_INCBIN_PYFILE(identifier, filename)        \
+    asm(".pushsection .rodata\n"                      \
+        "\t.globl " #identifier "\n"                  \
+        "\t.type " #identifier ", @object\n"          \
+        "\t.balign 8\n"                               \
+        #identifier ":\n"                             \
+        "\t.incbin \"" filename "\"\n"                \
+        "\t.globl " #identifier "_end\n"              \
+        #identifier "_end:\n"                         \
+        "\t.popsection\n");                           \
+    extern u8 identifier[];                           \
+    extern u8 identifier##_end[]
+#endif
+
+#define REPY_INCBIN_MODULE(module_name, file_name) \
+REPY_INCBIN_PYFILE(module_name ## _code, file_name); \
+REPY_ON_LOAD_MODULES void _construct_module_ ## module_name (int success) { \
+    if (success) { \
+        REPY_LoadModuleN(#module_name, (const char*)module_name ## _code, (u32) (module_name ## _code_end - module_name ## _code)); \
+    } \
+} \
+
 #define REPY_GLOBAL_CODE_CACHE(bytecode_identifier, code_type, code_str) \
 PyObjectHandle bytecode_identifier = 0; \
 REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
@@ -77,7 +108,6 @@ REPY_Release(_py_locals)
 
 #define REPY_FN_RETURN \
 REPY_Release(_py_locals); return
-
 
 #define REPY_FN_CODE_CACHE(bytecode_identifier, code_mode, code_str) \
 static PyObjectHandle bytecode_identifier = 0; \

@@ -7,6 +7,7 @@
 
 #include "extlib_functions.h"
 
+RECOMP_DECLARE_EVENT(REPY_OnLoadModules(int success));
 RECOMP_DECLARE_EVENT(REPY_OnMakeGlobalCaches(int success));
 RECOMP_DECLARE_EVENT(REPY_OnInit(int success));
 
@@ -21,6 +22,7 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
         recomp_printf("There was an error initializing the Python interpreter.\n");
     }
 
+    REPY_OnLoadModules(py_init);
     REPY_OnMakeGlobalCaches(py_init);
     REPY_OnInit(py_init);
 }
