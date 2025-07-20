@@ -18,8 +18,6 @@ static const char* code_type_strs[] = {
 static std::u8string cached_return_u8string;
 static std::string cached_return_string;
 
-static uint8_t* cached_mem = NULL;
-
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
     int32_t log_level = RECOMP_ARG(int32_t, 0);

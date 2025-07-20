@@ -154,27 +154,31 @@ void _return(recomp_context* ctx, T val) {
     }
 }
 
-inline void memcpy_from_recomp(uint8_t* rdram, uint8_t* dst, PTR(uint8_t) src, size_t size) {
+inline void memcpy_from_recomp(uint8_t* rdram, void* dst, PTR(uint8_t) src, size_t size) {
+    uint8_t* _dst = (uint8_t*)dst;
     for (size_t i = 0; i < size; i++) {
-        dst[i] = MEM_B(src, i);
+        _dst[i] = MEM_B(src, i);
     }
 }
 
-inline void memcpy_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, uint8_t* src, size_t size) {
+inline void memcpy_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, void* src, size_t size) {
+    uint8_t* _src = (uint8_t*)src;
     for (size_t i = 0; i < size; i++) {
-        MEM_B(dst, i) = src[i];
+        MEM_B(dst, i) = _src[i];
     }
 }
 
-inline void memcpy_rev_from_recomp(uint8_t* rdram, uint8_t* dst, PTR(uint8_t) src, size_t size) {
+inline void memcpy_rev_from_recomp(uint8_t* rdram, void* dst, PTR(uint8_t) src, size_t size) {
+    uint8_t* _dst = (uint8_t*)dst;
     for (size_t i = 0; i < size; i++) {
-        dst[size - i - 1] = MEM_B(src, i);
+        _dst[size - i - 1] = MEM_B(src, i);
     }
 }
 
-inline void memcpy_rev_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, uint8_t* src, size_t size) {
+inline void memcpy_rev_to_recomp(uint8_t* rdram, PTR(uint8_t) dst, void* src, size_t size) {
+    uint8_t* _src = (uint8_t*)src;
     for (size_t i = 0; i < size; i++) {
-        MEM_B(dst, i) = src[size - i - 1];
+        MEM_B(dst, i) = _src[size - i - 1];
     }
 }
 
