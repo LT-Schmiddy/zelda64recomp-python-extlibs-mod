@@ -253,6 +253,24 @@ RECOMP_EXPORT char* REPY_CastByteStr(PyObjectHandle object) {
     PythonNative_Object_CastByteStr_Copy(len, retVal);
     return retVal;
 }
+
+RECOMP_EXPORT PyObjectHandle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse) {
+    return PythonNative_Memcpy_ToBytes(src, len, reverse);
+}
+
+RECOMP_EXPORT u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj) {
+    return PythonNative_Memcpy_FromBytes(src, len, reverse, bytes_obj);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse) {
+    return PythonNative_Memcpy_ToByteArray(src, len, reverse);
+}
+
+RECOMP_EXPORT u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj) {
+    return PythonNative_Memcpy_FromByteArray(src, len, reverse, bytes_obj);
+}
+
+
 // Tuple Operations:
 RECOMP_EXPORT PyObjectHandle REPY_CreateTuple(u32 size, ...) {
     va_list va;

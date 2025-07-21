@@ -24,19 +24,25 @@ REPY_ON_INIT void REPY_Tests() {
     REPY_FN_SETUP;
     recomp_printf("REPY Tests Loaded\n");
 
-    REPY_FN_SET_U8("u8_set_test", 55);
-    REPY_FN_SET_S8("s8_set_test", -55);
-    REPY_FN_SET_U16("u16_set_test", 55);
-    REPY_FN_SET_S16("s16_set_test", -55);
+    u8 bytes_array[10] = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
+    PyObjectHandle bytes_test = REPY_MemcpyToByteArray(bytes_array, 10, false);
+    REPY_FN_SET("bytes_test", bytes_test);
 
     REPY_FN_EXEC_BLOCK(
-        small_val_test1,
-        "print(f'{u8_set_test=}')\n"
-        "print(f'{s8_set_test=}')\n"
-        "print(f'{u16_set_test=}')\n"
-        "print(f'{s16_set_test=}')\n"
+        memcpy_test1,
+        "print(f'{len(bytes_test)=}')\n"
+        "print(f'{bytes_test=}')\n"
+        "for i in range(0, len(bytes_test)):\n"
+        "    bytes_test[i] += 1\n"
+        "\n"
     );
-
+    REPY_MemcpyFromByteArray(bytes_array, 10, false, bytes_test);
+    recomp_printf("BytesArray: ");
+        
+    for (int i = 0; i < 10; i++) {
+        recomp_printf("%i", bytes_array[i]);
+    }
+    recomp_printf("\n");
 
     // no_code_block_test();
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);

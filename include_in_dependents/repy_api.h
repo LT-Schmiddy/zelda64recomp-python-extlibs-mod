@@ -391,6 +391,12 @@ REPY_IMPORT(PyObjectHandle REPY_CreateByteStrN(const char* string, u32 len));
 REPY_IMPORT(PyObjectHandle REPY_CreateByteStrN_SUH(const char* string, u32 len));
 REPY_IMPORT(char* REPY_CastByteStr(PyObjectHandle object));
 
+// Memcpy:
+REPY_IMPORT(PyObjectHandle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse));
+REPY_IMPORT(u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj));
+REPY_IMPORT(PyObjectHandle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse));
+REPY_IMPORT(u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj));
+
 // Tuple:
 REPY_IMPORT(PyObjectHandle REPY_CreateTuple(u32 size, ...));
 REPY_IMPORT(PyObjectHandle REPY_CreateTuple_SUH(u32 size, ...));

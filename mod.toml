@@ -90,6 +90,12 @@ native_libraries = [
         "PythonNative_Object_CastByteStr_Prepare",
         "PythonNative_Object_CastByteStr_Copy",
 
+        # Memcpy:
+        "PythonNative_Memcpy_ToBytes",
+        "PythonNative_Memcpy_FromBytes",
+        "PythonNative_Memcpy_ToByteArray",
+        "PythonNative_Memcpy_FromByteArray",
+
         # Tuple
         "PythonNative_Tuple_Create",
         "PythonNative_Tuple_GetMember",

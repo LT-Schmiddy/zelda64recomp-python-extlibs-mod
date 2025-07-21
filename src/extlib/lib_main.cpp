@@ -272,10 +272,113 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Copy) {
     }
 }
 
+// ====================================== Tuple: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_Memcpy_ToBytes) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
+    uint32_t data_size = RECOMP_ARG(uint32_t, 1);
+    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
 
 
+    uint8_t* mem_block = new uint8_t[data_size];
+    if (reverse) {
+        memcpy_rev_from_recomp(rdram, mem_block, data_ptr, data_size);
+    } else {
+        memcpy_from_recomp(rdram, mem_block, data_ptr, data_size);
+    }
+    py::bytes obj = py::bytes((char*)mem_block, data_size);
+    PyObjectHandle retVal = controller->create_handle(&obj);
+    delete[] mem_block;
 
-// ======================================  Tuple: ====================================== 
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Memcpy_FromBytes) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
+    uint32_t data_size = RECOMP_ARG(uint32_t, 1);
+    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
+    py::bytes* bytes_obj = (py::bytes*)RECOMP_ARG_PYOBJECT(3);
+
+    char* mem_block = new char[data_size];
+    uint32_t iter = 0;
+    uint32_t bytes_size = py::len(*bytes_obj);
+    
+    for (auto byte : *bytes_obj) {
+        if (iter >= data_size) {
+            break;
+        }
+        mem_block[iter] = byte.cast<uint8_t>();
+        iter++;
+    }
+
+    if (reverse) {
+        memcpy_rev_to_recomp(rdram, data_ptr, mem_block, data_size);
+    } else {
+        memcpy_to_recomp(rdram, data_ptr, mem_block, data_size);
+    }
+
+    delete[] mem_block;
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, iter);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Memcpy_ToByteArray) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
+    uint32_t data_size = RECOMP_ARG(uint32_t, 1);
+    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
+
+
+    uint8_t* mem_block = new uint8_t[data_size];
+    if (reverse) {
+        memcpy_rev_from_recomp(rdram, mem_block, data_ptr, data_size);
+    } else {
+        memcpy_from_recomp(rdram, mem_block, data_ptr, data_size);
+    }
+    py::bytearray obj = py::bytearray((char*)mem_block, data_size);
+    PyObjectHandle retVal = controller->create_handle(&obj);
+    delete[] mem_block;
+
+    RECOMP_RETURN(PyObjectHandle, retVal);
+}
+
+
+RECOMP_DLL_FUNC(PythonNative_Memcpy_FromByteArray) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
+    uint32_t data_size = RECOMP_ARG(uint32_t, 1);
+    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
+    py::bytearray* bytes_obj = (py::bytearray*)RECOMP_ARG_PYOBJECT(3);
+
+    char* mem_block = new char[data_size];
+    uint32_t iter = 0;
+    uint32_t bytes_size = py::len(*bytes_obj);
+    for (auto byte : *bytes_obj) {
+        if (iter >= data_size) {
+            break;
+        }
+        mem_block[iter] = byte.cast<uint8_t>();
+        iter++;
+    }
+
+    if (reverse) {
+        memcpy_rev_to_recomp(rdram, data_ptr, mem_block, data_size);
+    } else {
+        memcpy_to_recomp(rdram, data_ptr, mem_block, data_size);
+    }
+
+    delete[] mem_block;
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, iter);
+}
+
+
+// ====================================== Tuple: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;

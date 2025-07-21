@@ -55,6 +55,12 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateByteStrN(const char*
 RECOMP_IMPORT(".", u32 PythonNative_Object_CastByteStr_Prepare(PyObjectHandle py_object));
 RECOMP_IMPORT(".", void PythonNative_Object_CastByteStr_Copy(u32 len, char* dst));
 
+// Memcpy
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Memcpy_ToBytes(void* src, u32 len, u32 reverse));
+RECOMP_IMPORT(".", u32 PythonNative_Memcpy_FromBytes(void* src, u32 len, u32 reverse, PyObjectHandle py_obj));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Memcpy_ToByteArray(void* src, u32 len, u32 reverse));
+RECOMP_IMPORT(".", u32 PythonNative_Memcpy_FromByteArray(void* src, u32 len, u32 reverse, PyObjectHandle py_obj));
+
 // Tuple:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_Create(u32 size, va_list va));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Tuple_GetMember(PyObjectHandle tuple, int index));
