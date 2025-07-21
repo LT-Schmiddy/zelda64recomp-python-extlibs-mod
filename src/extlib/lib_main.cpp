@@ -149,96 +149,17 @@ PYTHON_OBJECT_CREATE(PythonNative_Object_Create ## fname, c_type, py_type); \
 PYTHON_OBJECT_CAST(PythonNative_Object_Cast ## fname, c_type, py_type); \
 
 PYTHON_OBJECT_CREATECAST(Bool, uint32_t, py::bool_);
-PYTHON_OBJECT_CREATECAST(U8, uint32_t, py::int_);
-PYTHON_OBJECT_CREATECAST(S8, int32_t, py::int_);
-PYTHON_OBJECT_CREATECAST(U16, uint32_t, py::int_);
-PYTHON_OBJECT_CREATECAST(S16, int32_t, py::int_);
+PYTHON_OBJECT_CREATECAST(U8, uint8_t, py::int_);
+PYTHON_OBJECT_CREATECAST(S8, int8_t, py::int_);
+PYTHON_OBJECT_CREATECAST(U16, uint16_t, py::int_);
+PYTHON_OBJECT_CREATECAST(S16, int16_t, py::int_);
 PYTHON_OBJECT_CREATECAST(U32, uint32_t, py::int_);
 PYTHON_OBJECT_CREATECAST(S32, int32_t, py::int_);
 PYTHON_OBJECT_CREATECAST(F32, float, py::float_);
 
 // ======================================  Long Long Casting: ======================================
 
-// The arg helper functions don't support anything larger than 32-bit. We'll use address read/write instead.
-/*
-RECOMP_DLL_FUNC(PythonNative_Object_U64Operation) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    PTR(uint64_t) location = RECOMP_ARG(PTR(uint64_t), 0);
-    // 0 for read, 1 for write
-    uint32_t op_mode = RECOMP_ARG(uint32_t, 1);
-
-    if (op_mode) {
-        // Writing:
-        // We only need this if we're writing, and use while reading will give an error:
-        py::int_* obj = (py::int_*)RECOMP_ARG_PYOBJECT(1);
-        uint64_t val = obj->cast<uint64_t>();
-        // memcpy_to_recomp(rdram, location, (uint8_t*)"12345678", sizeof(uint64_t));
-        memcpy_rev_to_recomp(rdram, location, (uint8_t*)&val, sizeof(uint64_t));
-        controller->release_suh_handles();
-        RECOMP_RETURN(PyObjectHandle, 0);
-    } else {
-        // Reading:
-        uint64_t val;
-        memcpy_rev_from_recomp(rdram, (uint8_t*)&val, location, sizeof(uint64_t));
-        py::int_ obj = py::int_(val);
-        PyObjectHandle retVal = controller->create_handle(&obj);
-        RECOMP_RETURN(PyObjectHandle, retVal);
-    }
-}
-
-RECOMP_DLL_FUNC(PythonNative_Object_S64Operation) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    PTR(int64_t) location = RECOMP_ARG(PTR(int64_t), 0);
-    // 0 for read, 1 for write
-    uint32_t op_mode = RECOMP_ARG(uint32_t, 1);
-
-    if (op_mode) {
-        // Writing:
-        // We only need this if we're writing, and use while reading will give an error:
-        py::int_* obj = (py::int_*)RECOMP_ARG_PYOBJECT(1);
-        int64_t val = obj->cast<int64_t>();
-        memcpy_rev_to_recomp(rdram, location, (uint8_t*)&val, sizeof(int64_t));
-        controller->release_suh_handles();
-        RECOMP_RETURN(PyObjectHandle, 0);
-    } else {
-        // Reading:
-        int64_t val;
-        memcpy_rev_from_recomp(rdram, (uint8_t*)&val, location, sizeof(int64_t));
-        py::int_ obj = py::int_(val);
-        PyObjectHandle retVal = controller->create_handle(&obj);
-        RECOMP_RETURN(PyObjectHandle, retVal);
-    }
-}
-
-
-RECOMP_DLL_FUNC(PythonNative_Object_F64Operation) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    PTR(double) location = RECOMP_ARG(PTR(double), 0);
-    // 0 for read, 1 for write
-    uint32_t op_mode = RECOMP_ARG(uint32_t, 1);
-
-    if (op_mode) {
-        // Writing:
-        // We only need this if we're writing, and use while reading will give an error:
-        py::int_* obj = (py::int_*)RECOMP_ARG_PYOBJECT(1);
-        double val = obj->cast<double>();
-        memcpy_rev_to_recomp(rdram, location, (uint8_t*)&val, sizeof(double));
-        controller->release_suh_handles();
-        RECOMP_RETURN(PyObjectHandle, 0);
-    } else {
-        // Reading:
-        double val;
-        memcpy_rev_from_recomp(rdram, (uint8_t*)&val, location, sizeof(double));
-        py::float_ obj = py::float_(val);
-        PyObjectHandle retVal = controller->create_handle(&obj);
-        RECOMP_RETURN(PyObjectHandle, retVal);
-    }
-}
-*/
-#define NUMBER_OPERATION(name, c_type, py_type) \
+#define NUMBER64_OPERATION(name, c_type, py_type) \
 RECOMP_DLL_FUNC(name) { \
     controller->set_rdram(rdram); \
     py::gil_scoped_acquire gil; \
@@ -263,9 +184,9 @@ RECOMP_DLL_FUNC(name) { \
     } \
 }
 
-NUMBER_OPERATION(PythonNative_Object_U64Operation, uint64_t, py::int_);
-NUMBER_OPERATION(PythonNative_Object_S64Operation, int64_t, py::int_);
-NUMBER_OPERATION(PythonNative_Object_F64Operation, double, py::float_);
+NUMBER64_OPERATION(PythonNative_Object_U64Operation, uint64_t, py::int_);
+NUMBER64_OPERATION(PythonNative_Object_S64Operation, int64_t, py::int_);
+NUMBER64_OPERATION(PythonNative_Object_F64Operation, double, py::float_);
 
 
 // ======================================  String Casting: ======================================
