@@ -157,7 +157,7 @@ PYTHON_OBJECT_CREATECAST(U32, uint32_t, py::int_);
 PYTHON_OBJECT_CREATECAST(S32, int32_t, py::int_);
 PYTHON_OBJECT_CREATECAST(F32, float, py::float_);
 
-// ======================================  Long Long Casting: ======================================
+// ====================================== 64-bit Casting: ======================================
 
 #define NUMBER64_OPERATION(name, c_type, py_type) \
 RECOMP_DLL_FUNC(name) { \
