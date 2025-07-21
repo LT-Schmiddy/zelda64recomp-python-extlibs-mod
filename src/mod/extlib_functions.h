@@ -24,6 +24,14 @@ RECOMP_IMPORT(".", PyObjectHandle PythonNative_ImportModule(const char* identifi
 // Casting Primatives:
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateBool(u32 value));
 RECOMP_IMPORT(".", u32 PythonNative_Object_CastBool(PyObjectHandle py_object));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateU8(u8 value));
+RECOMP_IMPORT(".", u8 PythonNative_Object_CastU8(PyObjectHandle py_object));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateS8(s8 value));
+RECOMP_IMPORT(".", s8 PythonNative_Object_CastS8(PyObjectHandle py_object));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateU16(u16 value));
+RECOMP_IMPORT(".", u16 PythonNative_Object_CastU16(PyObjectHandle py_object));
+RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateS16(s16 value));
+RECOMP_IMPORT(".", s16 PythonNative_Object_CastS16(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateU32(u32 value));
 RECOMP_IMPORT(".", u32 PythonNative_Object_CastU32(PyObjectHandle py_object));
 RECOMP_IMPORT(".", PyObjectHandle PythonNative_Object_CreateS32(s32 value));

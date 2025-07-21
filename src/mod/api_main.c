@@ -79,6 +79,55 @@ RECOMP_EXPORT bool REPY_CastBool(PyObjectHandle object) {
     return PythonNative_Object_CastBool(object);
 }
 
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateU8(u8 value) {
+    return PythonNative_Object_CreateU8(value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateU8_SUH(u8 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateU8(value));
+}
+
+RECOMP_EXPORT u8 REPY_CastU8(PyObjectHandle object) {
+    return PythonNative_Object_CastU8(object);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateS8(s8 value) {
+    return PythonNative_Object_CreateS8(value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateS8_SUH(s8 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateS8(value));
+}
+
+RECOMP_EXPORT s8 REPY_CastS8(PyObjectHandle object) {
+    return PythonNative_Object_CastS8(object);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateU16(u16 value) {
+    return PythonNative_Object_CreateU16(value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateU16_SUH(u16 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateU16(value));
+}
+
+RECOMP_EXPORT u16 REPY_CastU16(PyObjectHandle object) {
+    return PythonNative_Object_CastU16(object);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateS16(s16 value) {
+    return PythonNative_Object_CreateS16(value);
+}
+
+RECOMP_EXPORT PyObjectHandle REPY_CreateS16_SUH(s16 value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateS16(value));
+}
+
+RECOMP_EXPORT s16 REPY_CastS16(PyObjectHandle object) {
+    return PythonNative_Object_CastS16(object);
+}
+
 RECOMP_EXPORT PyObjectHandle REPY_CreateU32(u32 value) {
     return PythonNative_Object_CreateU32(value);
 }

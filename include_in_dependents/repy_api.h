@@ -247,6 +247,30 @@ REPY_CastBool(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(
 #define REPY_FN_SET_BOOL(var_name, value) \
 REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBool(value)))
 
+#define REPY_FN_GET_U8(var_name) \
+REPY_CastU8(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_U8(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU8(value)))
+
+#define REPY_FN_GET_S8(var_name) \
+REPY_CastS8(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_S8(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS8(value)))
+
+#define REPY_FN_GET_U16(var_name) \
+REPY_CastU16(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_U16(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU16(value)))
+
+#define REPY_FN_GET_S16(var_name) \
+REPY_CastS16(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+
+#define REPY_FN_SET_S16(var_name, value) \
+REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS16(value)))
+
 #define REPY_FN_GET_U32(var_name) \
 REPY_CastU32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
 
@@ -322,6 +346,18 @@ REPY_IMPORT(PyObjectHandle REPY_ImportModule(const char* identifier));
 REPY_IMPORT(PyObjectHandle REPY_CreateBool(bool value));
 REPY_IMPORT(PyObjectHandle REPY_CreateBool_SUH(bool value));
 REPY_IMPORT(bool REPY_CastBool(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateU8(u8 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateU8_SUH(u8 value));
+REPY_IMPORT(u8 REPY_CastU8(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateS8(s8 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateS8_SUH(s8 value));
+REPY_IMPORT(s8 REPY_CastS8(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateU16(u16 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateU16_SUH(u16 value));
+REPY_IMPORT(u16 REPY_CastU16(PyObjectHandle object));
+REPY_IMPORT(PyObjectHandle REPY_CreateS16(s16 value));
+REPY_IMPORT(PyObjectHandle REPY_CreateS16_SUH(s16 value));
+REPY_IMPORT(s16 REPY_CastS16(PyObjectHandle object));
 REPY_IMPORT(PyObjectHandle REPY_CreateU32(u32 value));
 REPY_IMPORT(PyObjectHandle REPY_CreateU32_SUH(u32 value));
 REPY_IMPORT(u32 REPY_CastU32(PyObjectHandle object));
