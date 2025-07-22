@@ -9,6 +9,15 @@ set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/do
 set(PYTHON_ARCHIVE "${CMAKE_BINARY_DIR}/cpython.tar.gz")
 set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
 
+# Handling the install_name change for the dylib:
+if(NOT DEFINED INSTALL_NAME_TOOL_COMMAND)
+    if (CMAKE_HOST_SYSTEM STREQUAL "Darwin")
+        set(INSTALL_NAME_TOOL_COMMAND install_name_tool)
+    else()
+        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
+    endif()
+endif()
+
 # Download the artifact
 if(NOT EXISTS "${PYTHON_ARCHIVE}")
     message(STATUS "Downloading Python artifact...")
@@ -36,11 +45,16 @@ target_link_directories(python_standalone INTERFACE "${PYTHON_ROOT}/lib")
 target_link_libraries(python_standalone INTERFACE libpython3.13.dylib)
 
 function(link_python_standalone TARGET_NAME)
+    string(CONCAT DYLIB_FILE $<TARGET_FILE_DIR:${TARGET_NAME}> "/lib" ${TARGET_NAME} ".dylib")
+
     target_link_libraries(${TARGET_NAME} PRIVATE python_standalone)
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${PYTHON_ROOT}/lib/libpython3.13.dylib"
                 "$<TARGET_FILE_DIR:${TARGET_NAME}>/libpython3.13.dylib"
+    )
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change /install/lib/libpython3.13.dylib @loader_path/libpython3.13.dylib ${DYLIB_FILE}
     )
 endfunction()
 
