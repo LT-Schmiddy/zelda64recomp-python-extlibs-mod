@@ -32,13 +32,13 @@
 
 #endif
 
-typedef int PyObjectHandle;
+typedef unsigned int REPY_Handle;
 
-typedef enum PythonCodeMode {
+typedef enum REPY_CodeMode {
     PY_CODE_EXEC = 0,
     PY_CODE_EVAL = 1,
     PY_CODE_SINGLE = 2
-} PythonCodeMode;
+} REPY_CodeMode;
 
 // ========== API: ==========
 // Events:
@@ -79,7 +79,7 @@ REPY_ON_LOAD_MODULES void _construct_module_ ## module_name (int success) { \
 } \
 
 #define REPY_GLOBAL_CODE_CACHE(bytecode_identifier, code_type, code_str) \
-PyObjectHandle bytecode_identifier = 0; \
+REPY_Handle bytecode_identifier = 0; \
 REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
     if (success && bytecode_identifier == 0) { \
         bytecode_identifier = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier '" #bytecode_identifier "' ", code_type); \
@@ -87,7 +87,7 @@ REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success
 } \
 
 #define REPY_STATIC_CODE_CACHE(bytecode_identifier, code_mode, code_str) \
-static PyObjectHandle bytecode_identifier = 0; \
+static REPY_Handle bytecode_identifier = 0; \
 REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
     if (success && bytecode_identifier == 0) { \
         bytecode_identifier = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier '" #bytecode_identifier "' ", code_mode); \
@@ -96,12 +96,12 @@ REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success
 
 // FN - Overhead: 
 #define REPY_FN_SETUP \
-PyObjectHandle _py_globals = REPY_CreateEmptyDict(); \
-PyObjectHandle _py_locals = _py_globals \
+REPY_Handle _py_globals = REPY_CreateEmptyDict(); \
+REPY_Handle _py_locals = _py_globals \
 
 #define REPY_FN_SETUP_WITH_GLOBALS(globals) \
-PyObjectHandle _py_globals = globals; \
-PyObjectHandle _py_locals = REPY_CreateEmptyDict() \
+REPY_Handle _py_globals = globals; \
+REPY_Handle _py_locals = REPY_CreateEmptyDict() \
 
 #define REPY_FN_CLEANUP \
 REPY_Release(_py_locals)
@@ -110,7 +110,7 @@ REPY_Release(_py_locals)
 REPY_Release(_py_locals); return
 
 #define REPY_FN_CODE_CACHE(bytecode_identifier, code_mode, code_str) \
-static PyObjectHandle bytecode_identifier = 0; \
+static REPY_Handle bytecode_identifier = 0; \
 if (bytecode_identifier == 0) { \
     bytecode_identifier = REPY_CompileCStr(code_str, __FILE_NAME__ ", in identifier '" #bytecode_identifier "' ", code_mode); \
 } \
@@ -191,7 +191,7 @@ REPY_CastBytes(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 // FN - Eval Cache Block:
 #define REPY_FN_EVAL_BLOCK(identifier, code_str, out_var) \
 REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
-PyObjectHandle out_var = REPY_FN_EVAL(identifier)
+REPY_Handle out_var = REPY_FN_EVAL(identifier)
 
 #define REPY_FN_EVAL_BLOCK_BOOL(identifier, code_str, out_var) \
 REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
@@ -330,112 +330,112 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(RE
 
 
 // General:
-REPY_IMPORT(void REPY_Release(PyObjectHandle py_object));
-REPY_IMPORT(PyObjectHandle REPY_MakeSUH(PyObjectHandle py_object));
-REPY_IMPORT(bool REPY_IsValidHandle(PyObjectHandle py_object));
-REPY_IMPORT(bool REPY_GetSUH(PyObjectHandle py_object));
-REPY_IMPORT(void REPY_SetSUH(PyObjectHandle py_object, bool value));
-REPY_IMPORT(PyObjectHandle REPY_CopyHandle(PyObjectHandle py_object));
+REPY_IMPORT(void REPY_Release(REPY_Handle py_object));
+REPY_IMPORT(REPY_Handle REPY_MakeSUH(REPY_Handle py_object));
+REPY_IMPORT(bool REPY_IsValidHandle(REPY_Handle py_object));
+REPY_IMPORT(bool REPY_GetSUH(REPY_Handle py_object));
+REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_object, bool value));
+REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_object));
 
 // Modules:
 REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
 REPY_IMPORT(void REPY_LoadModuleN(const char* identifier, const char* code, u32 len));
-REPY_IMPORT(PyObjectHandle REPY_ImportModule(const char* identifier));
+REPY_IMPORT(REPY_Handle REPY_ImportModule(const char* identifier));
 
 // Primatives
-REPY_IMPORT(PyObjectHandle REPY_CreateBool(bool value));
-REPY_IMPORT(PyObjectHandle REPY_CreateBool_SUH(bool value));
-REPY_IMPORT(bool REPY_CastBool(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateU8(u8 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateU8_SUH(u8 value));
-REPY_IMPORT(u8 REPY_CastU8(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateS8(s8 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateS8_SUH(s8 value));
-REPY_IMPORT(s8 REPY_CastS8(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateU16(u16 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateU16_SUH(u16 value));
-REPY_IMPORT(u16 REPY_CastU16(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateS16(s16 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateS16_SUH(s16 value));
-REPY_IMPORT(s16 REPY_CastS16(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateU32(u32 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateU32_SUH(u32 value));
-REPY_IMPORT(u32 REPY_CastU32(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateS32(s32 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateS32_SUH(s32 value));
-REPY_IMPORT(s32 REPY_CastS32(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateF32(f32 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateF32_SUH(f32 value));
-REPY_IMPORT(f32 REPY_CastF32(PyObjectHandle object));
+REPY_IMPORT(REPY_Handle REPY_CreateBool(bool value));
+REPY_IMPORT(REPY_Handle REPY_CreateBool_SUH(bool value));
+REPY_IMPORT(bool REPY_CastBool(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateU8(u8 value));
+REPY_IMPORT(REPY_Handle REPY_CreateU8_SUH(u8 value));
+REPY_IMPORT(u8 REPY_CastU8(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateS8(s8 value));
+REPY_IMPORT(REPY_Handle REPY_CreateS8_SUH(s8 value));
+REPY_IMPORT(s8 REPY_CastS8(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateU16(u16 value));
+REPY_IMPORT(REPY_Handle REPY_CreateU16_SUH(u16 value));
+REPY_IMPORT(u16 REPY_CastU16(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateS16(s16 value));
+REPY_IMPORT(REPY_Handle REPY_CreateS16_SUH(s16 value));
+REPY_IMPORT(s16 REPY_CastS16(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateU32(u32 value));
+REPY_IMPORT(REPY_Handle REPY_CreateU32_SUH(u32 value));
+REPY_IMPORT(u32 REPY_CastU32(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateS32(s32 value));
+REPY_IMPORT(REPY_Handle REPY_CreateS32_SUH(s32 value));
+REPY_IMPORT(s32 REPY_CastS32(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateF32(f32 value));
+REPY_IMPORT(REPY_Handle REPY_CreateF32_SUH(f32 value));
+REPY_IMPORT(f32 REPY_CastF32(REPY_Handle object));
 
 // 64-bit Primatives
-REPY_IMPORT(PyObjectHandle REPY_CreateU64(u64 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateU64_SUH(u64 value));
-REPY_IMPORT(u64 REPY_CastU64(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateS64(s64 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateS64_SUH(s64 value));
-REPY_IMPORT(s64 REPY_CastS64(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateF64(f64 value));
-REPY_IMPORT(PyObjectHandle REPY_CreateF64_SUH(f64 value));
-REPY_IMPORT(f64 REPY_CastF64(PyObjectHandle object));
+REPY_IMPORT(REPY_Handle REPY_CreateU64(u64 value));
+REPY_IMPORT(REPY_Handle REPY_CreateU64_SUH(u64 value));
+REPY_IMPORT(u64 REPY_CastU64(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateS64(s64 value));
+REPY_IMPORT(REPY_Handle REPY_CreateS64_SUH(s64 value));
+REPY_IMPORT(s64 REPY_CastS64(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateF64(f64 value));
+REPY_IMPORT(REPY_Handle REPY_CreateF64_SUH(f64 value));
+REPY_IMPORT(f64 REPY_CastF64(REPY_Handle object));
 
 // Strings:
-REPY_IMPORT(PyObjectHandle REPY_CreateStr(const char* string));
-REPY_IMPORT(PyObjectHandle REPY_CreateStr_SUH(const char* string));
-REPY_IMPORT(PyObjectHandle REPY_CreateStrN(const char* string, u32 len) );
-REPY_IMPORT(PyObjectHandle REPY_CreateStrN_SUH(const char* string, u32 len) );
-REPY_IMPORT(char* REPY_CastStr(PyObjectHandle object));
-REPY_IMPORT(PyObjectHandle REPY_CreateByteStr(const char* string));
-REPY_IMPORT(PyObjectHandle REPY_CreateByteStr_SUH(const char* string));
-REPY_IMPORT(PyObjectHandle REPY_CreateByteStrN(const char* string, u32 len));
-REPY_IMPORT(PyObjectHandle REPY_CreateByteStrN_SUH(const char* string, u32 len));
-REPY_IMPORT(char* REPY_CastByteStr(PyObjectHandle object));
+REPY_IMPORT(REPY_Handle REPY_CreateStr(const char* string));
+REPY_IMPORT(REPY_Handle REPY_CreateStr_SUH(const char* string));
+REPY_IMPORT(REPY_Handle REPY_CreateStrN(const char* string, u32 len) );
+REPY_IMPORT(REPY_Handle REPY_CreateStrN_SUH(const char* string, u32 len) );
+REPY_IMPORT(char* REPY_CastStr(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_CreateByteStr(const char* string));
+REPY_IMPORT(REPY_Handle REPY_CreateByteStr_SUH(const char* string));
+REPY_IMPORT(REPY_Handle REPY_CreateByteStrN(const char* string, u32 len));
+REPY_IMPORT(REPY_Handle REPY_CreateByteStrN_SUH(const char* string, u32 len));
+REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
 
 // Memcpy:
-REPY_IMPORT(PyObjectHandle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse));
-REPY_IMPORT(u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj));
-REPY_IMPORT(PyObjectHandle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse));
-REPY_IMPORT(u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj));
+REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse));
+REPY_IMPORT(u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse));
+REPY_IMPORT(u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
 
 // Tuple:
-REPY_IMPORT(PyObjectHandle REPY_CreateTuple(u32 size, ...));
-REPY_IMPORT(PyObjectHandle REPY_CreateTuple_SUH(u32 size, ...));
-REPY_IMPORT(PyObjectHandle REPY_CreatePair(PyObjectHandle key, PyObjectHandle value));
-REPY_IMPORT(PyObjectHandle REPY_CreatePair_SUH(PyObjectHandle key, PyObjectHandle value));
-REPY_IMPORT(PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index));
+REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
+REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
+REPY_IMPORT(REPY_Handle REPY_TupleGetMember(REPY_Handle tuple, int index));
 
 // Dicts:
-REPY_IMPORT(PyObjectHandle REPY_CreateEmptyDict());
-REPY_IMPORT(PyObjectHandle REPY_CreateEmptyDict_SUH());
-REPY_IMPORT(PyObjectHandle REPY_CreateDict(u32 size, ...));
-REPY_IMPORT(PyObjectHandle REPY_CreateDict_SUH(u32 size, ...));
-REPY_IMPORT(PyObjectHandle REPY_DictGet(PyObjectHandle dict, PyObjectHandle key));
-REPY_IMPORT(void REPY_DictSet(PyObjectHandle dict, PyObjectHandle key, PyObjectHandle value));
-REPY_IMPORT(bool REPY_DictHas(PyObjectHandle dict, PyObjectHandle key));
-REPY_IMPORT(void REPY_DictDel(PyObjectHandle dict, PyObjectHandle key));
+REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict());
+REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict_SUH());
+REPY_IMPORT(REPY_Handle REPY_CreateDict(u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_CreateDict_SUH(u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));
+REPY_IMPORT(void REPY_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle value));
+REPY_IMPORT(bool REPY_DictHas(REPY_Handle dict, REPY_Handle key));
+REPY_IMPORT(void REPY_DictDel(REPY_Handle dict, REPY_Handle key));
 
 // Execution:
-REPY_IMPORT(PyObjectHandle REPY_Compile(PyObjectHandle code, PyObjectHandle identifier, PyObjectHandle mode));
-REPY_IMPORT(PyObjectHandle REPY_CompileCStr(const char* code, const char* identifier, PythonCodeMode mode));
-REPY_IMPORT(PyObjectHandle REPY_CompileCStrN(const char* code, u32 len, const char* identifier, PythonCodeMode mode));
-REPY_IMPORT(bool REPY_Exec(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope));
-REPY_IMPORT(bool REPY_ExecCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
-REPY_IMPORT(bool REPY_ExecCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
-REPY_IMPORT(PyObjectHandle REPY_Eval(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope));
-REPY_IMPORT(PyObjectHandle REPY_EvalCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope));
-REPY_IMPORT(PyObjectHandle REPY_EvalCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope));
+REPY_IMPORT(REPY_Handle REPY_Compile(REPY_Handle code, REPY_Handle identifier, REPY_Handle mode));
+REPY_IMPORT(REPY_Handle REPY_CompileCStr(const char* code, const char* identifier, REPY_CodeMode mode));
+REPY_IMPORT(REPY_Handle REPY_CompileCStrN(const char* code, u32 len, const char* identifier, REPY_CodeMode mode));
+REPY_IMPORT(bool REPY_Exec(REPY_Handle code, REPY_Handle global_scope, REPY_Handle local_scope));
+REPY_IMPORT(bool REPY_ExecCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope));
+REPY_IMPORT(bool REPY_ExecCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope));
+REPY_IMPORT(REPY_Handle REPY_Eval(REPY_Handle code, REPY_Handle global_scope, REPY_Handle local_scope));
+REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope));
+REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope));
 
 // Python Function Calls
-REPY_IMPORT(bool REPY_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
-REPY_IMPORT(PyObjectHandle REPY_CallReturn(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs));
-REPY_IMPORT(bool REPY_CallAttr(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs));
-REPY_IMPORT(PyObjectHandle REPY_CallAttrReturn(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs));
+REPY_IMPORT(bool REPY_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(REPY_Handle REPY_CallReturn(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(bool REPY_CallAttr(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(REPY_Handle REPY_CallAttrReturn(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs));
 
 // Error Handling
 REPY_IMPORT(bool REPY_IsErrorSet());
-REPY_IMPORT(PyObjectHandle REPY_GetErrorType());
-REPY_IMPORT(PyObjectHandle REPY_GetErrorTrace());
-REPY_IMPORT(PyObjectHandle REPY_GetErrorValue());
+REPY_IMPORT(REPY_Handle REPY_GetErrorType());
+REPY_IMPORT(REPY_Handle REPY_GetErrorTrace());
+REPY_IMPORT(REPY_Handle REPY_GetErrorValue());
 REPY_IMPORT(void REPY_ClearError());
 
 

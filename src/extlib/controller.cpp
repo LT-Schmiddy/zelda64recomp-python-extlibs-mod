@@ -92,7 +92,7 @@ PyInterpreterController::~PyInterpreterController() {
     PLOGI << "-> Python Interpreter Parent: DEINIT";
 }
 
-PyObjectHandle PyInterpreterController::get_new_handle_value() {
+REPY_Handle PyInterpreterController::get_new_handle_value() {
     py::gil_scoped_acquire gil;
     while (py_objects.contains(next_handle_val) || next_handle_val == 0) {
         next_handle_val++;
@@ -100,65 +100,65 @@ PyObjectHandle PyInterpreterController::get_new_handle_value() {
     return next_handle_val++;
 }
 
-PyObjectHandle PyInterpreterController::create_handle_and_steal(py::object* obj) {
+REPY_Handle PyInterpreterController::create_handle_and_steal(py::object* obj) {
     py::gil_scoped_acquire gil;
-    PyObjectHandle new_handle = get_new_handle_value();
+    REPY_Handle new_handle = get_new_handle_value();
     py_objects.insert({new_handle, {py::reinterpret_steal<py::object>(*obj), false}});
 
-    PLOGD.printf("-> PyObjectHandle %i Created", new_handle);
+    PLOGD.printf("-> REPY_Handle %i Created", new_handle);
     return new_handle;
 }
 
-PyObjectHandle PyInterpreterController::create_handle(py::object* obj) {
+REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
     py::gil_scoped_acquire gil;
-    PyObjectHandle new_handle = get_new_handle_value();
+    REPY_Handle new_handle = get_new_handle_value();
     // py::object in_obj = (*obj);
     py_objects.insert({new_handle, {(*obj), false}});
 
-    PLOGD.printf("-> PyObjectHandle %i Created", new_handle);
+    PLOGD.printf("-> REPY_Handle %i Created", new_handle);
     return new_handle;
 }
 
-py::object* PyInterpreterController::get_py_object(PyObjectHandle handle) {
-    PyObjectHandleEntry* entry = &py_objects.at(handle);
+py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
+    REPY_HandleEntry* entry = &py_objects.at(handle);
     if (entry->is_single_use) {
         suh_release_queue.push(handle);
-        PLOGD.printf("-> PyObjectHandle %i Accessed (SUH)", handle);
+        PLOGD.printf("-> REPY_Handle %i Accessed (SUH)", handle);
     } else {
-        PLOGD.printf("-> PyObjectHandle %i Accessed", handle);
+        PLOGD.printf("-> REPY_Handle %i Accessed", handle);
     }
 
     return &entry->py_object;
 }
 
-bool PyInterpreterController::is_valid_handle(PyObjectHandle handle) {
+bool PyInterpreterController::is_valid_handle(REPY_Handle handle) {
     return py_objects.contains(handle);
 }
 
 
-bool PyInterpreterController::get_handle_suh(PyObjectHandle handle) {
-    PyObjectHandleEntry* entry = &py_objects.at(handle);
+bool PyInterpreterController::get_handle_suh(REPY_Handle handle) {
+    REPY_HandleEntry* entry = &py_objects.at(handle);
     return entry->is_single_use;
 }
 
-void PyInterpreterController::set_handle_suh(PyObjectHandle handle, bool is_single_use) {
-    PyObjectHandleEntry* entry = &py_objects.at(handle);
+void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_use) {
+    REPY_HandleEntry* entry = &py_objects.at(handle);
     entry->is_single_use = is_single_use;
-    PLOGD.printf("-> PyObjectHandle %i Setting SUH = %i", handle, is_single_use);
+    PLOGD.printf("-> REPY_Handle %i Setting SUH = %i", handle, is_single_use);
 }
 
 void PyInterpreterController::release_suh_handles() {
     while (suh_release_queue.size() > 0) {
-        PyObjectHandle handle = suh_release_queue.front();
+        REPY_Handle handle = suh_release_queue.front();
         suh_release_queue.pop();
         py_objects.erase(handle);
-        PLOGD.printf("-> PyObjectHandle %i Released (SUH)", handle);
+        PLOGD.printf("-> REPY_Handle %i Released (SUH)", handle);
     }
 }
 
-void PyInterpreterController::release_handle(PyObjectHandle handle) {
+void PyInterpreterController::release_handle(REPY_Handle handle) {
     py_objects.erase(handle);
-    PLOGD.printf("-> PyObjectHandle %i Released", handle);
+    PLOGD.printf("-> REPY_Handle %i Released", handle);
 }
 
 py::module_ PyInterpreterController::construct_module(std::string module_name, std::string module_code, bool add_to_sys) {
@@ -197,7 +197,7 @@ void PyInterpreterController::handle_exception(py::error_already_set* e) {
     last_error_value = e->value();
 }
 
-PyObjectHandle PyInterpreterController::get_py_error_type_handle() {
+REPY_Handle PyInterpreterController::get_py_error_type_handle() {
     if(!is_py_error_set) {
         return 0;
     }
@@ -205,7 +205,7 @@ PyObjectHandle PyInterpreterController::get_py_error_type_handle() {
     return create_handle(&last_error_type);
 }
 
-PyObjectHandle PyInterpreterController::get_py_error_trace_handle() {
+REPY_Handle PyInterpreterController::get_py_error_trace_handle() {
     if(!is_py_error_set) {
         return 0;
     }
@@ -213,7 +213,7 @@ PyObjectHandle PyInterpreterController::get_py_error_trace_handle() {
     return create_handle(&last_error_trace);
 }
 
-PyObjectHandle PyInterpreterController::get_py_error_value_handle() {
+REPY_Handle PyInterpreterController::get_py_error_value_handle() {
     if(!is_py_error_set) {
         return 0;
     }

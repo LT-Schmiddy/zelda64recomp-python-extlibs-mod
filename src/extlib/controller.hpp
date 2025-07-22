@@ -9,9 +9,9 @@
 
 #include "lib_recomp.hpp"
 
-typedef int PyObjectHandle;
+typedef unsigned int REPY_Handle;
 
-struct PyObjectHandleEntry {
+struct REPY_HandleEntry {
     py::object py_object = py::none();
     bool is_single_use = false;
 };
@@ -19,10 +19,10 @@ struct PyObjectHandleEntry {
 class PyInterpreterController {
 public:
     PyThreadState* py_main_thread = NULL;
-    std::unordered_map<PyObjectHandle, PyObjectHandleEntry> py_objects;
-    std::queue<PyObjectHandle> suh_release_queue;
+    std::unordered_map<REPY_Handle, REPY_HandleEntry> py_objects;
+    std::queue<REPY_Handle> suh_release_queue;
 
-    PyObjectHandle next_handle_val = 1;
+    REPY_Handle next_handle_val = 1;
 
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
     plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
@@ -43,22 +43,22 @@ public:
     ~PyInterpreterController();
 
     // Handle Operations:
-    PyObjectHandle get_new_handle_value();
-    PyObjectHandle create_handle_and_steal(py::object* obj);
-    PyObjectHandle create_handle(py::object* obj);
-    py::object* get_py_object(PyObjectHandle handle);
-    bool is_valid_handle(PyObjectHandle handle);
-    bool get_handle_suh(PyObjectHandle handle);
-    void set_handle_suh(PyObjectHandle handle, bool is_single_use);
+    REPY_Handle get_new_handle_value();
+    REPY_Handle create_handle_and_steal(py::object* obj);
+    REPY_Handle create_handle(py::object* obj);
+    py::object* get_py_object(REPY_Handle handle);
+    bool is_valid_handle(REPY_Handle handle);
+    bool get_handle_suh(REPY_Handle handle);
+    void set_handle_suh(REPY_Handle handle, bool is_single_use);
     void release_suh_handles();
-    void release_handle(PyObjectHandle handle);
+    void release_handle(REPY_Handle handle);
 
     // Error Operations:
     bool is_error_set();
     void handle_exception(py::error_already_set* e);
-    PyObjectHandle get_py_error_type_handle();
-    PyObjectHandle get_py_error_trace_handle();
-    PyObjectHandle get_py_error_value_handle();
+    REPY_Handle get_py_error_type_handle();
+    REPY_Handle get_py_error_trace_handle();
+    REPY_Handle get_py_error_value_handle();
     void clear_py_error();
 
     py::module_ construct_module(std::string module_name, std::string module_code, bool add_to_sys); 
@@ -69,4 +69,4 @@ public:
 
 extern std::shared_ptr<PyInterpreterController> controller;
 
-#define RECOMP_ARG_PYOBJECT(pos) controller->get_py_object(RECOMP_ARG(PyObjectHandle, pos))
+#define RECOMP_ARG_PYOBJECT(pos) controller->get_py_object(RECOMP_ARG(REPY_Handle, pos))

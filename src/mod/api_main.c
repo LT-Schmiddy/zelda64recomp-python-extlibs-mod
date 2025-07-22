@@ -29,27 +29,27 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
 
 // === EXPORTED FUNCTIONS === 
 // General:
-RECOMP_EXPORT void REPY_Release(PyObjectHandle py_object) {
+RECOMP_EXPORT void REPY_Release(REPY_Handle py_object) {
     PythonNative_Object_Release(py_object);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_MakeSUH(PyObjectHandle py_object) {
+RECOMP_EXPORT REPY_Handle REPY_MakeSUH(REPY_Handle py_object) {
     return PythonNative_Object_MakeSUH(py_object);
 }
 
-RECOMP_EXPORT bool REPY_IsValidHandle(PyObjectHandle py_object) {
+RECOMP_EXPORT bool REPY_IsValidHandle(REPY_Handle py_object) {
     return PythonNative_Object_IsValidHandle(py_object);
 }
 
-RECOMP_EXPORT bool REPY_GetSUH(PyObjectHandle py_object) {
+RECOMP_EXPORT bool REPY_GetSUH(REPY_Handle py_object) {
     return PythonNative_Object_GetSUH(py_object);
 }
 
-RECOMP_EXPORT void REPY_SetSUH(PyObjectHandle py_object, bool value) {
+RECOMP_EXPORT void REPY_SetSUH(REPY_Handle py_object, bool value) {
     PythonNative_Object_SetSUH(py_object, value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CopyHandle(PyObjectHandle py_object) {
+RECOMP_EXPORT REPY_Handle REPY_CopyHandle(REPY_Handle py_object) {
     return PythonNative_Object_CopyHandle(py_object);
 }
 
@@ -62,340 +62,340 @@ RECOMP_EXPORT void REPY_LoadModuleN(const char* identifier, const char* code, u3
     PythonNative_LoadModuleN(identifier, code, len);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_ImportModule(const char* identifier) {
+RECOMP_EXPORT REPY_Handle REPY_ImportModule(const char* identifier) {
     return PythonNative_ImportModule(identifier);
 }
 
 // Primatives:
-RECOMP_EXPORT PyObjectHandle REPY_CreateBool(bool value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateBool(bool value) {
     return PythonNative_Object_CreateBool(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateBool_SUH(bool value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateBool_SUH(bool value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateBool(value));
 }
 
-RECOMP_EXPORT bool REPY_CastBool(PyObjectHandle object) {
+RECOMP_EXPORT bool REPY_CastBool(REPY_Handle object) {
     return PythonNative_Object_CastBool(object);
 }
 
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateU8(u8 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU8(u8 value) {
     return PythonNative_Object_CreateU8(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateU8_SUH(u8 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU8_SUH(u8 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateU8(value));
 }
 
-RECOMP_EXPORT u8 REPY_CastU8(PyObjectHandle object) {
+RECOMP_EXPORT u8 REPY_CastU8(REPY_Handle object) {
     return PythonNative_Object_CastU8(object);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS8(s8 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS8(s8 value) {
     return PythonNative_Object_CreateS8(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS8_SUH(s8 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS8_SUH(s8 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateS8(value));
 }
 
-RECOMP_EXPORT s8 REPY_CastS8(PyObjectHandle object) {
+RECOMP_EXPORT s8 REPY_CastS8(REPY_Handle object) {
     return PythonNative_Object_CastS8(object);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateU16(u16 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU16(u16 value) {
     return PythonNative_Object_CreateU16(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateU16_SUH(u16 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU16_SUH(u16 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateU16(value));
 }
 
-RECOMP_EXPORT u16 REPY_CastU16(PyObjectHandle object) {
+RECOMP_EXPORT u16 REPY_CastU16(REPY_Handle object) {
     return PythonNative_Object_CastU16(object);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS16(s16 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS16(s16 value) {
     return PythonNative_Object_CreateS16(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS16_SUH(s16 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS16_SUH(s16 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateS16(value));
 }
 
-RECOMP_EXPORT s16 REPY_CastS16(PyObjectHandle object) {
+RECOMP_EXPORT s16 REPY_CastS16(REPY_Handle object) {
     return PythonNative_Object_CastS16(object);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateU32(u32 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU32(u32 value) {
     return PythonNative_Object_CreateU32(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateU32_SUH(u32 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU32_SUH(u32 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateU32(value));
 }
 
-RECOMP_EXPORT u32 REPY_CastU32(PyObjectHandle object) {
+RECOMP_EXPORT u32 REPY_CastU32(REPY_Handle object) {
     return PythonNative_Object_CastU32(object);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS32(s32 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS32(s32 value) {
     return PythonNative_Object_CreateS32(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS32_SUH(s32 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS32_SUH(s32 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateS32(value));
 }
 
-RECOMP_EXPORT s32 REPY_CastS32(PyObjectHandle object) {
+RECOMP_EXPORT s32 REPY_CastS32(REPY_Handle object) {
     return PythonNative_Object_CastS32(object);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateF32(f32 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateF32(f32 value) {
     return PythonNative_Object_CreateF32(value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateF32_SUH(f32 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateF32_SUH(f32 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateF32(value));
 }
 
-RECOMP_EXPORT f32 REPY_CastF32(PyObjectHandle object) {
+RECOMP_EXPORT f32 REPY_CastF32(REPY_Handle object) {
     return PythonNative_Object_CastF32(object);
 }
 
 // 64-bit Primatives:
-RECOMP_EXPORT PyObjectHandle REPY_CreateU64(u64 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU64(u64 value) {
     return PythonNative_Object_U64Operation(&value, 0);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateU64_SUH(u64 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateU64_SUH(u64 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_U64Operation(&value, 0));
 }
 
-RECOMP_EXPORT u64 REPY_CastU64(PyObjectHandle object) {
+RECOMP_EXPORT u64 REPY_CastU64(REPY_Handle object) {
     u64 retVal;
     PythonNative_Object_U64Operation(&retVal, object);
     return retVal;
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS64(s64 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS64(s64 value) {
     return PythonNative_Object_S64Operation(&value, 0);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateS64_SUH(s64 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateS64_SUH(s64 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_S64Operation(&value, 0));
 }
 
-RECOMP_EXPORT s64 REPY_CastS64(PyObjectHandle object) {
+RECOMP_EXPORT s64 REPY_CastS64(REPY_Handle object) {
     s64 retVal;
     PythonNative_Object_S64Operation(&retVal, object);
     return retVal;
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateF64(f64 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateF64(f64 value) {
     return PythonNative_Object_F64Operation(&value, 0);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateF64_SUH(f64 value) {
+RECOMP_EXPORT REPY_Handle REPY_CreateF64_SUH(f64 value) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_F64Operation(&value, 0));
 }
 
-RECOMP_EXPORT f64 REPY_CastF64(PyObjectHandle object) {
+RECOMP_EXPORT f64 REPY_CastF64(REPY_Handle object) {
     f64 retVal;
     PythonNative_Object_F64Operation(&retVal, object);
     return retVal;
 }
 
 // Strings:
-RECOMP_EXPORT PyObjectHandle REPY_CreateStr(const char* string) {
+RECOMP_EXPORT REPY_Handle REPY_CreateStr(const char* string) {
     return PythonNative_Object_CreateStr(string);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateStr_SUH(const char* string) {
+RECOMP_EXPORT REPY_Handle REPY_CreateStr_SUH(const char* string) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateStr(string));
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateStrN(const char* string, u32 len) {
+RECOMP_EXPORT REPY_Handle REPY_CreateStrN(const char* string, u32 len) {
     return PythonNative_Object_CreateStrN(string, len);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateStrN_SUH(const char* string, u32 len) {
+RECOMP_EXPORT REPY_Handle REPY_CreateStrN_SUH(const char* string, u32 len) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateStrN(string, len));
 }
 
-RECOMP_EXPORT char* REPY_CastStr(PyObjectHandle object) {
+RECOMP_EXPORT char* REPY_CastStr(REPY_Handle object) {
     u32 len = PythonNative_Object_CastStr_Prepare(object);
     char* retVal = recomp_alloc(len);
     PythonNative_Object_CastStr_Copy(len, retVal);
     return retVal;
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateByteStr(const char* string) {
+RECOMP_EXPORT REPY_Handle REPY_CreateByteStr(const char* string) {
     return PythonNative_Object_CreateByteStr(string);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateByteStr_SUH(const char* string) {
+RECOMP_EXPORT REPY_Handle REPY_CreateByteStr_SUH(const char* string) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateByteStr(string));
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateByteStrN(const char* string, u32 len) {
+RECOMP_EXPORT REPY_Handle REPY_CreateByteStrN(const char* string, u32 len) {
     return PythonNative_Object_CreateByteStrN(string, len);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateByteStrN_SUH(const char* string, u32 len) {
+RECOMP_EXPORT REPY_Handle REPY_CreateByteStrN_SUH(const char* string, u32 len) {
     return PythonNative_Object_MakeSUH(PythonNative_Object_CreateByteStrN(string, len));
 }
 
-RECOMP_EXPORT char* REPY_CastByteStr(PyObjectHandle object) {
+RECOMP_EXPORT char* REPY_CastByteStr(REPY_Handle object) {
     u32 len = PythonNative_Object_CastByteStr_Prepare(object);
     char* retVal = recomp_alloc(len);
     PythonNative_Object_CastByteStr_Copy(len, retVal);
     return retVal;
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse) {
+RECOMP_EXPORT REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse) {
     return PythonNative_Memcpy_ToBytes(src, len, reverse);
 }
 
-RECOMP_EXPORT u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj) {
+RECOMP_EXPORT u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj) {
     return PythonNative_Memcpy_FromBytes(src, len, reverse, bytes_obj);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse) {
+RECOMP_EXPORT REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse) {
     return PythonNative_Memcpy_ToByteArray(src, len, reverse);
 }
 
-RECOMP_EXPORT u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, PyObjectHandle bytes_obj) {
+RECOMP_EXPORT u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj) {
     return PythonNative_Memcpy_FromByteArray(src, len, reverse, bytes_obj);
 }
 
 
 // Tuple Operations:
-RECOMP_EXPORT PyObjectHandle REPY_CreateTuple(u32 size, ...) {
+RECOMP_EXPORT REPY_Handle REPY_CreateTuple(u32 size, ...) {
     va_list va;
     va_start(va, size);
-    PyObjectHandle handle = PythonNative_Tuple_Create(size, va);
+    REPY_Handle handle = PythonNative_Tuple_Create(size, va);
     va_end(va);
 
     return handle;
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateTuple_SUH(u32 size, ...) {
+RECOMP_EXPORT REPY_Handle REPY_CreateTuple_SUH(u32 size, ...) {
     va_list va;
     va_start(va, size);
-    PyObjectHandle handle = PythonNative_Tuple_Create(size, va);
+    REPY_Handle handle = PythonNative_Tuple_Create(size, va);
     va_end(va);
 
     return PythonNative_Object_MakeSUH(handle);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreatePair(PyObjectHandle key, PyObjectHandle value) {
+RECOMP_EXPORT REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value) {
     return REPY_CreateTuple(2, key, value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreatePair_SUH(PyObjectHandle key, PyObjectHandle value) {
+RECOMP_EXPORT REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value) {
     return REPY_CreateTuple_SUH(2, key, value);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_TupleGetMember(PyObjectHandle tuple, int index) {
+RECOMP_EXPORT REPY_Handle REPY_TupleGetMember(REPY_Handle tuple, int index) {
     return PythonNative_Tuple_GetMember(tuple, index);
 }
 
 // Dict Operations:
-RECOMP_EXPORT PyObjectHandle REPY_CreateEmptyDict() {
+RECOMP_EXPORT REPY_Handle REPY_CreateEmptyDict() {
     return PythonNative_Dict_Create(0, NULL);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateEmptyDict_SUH() {
+RECOMP_EXPORT REPY_Handle REPY_CreateEmptyDict_SUH() {
     return PythonNative_Object_MakeSUH(PythonNative_Dict_Create(0, NULL));
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateDict(u32 size, ...) {
+RECOMP_EXPORT REPY_Handle REPY_CreateDict(u32 size, ...) {
     va_list va;
     va_start(va, size);
-    PyObjectHandle handle = PythonNative_Dict_Create(size, va);
+    REPY_Handle handle = PythonNative_Dict_Create(size, va);
     va_end(va);
 
     return handle;
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CreateDict_SUH(u32 size, ...) {
+RECOMP_EXPORT REPY_Handle REPY_CreateDict_SUH(u32 size, ...) {
     va_list va;
     va_start(va, size);
-    PyObjectHandle handle = PythonNative_Dict_Create(size, va);
+    REPY_Handle handle = PythonNative_Dict_Create(size, va);
     va_end(va);
 
     return PythonNative_Object_MakeSUH(handle);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_DictGet(PyObjectHandle dict, PyObjectHandle key) {
+RECOMP_EXPORT REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key) {
     return PythonNative_Dict_Get(dict, key);
 }
 
-RECOMP_EXPORT void REPY_DictSet(PyObjectHandle dict, PyObjectHandle key, PyObjectHandle value) {
+RECOMP_EXPORT void REPY_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle value) {
     PythonNative_Dict_Set(dict, key, value);
 }
 
-RECOMP_EXPORT bool REPY_DictHas(PyObjectHandle dict, PyObjectHandle key) {
+RECOMP_EXPORT bool REPY_DictHas(REPY_Handle dict, REPY_Handle key) {
     return PythonNative_Dict_Has(dict, key);
 }
 
-RECOMP_EXPORT void REPY_DictDel(PyObjectHandle dict, PyObjectHandle key) {
+RECOMP_EXPORT void REPY_DictDel(REPY_Handle dict, REPY_Handle key) {
     PythonNative_Dict_Remove(dict, key);
 }
 
 // Execution:
-RECOMP_EXPORT PyObjectHandle REPY_Compile(PyObjectHandle code, PyObjectHandle identifier, PyObjectHandle mode) {
+RECOMP_EXPORT REPY_Handle REPY_Compile(REPY_Handle code, REPY_Handle identifier, REPY_Handle mode) {
     return PythonNative_Compile(code, identifier, mode);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CompileCStr(const char* code, const char* identifier, PythonCodeMode mode) {
+RECOMP_EXPORT REPY_Handle REPY_CompileCStr(const char* code, const char* identifier, REPY_CodeMode mode) {
     return PythonNative_CompileCStr(code, identifier, mode);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CompileCStrN(const char* code, u32 len, const char* identifier, PythonCodeMode mode) {
+RECOMP_EXPORT REPY_Handle REPY_CompileCStrN(const char* code, u32 len, const char* identifier, REPY_CodeMode mode) {
     return PythonNative_CompileCStrN(code, len, identifier, mode);
 }
 
-RECOMP_EXPORT bool REPY_Exec(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope) {
+RECOMP_EXPORT bool REPY_Exec(REPY_Handle code, REPY_Handle global_scope, REPY_Handle local_scope) {
     return PythonNative_Exec(code, global_scope, local_scope);
 }
 
-RECOMP_EXPORT bool REPY_ExecCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope) {
+RECOMP_EXPORT bool REPY_ExecCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope) {
     return PythonNative_ExecCStr(code, global_scope, local_scope);
 }
 
-RECOMP_EXPORT bool REPY_ExecCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope) {
+RECOMP_EXPORT bool REPY_ExecCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope) {
     return PythonNative_ExecCStrN(code, len, global_scope, local_scope);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_Eval(PyObjectHandle code, PyObjectHandle global_scope, PyObjectHandle local_scope) {
+RECOMP_EXPORT REPY_Handle REPY_Eval(REPY_Handle code, REPY_Handle global_scope, REPY_Handle local_scope) {
     return PythonNative_Eval(code, global_scope, local_scope);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_EvalCStr(const char* code, PyObjectHandle global_scope, PyObjectHandle local_scope) {
+RECOMP_EXPORT REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope) {
     return PythonNative_EvalCStr(code, global_scope, local_scope);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_EvalCStrN(const char* code, u32 len, PyObjectHandle global_scope, PyObjectHandle local_scope) {
+RECOMP_EXPORT REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope) {
     return PythonNative_EvalCStrN(code, len, global_scope, local_scope);
 }
 
 // Python Functions
-RECOMP_EXPORT bool REPY_Call(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs) {
+RECOMP_EXPORT bool REPY_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_Call(func, args, kwargs);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CallReturn(PyObjectHandle func, PyObjectHandle args, PyObjectHandle kwargs) {
+RECOMP_EXPORT REPY_Handle REPY_CallReturn(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_Call_Return(func, args, kwargs);
 }
 
-RECOMP_EXPORT bool REPY_CallAttr(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs) {
+RECOMP_EXPORT bool REPY_CallAttr(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_CallAttr(func, name, args, kwargs);
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_CallAttrReturn(PyObjectHandle func, char* name, PyObjectHandle args, PyObjectHandle kwargs) {
+RECOMP_EXPORT REPY_Handle REPY_CallAttrReturn(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_CallAttr_Return(func, name, args, kwargs);
 }
 
@@ -404,15 +404,15 @@ RECOMP_EXPORT bool REPY_IsErrorSet() {
     return PythonNative_IsErrorSet();
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_GetErrorType() {
+RECOMP_EXPORT REPY_Handle REPY_GetErrorType() {
     return PythonNative_GetErrorType();
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_GetErrorTrace() {
+RECOMP_EXPORT REPY_Handle REPY_GetErrorTrace() {
     return PythonNative_GetErrorTrace();
 }
 
-RECOMP_EXPORT PyObjectHandle REPY_GetErrorValue() {
+RECOMP_EXPORT REPY_Handle REPY_GetErrorValue() {
     return PythonNative_GetErrorValue();
 }
 

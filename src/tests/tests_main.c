@@ -41,7 +41,7 @@ REPY_ON_INIT void REPY_Tests() {
     );
     
     u64* fib_table = recomp_alloc(sizeof(u64)* FIB_TABLE_SIZE);
-    PyObjectHandle fib_fn = REPY_FN_GET("count_step");
+    REPY_Handle fib_fn = REPY_FN_GET("count_step");
 
     for (int i = 0; i < FIB_TABLE_SIZE; i++) {
         REPY_Call(fib_fn, 0, 0);

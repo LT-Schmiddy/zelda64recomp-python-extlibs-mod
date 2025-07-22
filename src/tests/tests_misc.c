@@ -3,6 +3,7 @@
 #include "recomputils.h"
 
 #include "repy_api.h"
+
 /*
 void inline_test() {
     REPY_FN_SETUP;
@@ -10,7 +11,7 @@ void inline_test() {
 
     REPY_FN_SET_S32("count", 55);
 
-    PyObjectHandle new_dict = REPY_CreateEmptyDict();
+    REPY_Handle new_dict = REPY_CreateEmptyDict();
     REPY_DictSet(new_dict, REPY_MakeSUH(REPY_CreateStr("key_string")), REPY_MakeSUH(REPY_CreateStr("value_string")));
     REPY_FN_SET("new_dict", new_dict);
     REPY_Release(new_dict);
@@ -24,7 +25,7 @@ void inline_test() {
     //     "    print('*', i)\n"
     // );
 
-    PyObjectHandle os_handle = REPY_FN_GET("os");
+    REPY_Handle os_handle = REPY_FN_GET("os");
     const char* os_name = REPY_CastStr(REPY_MakeSUH(REPY_CallAttrReturn(os_handle, "getcwd", 0, 0)));
     recomp_printf("Python says the CWD is '%s'\n", os_name);
 
@@ -54,7 +55,7 @@ void tuple_test() {
 
 
     REPY_FN_EVAL_CACHE(tuple_test_get_print, "print", print_fn);
-    PyObjectHandle args = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
+    REPY_Handle args = REPY_CreateTuple(3, REPY_MakeSUH(REPY_CreateS32(0)), REPY_MakeSUH(REPY_CreateS32(1)), REPY_MakeSUH(REPY_CreateS32(2)));
     REPY_FN_SET("index_2", REPY_MakeSUH(REPY_TupleGetMember(args, 2)));
 
     REPY_Call(print_fn, args, 0);
@@ -105,9 +106,9 @@ void time_test() {
 }
 
 void print_dict_test_no_code() {
-    PyObjectHandle builtins = REPY_ImportModule("builtins");
+    REPY_Handle builtins = REPY_ImportModule("builtins");
 
-    PyObjectHandle my_dict = REPY_CreateDict(4,
+    REPY_Handle my_dict = REPY_CreateDict(4,
         REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key1"), REPY_CreateStr_SUH("Value1")),
         REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key2"), REPY_CreateStr_SUH("Value2")),
         REPY_CreatePair_SUH(REPY_CreateStr_SUH("Key3"), REPY_CreateStr_SUH("Value3")),
@@ -271,7 +272,7 @@ REPY_ON_INIT void REPY_Tests() {
     recomp_printf("REPY Tests Loaded\n");
 
     u8 bytes_array[10] = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
-    PyObjectHandle bytes_test = REPY_MemcpyToByteArray(bytes_array, 10, false);
+    REPY_Handle bytes_test = REPY_MemcpyToByteArray(bytes_array, 10, false);
     REPY_FN_SET("bytes_test", bytes_test);
 
     REPY_FN_EXEC_BLOCK(
