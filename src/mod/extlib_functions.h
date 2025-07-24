@@ -61,9 +61,12 @@ RECOMP_IMPORT(".", u32 PythonNative_Memcpy_FromBytes(void* src, u32 len, u32 rev
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Memcpy_ToByteArray(void* src, u32 len, u32 reverse));
 RECOMP_IMPORT(".", u32 PythonNative_Memcpy_FromByteArray(void* src, u32 len, u32 reverse, REPY_Handle py_obj));
 
+// Indexing and Slicing
+RECOMP_IMPORT(".", u32 PythonNative_Object_Len(REPY_Handle object));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_GetIndex(REPY_Handle object, int index));
+
 // Tuple:
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Tuple_Create(u32 size, va_list va));
-RECOMP_IMPORT(".", REPY_Handle PythonNative_Tuple_GetMember(REPY_Handle tuple, int index));
 
 // Dict Operations:
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Dict_Create(u32 size, va_list va));

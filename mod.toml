@@ -8,7 +8,7 @@
 id = "MM_Recomp_External_Python_API"
 
 # Version of this mod.
-version = "0.1.0"
+version = "0.1.1"
 
 # The name that will show up for this mod in the mod menu. This should be human readable.
 display_name = "Python for Zelda64Recompiled"
@@ -49,6 +49,7 @@ native_libraries = [
         "PythonNative_Object_GetSUH",
         "PythonNative_Object_SetSUH",
         "PythonNative_Object_CopyHandle",
+
         
         # Modules
         "PythonNative_LoadModule",
@@ -94,9 +95,13 @@ native_libraries = [
         "PythonNative_Memcpy_ToByteArray",
         "PythonNative_Memcpy_FromByteArray",
 
+        # Indexing and Slicing
+        "PythonNative_Object_Len",
+        "PythonNative_Object_GetIndex",
+        
         # Tuple
         "PythonNative_Tuple_Create",
-        "PythonNative_Tuple_GetMember",
+
 
         # Dicts    
         "PythonNative_Dict_Create",

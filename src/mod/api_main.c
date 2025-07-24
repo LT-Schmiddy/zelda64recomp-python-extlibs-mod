@@ -258,18 +258,47 @@ RECOMP_EXPORT REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse) {
     return PythonNative_Memcpy_ToBytes(src, len, reverse);
 }
 
-RECOMP_EXPORT u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj) {
-    return PythonNative_Memcpy_FromBytes(src, len, reverse, bytes_obj);
+RECOMP_EXPORT u32 REPY_MemcpyFromBytes(void* dst, u32 len, u32 reverse, REPY_Handle bytes_obj) {
+    return PythonNative_Memcpy_FromBytes(dst, len, reverse, bytes_obj);
+}
+
+RECOMP_EXPORT void* REPY_AllocAndCopyBytes(u32 reverse, REPY_Handle bytes_obj, u32* write_size) {
+    u32 size = PythonNative_Object_Len(bytes_obj);
+    void* retVal = recomp_alloc(size);
+    u32 _write_size = PythonNative_Memcpy_FromBytes(retVal, size, reverse, bytes_obj);
+    if (write_size != NULL) {
+        *write_size = _write_size;
+    }
+    return retVal;
 }
 
 RECOMP_EXPORT REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse) {
     return PythonNative_Memcpy_ToByteArray(src, len, reverse);
 }
 
-RECOMP_EXPORT u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj) {
-    return PythonNative_Memcpy_FromByteArray(src, len, reverse, bytes_obj);
+RECOMP_EXPORT u32 REPY_MemcpyFromByteArray(void* dst, u32 len, u32 reverse, REPY_Handle bytes_obj) {
+    return PythonNative_Memcpy_FromByteArray(dst, len, reverse, bytes_obj);
 }
 
+RECOMP_EXPORT void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj, u32* write_size) {
+    u32 size = PythonNative_Object_Len(bytes_obj);
+    void* retVal = recomp_alloc(size);
+    u32 _write_size = PythonNative_Memcpy_FromByteArray(retVal, size, reverse, bytes_obj);
+    if (write_size != NULL) {
+        *write_size = _write_size;
+    }
+    return retVal;
+}
+
+
+// Indexing and Slicing:
+RECOMP_EXPORT u32 REPY_Len(REPY_Handle object) {
+    return PythonNative_Object_Len(object);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_GetIndex(REPY_Handle object, int index) {
+    return PythonNative_Object_GetIndex(object, index);
+}
 
 // Tuple Operations:
 RECOMP_EXPORT REPY_Handle REPY_CreateTuple(u32 size, ...) {
@@ -296,10 +325,6 @@ RECOMP_EXPORT REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value) {
 
 RECOMP_EXPORT REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value) {
     return REPY_CreateTuple_SUH(2, key, value);
-}
-
-RECOMP_EXPORT REPY_Handle REPY_TupleGetMember(REPY_Handle tuple, int index) {
-    return PythonNative_Tuple_GetMember(tuple, index);
 }
 
 // Dict Operations:

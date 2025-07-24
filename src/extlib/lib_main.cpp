@@ -272,7 +272,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Copy) {
     }
 }
 
-// ====================================== Tuple: ====================================== 
+// ====================================== Memcpy: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Memcpy_ToBytes) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
@@ -377,6 +377,31 @@ RECOMP_DLL_FUNC(PythonNative_Memcpy_FromByteArray) {
     RECOMP_RETURN(uint32_t, iter);
 }
 
+// ====================================== Indexing and Slicing Operations: ====================================== 
+
+RECOMP_DLL_FUNC(PythonNative_Object_Len) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* object = RECOMP_ARG_PYOBJECT(0);
+    uint32_t len_val = py::len(*object);
+    
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, len_val);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_GetIndex) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
+    int index = RECOMP_ARG(int, 1); 
+
+    py::object obj = (*tuple)[index];
+    REPY_Handle handle = controller->create_handle(&obj);
+    controller->release_suh_handles();
+    RECOMP_RETURN(REPY_Handle, handle);
+}
+
+
 
 // ====================================== Tuple: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
@@ -392,18 +417,6 @@ RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
 
     py::tuple new_tuple = py::tuple(tmp);
     REPY_Handle handle = controller->create_handle(&new_tuple);
-    controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
-}
-
-RECOMP_DLL_FUNC(PythonNative_Tuple_GetMember) {
-    controller->set_rdram(rdram);
-    py::gil_scoped_acquire gil;
-    py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
-    int index = RECOMP_ARG(int, 1); 
-
-    py::object obj = (*tuple)[index];
-    REPY_Handle handle = controller->create_handle(&obj);
     controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }

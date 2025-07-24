@@ -5,7 +5,7 @@
 #include "global.h"
 
 /*! \file repy_api.h
-    \version 1.0.0
+    \version 0.1.1
     \brief The main header for Recomp External Python
  */
 
@@ -394,15 +394,20 @@ REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
 // Memcpy:
 REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse));
 REPY_IMPORT(u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(void* REPY_AllocAndCopyBytes(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
 REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse));
 REPY_IMPORT(u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
+
+// Indexing and Slicing:
+REPY_IMPORT(u32 REPY_Len(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_GetIndex(REPY_Handle object, int index));
 
 // Tuple:
 REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
-REPY_IMPORT(REPY_Handle REPY_TupleGetMember(REPY_Handle tuple, int index));
 
 // Dicts:
 REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict());
