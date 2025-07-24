@@ -17,56 +17,30 @@ void validate(char* case_name, bool case_stmt) {
         _test_cases_passed++;
     }
     
-    recomp_printf("Case %s %s\n", case_name, case_stmt ? "Passed" : "Failed!");
+    recomp_printf("Case %s %s\n", case_stmt ? "Passed:" : "Failed!", case_name);
 }
 
 #define FIB_TABLE_SIZE 100000
 
 REPY_ON_INIT void REPY_Tests() {
-    REPY_FN_SETUP;
-    recomp_printf("REPY Tests Loaded\n");
-        REPY_FN_EXEC_BLOCK(
-        time_start1,
-        "import time\n"
-        "nc_start_time = time.time()\n"
-    );
+    // Testing Handle Operations:
+    REPY_Handle testbool = REPY_CreateBool(true);
+    validate("First assigned handle (testbool) == 1", testbool == 1);
+    validate("testbool is valid (REPY_IsValidHandle)", REPY_IsValidHandle(testbool));
+    validate("testbool is not SUH (REPY_GetSUH)", REPY_GetSUH(testbool) == 0);
+    REPY_MakeSUH(testbool);
+    validate("testbool is made SUH (REPY_MakeSUH)", REPY_GetSUH(testbool) == 1);
+    REPY_SetSUH(testbool, false);
+    validate("testbool SUH disabled again (REPY_MakeSUH)", REPY_GetSUH(testbool) == 0);
+    REPY_Handle testbool2 = REPY_CopyHandle(testbool);
+    validate("Copied handle (testbool2) == 2", testbool2 == 2);
+    REPY_MakeSUH(testbool2);
+    REPY_Handle testbool3 = REPY_CopyHandle(testbool2);
+    validate("testbool2 is not valid after SUH access", !REPY_IsValidHandle(testbool2));
+    REPY_Release(testbool);
+    validate("testbool is not valid after release (REPY_Release)", !REPY_IsValidHandle(testbool));
+    REPY_Release(testbool3);
 
-    REPY_FN_EXEC_BLOCK(
-        bad_fib1,
-        "count_holder = 0\n"
-        "def count_step():\n"
-        "    global count_holder\n"
-        "    count_holder += 1\n"
-        "\n"
-    );
+    // Evaluation Tests. Doing these now since we'll need them later:
     
-    u64* fib_table = recomp_alloc(sizeof(u64)* FIB_TABLE_SIZE);
-    REPY_Handle fib_fn = REPY_FN_GET("count_step");
-
-    for (int i = 0; i < FIB_TABLE_SIZE; i++) {
-        REPY_Call(fib_fn, 0, 0);
-        fib_table[i] = REPY_FN_GET_U64("count_holder");
-        if (i % (FIB_TABLE_SIZE / 10) == 0) {
-            recomp_printf("=");
-        }
-    }
-    
-    REPY_FN_EXEC_BLOCK(
-        time_end1,
-        "fib_run_time = time.time() - nc_start_time\n"
-    );
-    recomp_printf("\n... ");
-    for (int i = 0; i < 5; i++) {
-        recomp_printf("%llu, ", fib_table[FIB_TABLE_SIZE - 6 + i]);
-    }
-
-    REPY_FN_EXEC_BLOCK(
-        time_print1,
-        "print(f'{fib_run_time=}')\n"
-    );
-    recomp_free(fib_table);
-
-    // no_code_block_test();
-    recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
-    REPY_FN_CLEANUP;
 }
