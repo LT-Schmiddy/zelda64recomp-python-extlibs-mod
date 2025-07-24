@@ -5,7 +5,7 @@
 #include "global.h"
 
 /*! \file repy_api.h
-    \version 0.1.1
+    \version 0.1.2
     \brief The main header for Recomp External Python
  */
 

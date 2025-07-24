@@ -1,5 +1,23 @@
 cmake_minimum_required(VERSION 3.20)
 
+set(CMAKE_BUILD_RPATH_USE_ORIGIN On)
+# set(CMAKE_BUILD_RPATH "$ORIGIN/.")
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+
+elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    # Macos
+    set(CMAKE_INSTALL_RPATH "@loader_path")
+    set(CMAKE_BUILD_RPATH "@loader_path")
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    # 64-bit Linux
+    set(CMAKE_BUILD_RPATH "$ORIGIN/.")
+    # set(CMAKE_INSTALL_RPATH "$ORIGIN/.")
+    # set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    # set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
+
 project(recomp_mod_native_lib)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -77,4 +95,5 @@ set_target_properties(${TARGET_NAME}
     ARCHIVE_OUTPUT_DIRECTORY "./arc/"
     LIBRARY_OUTPUT_DIRECTORY "./lib/"
     RUNTIME_OUTPUT_DIRECTORY "./lib/"
+    INSTALL_RPATH "\\$ORIGIN"
 )

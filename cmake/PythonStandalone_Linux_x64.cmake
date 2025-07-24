@@ -29,14 +29,17 @@ endif()
 file(GLOB EXTRACTED_DIRS LIST_DIRECTORIES true "${PYTHON_EXTRACT_DIR}/*")
 list(GET EXTRACTED_DIRS 0 PYTHON_ROOT)
 
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/lib/libpython3.13.so.1.0" "${PYTHON_ROOT}/lib/libpython3.13.so")
+
 # Create imported interface target
 add_library(python_standalone INTERFACE)
 target_include_directories(python_standalone INTERFACE "${PYTHON_ROOT}/include/python3.13")
 target_link_directories(python_standalone INTERFACE "${PYTHON_ROOT}/lib")
-target_link_libraries(python_standalone INTERFACE libpython3.13.so.1.0)
+# target_link_libraries(python_standalone INTERFACE libpython3.13.so.1.0)
+target_link_libraries(python_standalone INTERFACE libpython3.13.so)
 
 ## Seems to be a problem linking if we don't remove the `1.0` from the library extension.
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/lib/libpython3.13.so.1.0" "${PYTHON_ROOT}/lib/libpython3.13.so")
+# execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/lib/libpython3.13.so.1.0" "${PYTHON_ROOT}/lib/libpython3.13.so")
 
 
 function(link_python_standalone TARGET_NAME)
@@ -46,6 +49,13 @@ function(link_python_standalone TARGET_NAME)
                 "${PYTHON_ROOT}/lib/libpython3.13.so.1.0"
                 "$<TARGET_FILE_DIR:${TARGET_NAME}>/libpython3.13.so"
     )
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${PYTHON_ROOT}/lib/libpython3.13.so.1.0"
+                "$<TARGET_FILE_DIR:${TARGET_NAME}>/libpython3.13.so.1.0"
+    )
+
+    # set(CMAKE_INSTALL_RPATH "\\$ORIGIN")
 endfunction()
 
 set(PYTHON_EXE "${PYTHON_ROOT}/bin/python3.13" CACHE PATH "Python executable")

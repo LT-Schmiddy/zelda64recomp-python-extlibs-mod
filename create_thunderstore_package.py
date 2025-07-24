@@ -5,14 +5,31 @@ import make_python_functions as bm
 
 info = bm.ModInfo("./mod.toml", "build/mod")
 extlib_name = info.get_extlib_name();
-if extlib_name is not None:
-    info.set_extlib_info(
-        f"./build/zig-windows-x64-Release/lib/lib{extlib_name}.dll",
-        f"./build/zig-macos-aarch64-Release/lib/lib{extlib_name}.dylib",
-        f"./build/zig-linux-x64-Release/lib/lib{extlib_name}.so",
-        ""
-    )
+
+info.set_extlib_info(
+    f"./build/zig-windows-x64-Release/lib/lib{extlib_name}.dll",
+    f"./build/zig-macos-aarch64-Release/lib/lib{extlib_name}.dylib",
+    f"./build/zig-linux-x64-Release/lib/lib{extlib_name}.so",
+    ""
+)
 package_dir = info.project_root.joinpath("thunderstore_package")
+
+python_libs: list[Path] = [
+    Path("./build/zig-windows-x64-Release/lib/python313.dll"),
+    Path("./build/zig-macos-aarch64-Release/lib/libpython3.13.dylib"),
+    Path("./build/zig-linux-x64-Release/lib/libpython3.13.so.1.0"),
+    Path("./build/zig-linux-x64-Release/lib/libpython3.13.so"),
+]
+
+python_win_pyd: list[Path] = []
+python_win_dlls: list[Path] = []
+
+py_dll_libs_dir = info.project_root.joinpath("build/zig-windows-x64-Release/python-standalone/python/DLLs")
+for file in [py_dll_libs_dir.joinpath(i) for i in os.listdir(py_dll_libs_dir)]:
+    if file.suffix == ".pyd":
+        python_win_pyd.append(file)
+    elif file.suffix == ".dll":
+        python_win_dlls.append(file)
 
 def slugify(text: str) -> str:
     text = text.strip()
@@ -128,6 +145,15 @@ def copy_extlib(src_path: Path, dst_path: Path) -> bool:
     else:
         print(f"No file '{src_path}' exists. You need to build the extlib first.")
         return False
+    
+def copy_additional_file(src_path: Path, dst_path: Path) -> bool:
+    if (src_path.is_file()):
+        print(f"Copying additional file from '{src_path}' to '{dst_path}'...")
+        shutil.copy(src_path, dst_path)
+        return True
+    else:
+        print(f"Error: No file '{src_path}' exists.")
+        return False
 
 def create_archive(package_dir: Path, dst_path: Path):
     new_zip = zipfile.ZipFile(dst_path, 'w')
@@ -170,13 +196,25 @@ def create_package():
     mod_file = package_dir.joinpath(info.build_mod_nrm_file.name)
     fully_collected = copy_mod(info.build_mod_nrm_file, mod_file) and fully_collected
     
-    if extlib_name is not None:
-        dll_file = package_dir.joinpath(info.runtime_dll_file.name)
-        dylib_file = package_dir.joinpath(info.runtime_dylib_file.name)
-        so_file = package_dir.joinpath(info.runtime_so_file.name)
-        fully_collected = copy_extlib(info.build_dll_file, dll_file) and fully_collected
-        fully_collected = copy_extlib(info.build_dylib_file, dylib_file) and fully_collected
-        fully_collected = copy_extlib(info.build_so_file, so_file) and fully_collected
+    # Extlib Handling
+    dll_file = package_dir.joinpath(info.runtime_dll_file.name)
+    dylib_file = package_dir.joinpath(info.runtime_dylib_file.name)
+    so_file = package_dir.joinpath(info.runtime_so_file.name)
+    fully_collected = copy_extlib(info.build_dll_file, dll_file) and fully_collected
+    fully_collected = copy_extlib(info.build_dylib_file, dylib_file) and fully_collected
+    fully_collected = copy_extlib(info.build_so_file, so_file) and fully_collected
+    
+    for i in python_libs:
+        package_file = package_dir.joinpath(i.name)
+        fully_collected = copy_additional_file(i, package_file)
+        
+    for i in python_win_dlls:
+        package_file = package_dir.joinpath(i.name)
+        fully_collected = copy_additional_file(i, package_file)
+    
+    for i in python_win_pyd:
+        package_file = package_dir.joinpath(i.with_suffix(".dll").name)
+        fully_collected = copy_additional_file(i, package_file)
     
     if fully_collected:
         print("Fully collected. Zipping mod package.")
