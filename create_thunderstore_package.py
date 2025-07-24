@@ -25,11 +25,7 @@ python_win_pyd: list[Path] = []
 python_win_dlls: list[Path] = []
 
 py_dll_libs_dir = info.project_root.joinpath("build/zig-windows-x64-Release/python-standalone/python/DLLs")
-for file in [py_dll_libs_dir.joinpath(i) for i in os.listdir(py_dll_libs_dir)]:
-    if file.suffix == ".pyd":
-        python_win_pyd.append(file)
-    elif file.suffix == ".dll":
-        python_win_dlls.append(file)
+
 
 def slugify(text: str) -> str:
     text = text.strip()
@@ -207,7 +203,14 @@ def create_package():
     for i in python_libs:
         package_file = package_dir.joinpath(i.name)
         fully_collected = copy_additional_file(i, package_file)
-        
+    
+    # Collecting additional dependencies needed on windows
+    for file in [py_dll_libs_dir.joinpath(i) for i in os.listdir(py_dll_libs_dir)]:
+        if file.suffix == ".pyd":
+            python_win_pyd.append(file)
+        elif file.suffix == ".dll":
+            python_win_dlls.append(file)
+    
     for i in python_win_dlls:
         package_file = package_dir.joinpath(i.name)
         fully_collected = copy_additional_file(i, package_file)
