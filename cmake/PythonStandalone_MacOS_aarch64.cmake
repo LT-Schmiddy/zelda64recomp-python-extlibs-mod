@@ -53,9 +53,9 @@ function(link_python_standalone TARGET_NAME)
                 "${PYTHON_ROOT}/lib/libpython3.13.dylib"
                 "$<TARGET_FILE_DIR:${TARGET_NAME}>/libpython3.13.dylib"
     )
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change /install/lib/libpython3.13.dylib @loader_path/libpython3.13.dylib ${DYLIB_FILE}
-    )
+    # add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    #     COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change /install/lib/libpython3.13.dylib @loader_path/libpython3.13.dylib ${DYLIB_FILE}
+    # )
 endfunction()
 
 set(PYTHON_EXE "${PYTHON_ROOT}/bin/python3.13" CACHE PATH "Python executable")
