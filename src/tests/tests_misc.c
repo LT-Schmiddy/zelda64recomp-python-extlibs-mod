@@ -347,3 +347,18 @@ REPY_ON_INIT void REPY_Tests() {
 }
 
 */
+
+REPY_ON_INIT void run_misc_tests() {
+    REPY_FN_SETUP;
+    REPY_FN_SET_S32("x", 32);
+
+    REPY_FN_IF(if_test1, 1, "x == 0") {
+        recomp_printf("bytecode_index -> 0\n");
+    } REPY_FN_ELIF(if_test1, "x == 32") {
+        recomp_printf("bytecode_index -> 1\n");
+    } else {
+        recomp_printf("bytecode ran else statement\n");
+    }
+
+    REPY_FN_CLEANUP;
+}

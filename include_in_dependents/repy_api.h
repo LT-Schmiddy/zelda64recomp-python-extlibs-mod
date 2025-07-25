@@ -35,10 +35,24 @@
 typedef unsigned int REPY_Handle;
 
 typedef enum REPY_CodeMode {
-    PY_CODE_EXEC = 0,
-    PY_CODE_EVAL = 1,
-    PY_CODE_SINGLE = 2
+    REPY_CODE_EXEC = 0,
+    REPY_CODE_EVAL = 1,
+    REPY_CODE_SINGLE = 2
 } REPY_CodeMode;
+
+typedef enum REPY_CHReturnType {
+    REPY_RETURN_FALSE = 0,
+    REPY_RETURN_TRUE = 1,
+    REPY_RETURN_WAS_COMPILED = 2,
+    REPY_RETURN_WAS_COMPILED_SUCCESSFULLY = 3,
+    REPY_RETURN_HANDLE = 4
+} REPY_CHReturnType;
+
+typedef struct REPY_IteratorHelper {
+    u32 index;
+    REPY_Handle iter;
+    REPY_Handle curr;
+} REPY_IteratorHelper;
 
 // ========== API: ==========
 // Events:
@@ -123,7 +137,7 @@ REPY_Exec(bytecode_handle, _py_globals, _py_locals)
 REPY_ExecCStr(code_str, _py_globals, _py_locals) 
 
 #define REPY_FN_EXEC_BLOCK(identifier, code_str) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EXEC, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EXEC, code_str) \
 u32 identifier ## _success = REPY_FN_EXEC(identifier) 
 
 // FN - Eval Bytecode:
@@ -190,43 +204,43 @@ REPY_CastBytes(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
 // FN - Eval Cache Block:
 #define REPY_FN_EVAL_BLOCK(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 REPY_Handle out_var = REPY_FN_EVAL(identifier)
 
 #define REPY_FN_EVAL_BLOCK_BOOL(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 bool out_var = REPY_FN_EVAL_BOOL(identifier)
 
 #define REPY_FN_EVAL_BLOCK_U32(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 u32 out_var = REPY_FN_EVAL_U32(identifier)
 
 #define REPY_FN_EVAL_BLOCK_S32(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 s32 out_var = REPY_FN_EVAL_S32(identifier)
 
 #define REPY_FN_EVAL_BLOCK_F32(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 f32 out_var = REPY_FN_EVAL_F32(identifier)
 
 #define REPY_FN_EVAL_BLOCK_U64(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 u64 out_var = REPY_FN_EVAL_U64(identifier)
 
 #define REPY_FN_EVAL_BLOCK_S64(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 s64 out_var = REPY_FN_EVAL_S64(identifier)
 
 #define REPY_FN_EVAL_BLOCK_F64(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 f64 out_var = REPY_FN_EVAL_F64(identifier)
 
 #define REPY_FN_EVAL_BLOCK_STR(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 char* out_var = REPY_FN_EVAL_STR(identifier)
 
 #define REPY_FN_EVAL_BLOCK_BYTESTR(identifier, code_str, out_var) \
-REPY_FN_CODE_CACHE(identifier, PY_CODE_EVAL, code_str) \
+REPY_FN_CODE_CACHE(identifier, REPY_CODE_EVAL, code_str) \
 char* out_var = REPY_FN_EVAL_BYTESTR(identifier)
 
 
@@ -328,6 +342,37 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(RE
 #define REPY_FN_SET_BYTESTR_N(var_name, value, len) \
 REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBytes(value, len)))
 
+
+
+// FN - Flow Control
+#define REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count, python_expression) \
+static REPY_Handle bytecode_array_identifier[elif_count + 1]; \
+static bool bytecode_array_identifier ## _init = false; \
+if (! bytecode_array_identifier ## _init) { \
+    for (int i = 0; i < elif_count + 1; i++) { \
+        bytecode_array_identifier[i] = 0; \
+    } \
+    bytecode_array_identifier ## _init = 1; \
+} \
+u32 bytecode_array_identifier ## _index = 0; \
+
+#define REPY_FN_IF_STMT(bytecode_array_identifier, python_expression) \
+if ( \
+    REPY_CompileHelper( \
+        &bytecode_array_identifier[bytecode_array_identifier ## _index], \
+        python_expression, \
+        __FILE_NAME__ ", in REPY_FN_IF with identifier '" #bytecode_array_identifier "' -> " #python_expression , \
+        REPY_CODE_EVAL, \
+        REPY_RETURN_TRUE \
+    )  && REPY_FN_EVAL_BOOL(bytecode_array_identifier[bytecode_array_identifier ## _index++]) \
+) 
+
+#define REPY_FN_IF(bytecode_array_identifier, elif_count, python_expression) \
+REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count, python_expression) \
+REPY_FN_IF_STMT(bytecode_array_identifier, python_expression) \
+
+#define REPY_FN_ELIF(bytecode_array_identifier, python_expression) \
+else REPY_FN_IF_STMT(bytecode_array_identifier, python_expression) \
 
 // General:
 REPY_IMPORT(void REPY_Release(REPY_Handle py_object));
@@ -443,5 +488,8 @@ REPY_IMPORT(REPY_Handle REPY_GetErrorTrace());
 REPY_IMPORT(REPY_Handle REPY_GetErrorValue());
 REPY_IMPORT(void REPY_ClearError());
 
+
+// Helpers:
+REPY_IMPORT(u32 REPY_CompileHelper(REPY_Handle* handle_ptr, const char* code_str, const char* identifier, REPY_CodeMode code_mode, REPY_CHReturnType return_type));
 
 #endif
