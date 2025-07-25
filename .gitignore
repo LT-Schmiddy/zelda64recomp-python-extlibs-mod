@@ -2,7 +2,7 @@
 *.o
 *.elf
 *.bin
-*.exe
+# *.exe
 *.dll
 *.dylib
 *.so

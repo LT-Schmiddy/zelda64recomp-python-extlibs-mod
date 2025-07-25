@@ -1,19 +1,19 @@
 cmake_minimum_required(VERSION 3.20)
 
-set(CMAKE_BUILD_RPATH_USE_ORIGIN On)
-# set(CMAKE_BUILD_RPATH "$ORIGIN/.")
+
+
+
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     # Macos
-    set(CMAKE_INSTALL_RPATH "@loader_path")
-    set(CMAKE_BUILD_RPATH "@loader_path")
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    set(CMAKE_MACOSX_RPATH On)
+
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     # 64-bit Linux
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN On)
     set(CMAKE_BUILD_RPATH "$ORIGIN/.")
-    # set(CMAKE_INSTALL_RPATH "$ORIGIN/.")
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/.")
     # set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
     # set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
@@ -85,15 +85,15 @@ include_directories("./extern/plog/include")
 # Establishing Build Target:
 add_library(${TARGET_NAME} SHARED)
 add_subdirectory("./src/extlib")
-link_python_standalone(${TARGET_NAME})
 target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
 target_link_libraries(${TARGET_NAME} PRIVATE plog::plog)
-target_sources(${TARGET_NAME} PUBLIC ./extern/incbin/incbin.c)
+# target_sources(${TARGET_NAME} PUBLIC ./extern/incbin/incbin.c)
+
+link_python_standalone(${TARGET_NAME})
 
 set_target_properties(${TARGET_NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "./arc/"
     LIBRARY_OUTPUT_DIRECTORY "./lib/"
     RUNTIME_OUTPUT_DIRECTORY "./lib/"
-    INSTALL_RPATH "\\$ORIGIN"
 )
