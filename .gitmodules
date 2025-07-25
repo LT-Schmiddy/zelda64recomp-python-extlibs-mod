@@ -17,3 +17,6 @@
 [submodule "extern/plog"]
 	path = extern/plog
 	url = https://github.com/SergiusTheBest/plog
+[submodule "extern/slot_map"]
+	path = extern/plog
+	url = https://github.com/SergeyMakeev/slot_map
