@@ -419,18 +419,26 @@ RECOMP_DLL_FUNC(PythonNative_Object_Next) {
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
     py::object* default_obj; 
     py::object entry;
-    if (RECOMP_ARG(REPY_Handle, 1) != 0) {
-        default_obj = RECOMP_ARG_PYOBJECT(1); 
-        entry = controller->py_next(*obj, *default_obj);
-    } else {
-        entry = controller->py_next(*obj);
+
+    try {
+        if (RECOMP_ARG(REPY_Handle, 1) != 0) {
+            default_obj = RECOMP_ARG_PYOBJECT(1); 
+            entry = controller->py_next(*obj, *default_obj);
+        } else {
+            entry = controller->py_next(*obj);
+        }
+    } catch (py::error_already_set &e) {
+        py::print(e.type());
+
+        controller->handle_exception(&e);
+        controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
     }
 
     REPY_Handle handle = controller->create_handle(&entry);
     controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
-
 
 // ====================================== Tuple: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
@@ -906,4 +914,3 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
     py::gil_scoped_acquire gil;
     controller->clear_py_error();
 }
-

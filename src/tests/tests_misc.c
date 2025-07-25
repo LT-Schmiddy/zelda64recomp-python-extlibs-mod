@@ -359,6 +359,13 @@ REPY_ON_INIT void run_misc_tests() {
     } else {
         recomp_printf("bytecode ran else statement\n");
     }
+    
+    REPY_FN_FOREACH(foreach_test1, "i", "[1, 2, 3, 4, 5]") {
+        REPY_FN_EXEC_BLOCK(
+            loop_print_test,
+            "print(i)\n"
+        );
+    }
 
     REPY_FN_CLEANUP;
 }
