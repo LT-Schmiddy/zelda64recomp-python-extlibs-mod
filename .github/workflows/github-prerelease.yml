@@ -21,7 +21,7 @@ jobs:
     - name: Get Apt Packages
       id: get_apt_packages
       run: |-
-        sudo apt install -y clang lld ninja-build jq
+        sudo apt install -y clang lld ninja-build jq llvm-18
 
     - name: Get Snap Packages
       id: get_snap_packages
