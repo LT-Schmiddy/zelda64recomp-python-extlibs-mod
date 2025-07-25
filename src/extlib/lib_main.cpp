@@ -401,6 +401,35 @@ RECOMP_DLL_FUNC(PythonNative_Object_GetIndex) {
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
+// ====================================== Iteration: ======================================
+RECOMP_DLL_FUNC(PythonNative_Object_Iter) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0); 
+
+    py::object iter = py::iter(*obj);
+    REPY_Handle handle = controller->create_handle(&iter);
+    controller->release_suh_handles();
+    RECOMP_RETURN(REPY_Handle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_Next) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0); 
+    py::object* default_obj; 
+    py::object entry;
+    if (RECOMP_ARG(REPY_Handle, 1) != 0) {
+        default_obj = RECOMP_ARG_PYOBJECT(1); 
+        entry = controller->py_next(*obj, *default_obj);
+    } else {
+        entry = controller->py_next(*obj);
+    }
+
+    REPY_Handle handle = controller->create_handle(&entry);
+    controller->release_suh_handles();
+    RECOMP_RETURN(REPY_Handle, handle);
+}
 
 
 // ====================================== Tuple: ====================================== 

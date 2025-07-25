@@ -98,6 +98,10 @@ native_libraries = [
         # Indexing and Slicing
         "PythonNative_Object_Len",
         "PythonNative_Object_GetIndex",
+
+        # Iteration
+        "PythonNative_Object_Iter",
+        "PythonNative_Object_Next",
         
         # Tuple
         "PythonNative_Tuple_Create",

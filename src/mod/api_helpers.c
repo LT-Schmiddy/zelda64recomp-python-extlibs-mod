@@ -7,7 +7,7 @@
 
 #include "extlib_functions.h"
 
-RECOMP_EXPORT u32 REPY_CompileHelper(
+RECOMP_EXPORT u32 REPY_CompileHelper (
     REPY_Handle* handle_ptr, 
     const char* code_str, 
     const char* identifier,
@@ -36,4 +36,8 @@ RECOMP_EXPORT u32 REPY_CompileHelper(
         default:
             return false;
     }
+}
+
+RECOMP_EXPORT REPY_IteratorHelper REPY_IteratorHelper_Init() {
+    
 }

@@ -344,7 +344,7 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(RE
 
 
 
-// FN - Flow Control
+// Flow Control - If
 #define REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count, python_expression) \
 static REPY_Handle bytecode_array_identifier[elif_count + 1]; \
 static bool bytecode_array_identifier ## _init = false; \
@@ -373,6 +373,11 @@ REPY_FN_IF_STMT(bytecode_array_identifier, python_expression) \
 
 #define REPY_FN_ELIF(bytecode_array_identifier, python_expression) \
 else REPY_FN_IF_STMT(bytecode_array_identifier, python_expression) \
+
+// Flow Control - While
+#define REPY_FN_WHILE(bytecode_identifier, python_expression) \
+REPY_FN_CODE_CACHE(bytecode_identifier, REPY_CODE_EVAL, python_expression); \
+while (REPY_FN_EVAL_BOOL(bytecode_identifier))
 
 // General:
 REPY_IMPORT(void REPY_Release(REPY_Handle py_object));
@@ -447,6 +452,10 @@ REPY_IMPORT(void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj,
 // Indexing and Slicing:
 REPY_IMPORT(u32 REPY_Len(REPY_Handle object));
 REPY_IMPORT(REPY_Handle REPY_GetIndex(REPY_Handle object, int index));
+
+// Iteration
+REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj, u32 process_stop_iteration));
 
 // Tuple:
 REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));

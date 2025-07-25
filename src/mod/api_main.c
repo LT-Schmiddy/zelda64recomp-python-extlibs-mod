@@ -300,6 +300,15 @@ RECOMP_EXPORT REPY_Handle REPY_GetIndex(REPY_Handle object, int index) {
     return PythonNative_Object_GetIndex(object, index);
 }
 
+// Iteration
+RECOMP_EXPORT REPY_Handle REPY_Iter(REPY_Handle object) {
+    return PythonNative_Object_Iter(object);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj, u32 process_stop_iteration) {
+    return PythonNative_Object_Next(iterator, default_obj, process_stop_iteration);
+}
+
 // Tuple Operations:
 RECOMP_EXPORT REPY_Handle REPY_CreateTuple(u32 size, ...) {
     va_list va;

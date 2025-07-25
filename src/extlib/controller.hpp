@@ -36,6 +36,7 @@ public:
     py::function py_compile;
     py::function py_exec;
     py::function py_eval;
+    py::function py_next;
 
     uint8_t* rdram;
 

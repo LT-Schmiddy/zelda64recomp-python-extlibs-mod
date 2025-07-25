@@ -73,6 +73,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     py_compile = builtins.attr("compile");
     py_exec = builtins.attr("exec");
     py_eval = builtins.attr("eval");
+    py_next = builtins.attr("py_next");
     
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
