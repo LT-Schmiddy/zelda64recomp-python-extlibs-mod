@@ -38,6 +38,8 @@ public:
     py::function py_eval;
     py::function py_next;
 
+    py::object py_stop_iteration_type;
+
     uint8_t* rdram;
 
     PyInterpreterController(plog::Severity severity, fs::path mod_dir);

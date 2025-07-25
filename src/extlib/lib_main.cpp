@@ -417,6 +417,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_Next) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
+    uint32_t process_stop_iteration = RECOMP_ARG(uint32_t, 2);
     py::object* default_obj; 
     py::object entry;
 
@@ -429,8 +430,15 @@ RECOMP_DLL_FUNC(PythonNative_Object_Next) {
         }
     } catch (py::error_already_set &e) {
         py::print(e.type());
+        py::print(controller->py_stop_iteration_type);
 
-        controller->handle_exception(&e);
+        if (!e.type().is(controller->py_stop_iteration_type) || !process_stop_iteration) {
+            controller->handle_exception(&e);
+        } else {
+            // Catching the exception already clears it from the interpreter. All we need to do now is let it die.
+            PLOGD.printf("REPY_Handle %u has ended iteration. StopIteration exception handled internally", RECOMP_ARG(REPY_Handle, 0));
+        }
+        
         controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }

@@ -60,7 +60,7 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, REPY_
         }
     }
 
-    helper->curr = PythonNative_Object_Next(helper->iter, 0, false);
+    helper->curr = PythonNative_Object_Next(helper->iter, 0, true);
 
     if (helper->curr) {
         if (py_scope) {
