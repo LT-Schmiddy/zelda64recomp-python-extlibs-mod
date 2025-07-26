@@ -220,3 +220,11 @@ description = "Log additional information to the console for debugging. (Only ap
 type = "Enum"
 options = [ "NONE", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG", "VERBOSE"]
 default = "ERROR"
+
+[[manifest.config_options]]
+id = "handle_lookup_method"
+name = "Handle Lookup Method"
+description = "Log additional information to the console for debugging. (Only applies to debug builds of Zelda64Recomp)."
+type = "Enum"
+options = [ "Unordered Map", "Slot Map"]
+default = "Unordered Map"

@@ -29,7 +29,9 @@ void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 }
 
 // ======================================  Handle Control: ====================================== 
-PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir) {
+PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir, bool p_use_slotmap) {
+    use_slotmap = p_use_slotmap;
+
     file_appender = new plog::RollingFileAppender<plog::TxtFormatter>("REPY.log");
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
     log = &plog::init((plog::Severity)severity);
@@ -62,7 +64,8 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     config.install_signal_handlers = true;
 
     py::initialize_interpreter(&config); 
-    PLOGI << "-> Python Interpreter Parent: INIT";
+    PLOGI << "-> Python Interpreter Initialized";
+    PLOGI << "-> REPY_Handle Lookup Mode set to " << (p_use_slotmap ? "Slot Map" : "Unordered Hash Map");
 
     auto sys = py::module_::import("sys");
     auto sys_path = sys.attr("path");
@@ -88,16 +91,16 @@ PyInterpreterController::~PyInterpreterController() {
     // But it doesn't seem to like it when we have handles left over.
     {
         // py::gil_scoped_acquire gil;
-        // py_objects.clear();
+        // py_objects_umap.clear();
     }
     PyEval_RestoreThread(py_main_thread);
-    py_objects.clear();
-    PLOGI << "-> Python Interpreter Parent: DEINIT";
+    py_objects_umap.clear();
+    PLOGI << "-> Python Interpreter Uninitialized";
 }
 
 REPY_Handle PyInterpreterController::get_new_handle_value() {
     py::gil_scoped_acquire gil;
-    while (py_objects.contains(next_handle_val) || next_handle_val == 0) {
+    while (py_objects_umap.contains(next_handle_val) || next_handle_val == 0) {
         next_handle_val++;
     }
     return next_handle_val++;
@@ -105,47 +108,81 @@ REPY_Handle PyInterpreterController::get_new_handle_value() {
 
 REPY_Handle PyInterpreterController::create_handle_and_steal(py::object* obj) {
     py::gil_scoped_acquire gil;
-    REPY_Handle new_handle = get_new_handle_value();
-    py_objects.insert({new_handle, {py::reinterpret_steal<py::object>(*obj), false}});
+    REPY_Handle new_handle;
+    if (use_slotmap) {
+        new_handle = py_objects_smap.add_and_steal(obj);
+    } else {
+        new_handle = get_new_handle_value();
+        py_objects_umap.insert({new_handle, {py::reinterpret_steal<py::object>(*obj), false}});
+    }
 
-    PLOGD.printf("-> REPY_Handle %i Created", new_handle);
+    PLOGD.printf("-> REPY_Handle 0x%08X Created", new_handle);
     return new_handle;
 }
 
 REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
-    py::gil_scoped_acquire gil;
-    REPY_Handle new_handle = get_new_handle_value();
-    // py::object in_obj = (*obj);
-    py_objects.insert({new_handle, {(*obj), false}});
+    REPY_Handle new_handle;
+    if (use_slotmap) {
+        new_handle = py_objects_smap.add(obj);
+    } else {
+        new_handle = get_new_handle_value();
+        py_objects_umap.insert({new_handle, {(*obj), false}});
+    }
 
-    PLOGD.printf("-> REPY_Handle %i Created", new_handle);
+    PLOGD.printf("-> REPY_Handle 0x%08X Created", new_handle);
     return new_handle;
 }
 
 py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
-    REPY_HandleEntry* entry = &py_objects.at(handle);
-    if (entry->is_single_use) {
-        suh_release_queue.push(handle);
-        PLOGD.printf("-> REPY_Handle %08X Accessed (SUH)", handle);
+    if (use_slotmap) {
+        REPY_HandleEntry* entry = py_objects_smap.get(handle);
+        if (entry->is_single_use) {
+            suh_release_queue.push(handle);
+            PLOGD.printf("-> REPY_Handle 0x%08X Accessed (SUH)", handle);
+        } else {
+            PLOGD.printf("-> REPY_Handle 0x%08X Accessed", handle);
+        }
+        return &entry->py_object;
     } else {
-        PLOGD.printf("-> REPY_Handle %08X Accessed", handle);
-    }
+        REPY_HandleEntry* entry = &py_objects_umap.at(handle);
+        if (entry->is_single_use) {
+            suh_release_queue.push(handle);
+            PLOGD.printf("-> REPY_Handle 0x%08X Accessed (SUH)", handle);
+        } else {
+            PLOGD.printf("-> REPY_Handle 0x%08X Accessed", handle);
+        }
 
-    return &entry->py_object;
+        return &entry->py_object;
+    }
 }
 
 bool PyInterpreterController::is_valid_handle(REPY_Handle handle) {
-    return py_objects.contains(handle);
+    if (use_slotmap) {
+        return py_objects_smap.has(handle);
+    }
+    return py_objects_umap.contains(handle);
 }
 
 
 bool PyInterpreterController::get_handle_suh(REPY_Handle handle) {
-    REPY_HandleEntry* entry = &py_objects.at(handle);
+    REPY_HandleEntry* entry;
+    if (use_slotmap) {
+        entry = py_objects_smap.get(handle);
+    } else {
+        entry = &py_objects_umap.at(handle);
+    }
+
     return entry->is_single_use;
 }
 
 void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_use) {
-    REPY_HandleEntry* entry = &py_objects.at(handle);
+    REPY_HandleEntry* entry;
+    if (use_slotmap) {
+        entry = py_objects_smap.get(handle);
+    } else {
+        entry = &py_objects_umap.at(handle);
+    }
+
     entry->is_single_use = is_single_use;
     PLOGD.printf("-> REPY_Handle %08X Setting SUH = %i", handle, is_single_use);
 }
@@ -154,13 +191,21 @@ void PyInterpreterController::release_suh_handles() {
     while (suh_release_queue.size() > 0) {
         REPY_Handle handle = suh_release_queue.front();
         suh_release_queue.pop();
-        py_objects.erase(handle);
+        if (use_slotmap) {
+            py_objects_smap.del(handle);
+        } else {
+            py_objects_umap.erase(handle);
+        }
         PLOGD.printf("-> REPY_Handle %08X Released (SUH)", handle);
     }
 }
 
 void PyInterpreterController::release_handle(REPY_Handle handle) {
-    py_objects.erase(handle);
+    if (use_slotmap) {
+        py_objects_smap.del(handle);
+    } else {
+        py_objects_umap.erase(handle);
+    }
     PLOGD.printf("-> REPY_Handle %08X Released", handle);
 }
 
