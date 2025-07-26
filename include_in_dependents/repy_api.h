@@ -41,17 +41,19 @@ typedef enum REPY_CodeMode {
 } REPY_CodeMode;
 
 typedef enum REPY_CHReturnType {
-    REPY_RETURN_FALSE = 0,
-    REPY_RETURN_TRUE = 1,
-    REPY_RETURN_WAS_COMPILED = 2,
-    REPY_RETURN_WAS_COMPILED_SUCCESSFULLY = 3,
-    REPY_RETURN_HANDLE = 4
+    REPY_CH_RETURN_FALSE = 0,
+    REPY_CH_RETURN_TRUE = 1,
+    REPY_CH_RETURN_WAS_COMPILED = 2,
+    REPY_CH_RETURN_WAS_COMPILED_SUCCESSFULLY = 3,
+    REPY_CH_RETURN_HANDLE = 4
 } REPY_CHReturnType;
 
 typedef struct REPY_IteratorHelper {
     REPY_Handle iter;
     u32 index;
     REPY_Handle curr;
+    REPY_Handle py_scope;
+    REPY_Handle var_name;
     bool _first_update;
 } REPY_IteratorHelper;
 
@@ -117,7 +119,7 @@ if (bytecode_identifier == 0) { \
 
 // Python Object Flow Control
 #define REPY_FOREACH_BLOCK(iter_identifier, py_object, py_scope, var_name) \
-for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Init(py_object); REPY_IteratorHelper_Update(iter_identifier, py_scope, var_name);)
+for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Init(py_object, py_scope, var_name); REPY_IteratorHelper_Update(iter_identifier);)
 
 #define REPY_FOREACH(iter_identifier, py_object) \
 REPY_FOREACH_BLOCK(iter_identifier, py_object, 0, NULL)
@@ -371,7 +373,7 @@ if ( \
         py_expression, \
         __FILE_NAME__ ", in REPY_FN_IF with identifier '" #bytecode_array_identifier "' -> " #py_expression , \
         REPY_CODE_EVAL, \
-        REPY_RETURN_TRUE \
+        REPY_CH_RETURN_TRUE \
     )  && REPY_FN_EVAL_BOOL(bytecode_array_identifier[bytecode_array_identifier ## _index++]) \
 ) 
 
@@ -523,7 +525,7 @@ REPY_IMPORT(void REPY_ClearError());
 
 // Helpers:
 REPY_IMPORT(u32 REPY_CompileHelper(REPY_Handle* handle_ptr, const char* code_str, const char* identifier, REPY_CodeMode code_mode, REPY_CHReturnType return_type));
-REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_object));
-REPY_IMPORT(bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, REPY_Handle py_scope, const char* var_name));
+REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name));
+REPY_IMPORT(bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper));
 
 #endif

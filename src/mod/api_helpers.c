@@ -14,41 +14,41 @@ RECOMP_EXPORT u32 REPY_CompileHelper (
     REPY_CodeMode code_mode, 
     REPY_CHReturnType return_type
 ) {
-    recomp_printf("Running REPY_CompileHelper\n");
     bool was_compiled = false;
     if (*handle_ptr == 0) {
         *handle_ptr = REPY_CompileCStr(code_str, identifier, code_mode);
-        recomp_printf("REPY_CompileHelper compiled handle %u\n", *handle_ptr);
         bool was_compiled = true;
     } 
 
     // Handling Return:
     switch(return_type) {
-        case REPY_RETURN_TRUE:
+        case REPY_CH_RETURN_TRUE:
             return true;
-        case REPY_RETURN_WAS_COMPILED:
+        case REPY_CH_RETURN_WAS_COMPILED:
             return was_compiled;
-        case REPY_RETURN_WAS_COMPILED_SUCCESSFULLY:
+        case REPY_CH_RETURN_WAS_COMPILED_SUCCESSFULLY:
             return was_compiled && *handle_ptr;
-        case REPY_RETURN_HANDLE:
+        case REPY_CH_RETURN_HANDLE:
             return *handle_ptr;
-        case REPY_RETURN_FALSE:
+        case REPY_CH_RETURN_FALSE:
         default:
             return false;
     }
 }
 
-RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_object) {
+RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name) {
     REPY_IteratorHelper* helper = recomp_alloc(sizeof(REPY_IteratorHelper));
     helper->_first_update = true;
     helper->index = 0;
     helper->iter = PythonNative_Object_Iter(py_object);
     helper->curr = 0;
+    helper->py_scope = PythonNative_Object_CopyHandle(py_scope);
+    helper->var_name = PythonNative_Object_CreateStr(var_name);
 
     return helper;
 }
 
-RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, REPY_Handle py_scope, const char* var_name) {
+RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper) {
     if (helper->_first_update) {
         helper->_first_update = false;
     } else {
@@ -63,15 +63,17 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, REPY_
     helper->curr = PythonNative_Object_Next(helper->iter, 0, true);
 
     if (helper->curr) {
-        if (py_scope) {
+        if (helper->py_scope) {
             // If given a python scope, add current to the scope under the given variable name:
-            PythonNative_Dict_Set(py_scope, PythonNative_Object_MakeSUH(PythonNative_Object_CreateStr(var_name)), helper->curr);
+            PythonNative_Dict_Set(helper->py_scope, helper->var_name, helper->curr);
         }
 
         return true;
     } else {
         // Iterator complete. Time to clean up.
         PythonNative_Object_Release(helper->iter);
+        PythonNative_Object_Release(helper->py_scope);
+        PythonNative_Object_Release(helper->var_name);
         recomp_free(helper);
         return false;   
     }
