@@ -57,6 +57,8 @@ typedef struct REPY_IteratorHelper {
     bool _first_update;
 } REPY_IteratorHelper;
 
+#define REPY_NO_OBJECT 0
+
 // ========== API: ==========
 // Events:
 #define REPY_ON_LOAD_MODULES RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnLoadModules)

@@ -27,7 +27,7 @@
                 "MIPS",
                 "COMBINED_INTELLISENSE",
                 "RECOMP_INCBIN_EXTERN_ONLY",
-                "REPY_SILENCE_INCBIN_SQUIGGLES",
+                "REPY_SILENCE_INCBIN_SQUIGGLES"
             ],
             // "compilerPath": "clang",
             "cStandard": "c99",
