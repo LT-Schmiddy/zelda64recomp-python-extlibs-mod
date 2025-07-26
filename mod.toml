@@ -8,7 +8,7 @@
 id = "MM_Recomp_External_Python_API"
 
 # Version of this mod.
-version = "0.1.2"
+version = "0.1.3"
 
 # The name that will show up for this mod in the mod menu. This should be human readable.
 display_name = "Python for Zelda64Recompiled"
