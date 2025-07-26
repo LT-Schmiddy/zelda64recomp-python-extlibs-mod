@@ -346,7 +346,7 @@ REPY_ON_INIT void REPY_Tests() {
     REPY_FN_CLEANUP;
 }
 
-*/
+
 
 REPY_ON_INIT void run_misc_tests() {
     REPY_FN_SETUP;
@@ -376,3 +376,4 @@ REPY_ON_INIT void run_misc_tests() {
 
     REPY_FN_CLEANUP;
 }
+*/

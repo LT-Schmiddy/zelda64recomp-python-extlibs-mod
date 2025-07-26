@@ -44,7 +44,7 @@ RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_objec
     helper->curr = 0;
     helper->py_scope = PythonNative_Object_CopyHandle(py_scope);
     helper->var_name = PythonNative_Object_CreateStr(var_name);
-
+    
     return helper;
 }
 

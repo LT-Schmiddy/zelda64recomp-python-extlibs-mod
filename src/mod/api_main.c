@@ -226,8 +226,9 @@ RECOMP_EXPORT REPY_Handle REPY_CreateStrN_SUH(const char* string, u32 len) {
 
 RECOMP_EXPORT char* REPY_CastStr(REPY_Handle object) {
     u32 len = PythonNative_Object_CastStr_Prepare(object);
-    char* retVal = recomp_alloc(len);
+    char* retVal = recomp_alloc(len + 1);
     PythonNative_Object_CastStr_Copy(len, retVal);
+    retVal[len] = 0; // Setting Null terminator
     return retVal;
 }
 
@@ -249,8 +250,9 @@ RECOMP_EXPORT REPY_Handle REPY_CreateByteStrN_SUH(const char* string, u32 len) {
 
 RECOMP_EXPORT char* REPY_CastByteStr(REPY_Handle object) {
     u32 len = PythonNative_Object_CastByteStr_Prepare(object);
-    char* retVal = recomp_alloc(len);
+    char* retVal = recomp_alloc(len + 1);;
     PythonNative_Object_CastByteStr_Copy(len, retVal);
+    retVal[len] = 0; // Setting Null terminator
     return retVal;
 }
 

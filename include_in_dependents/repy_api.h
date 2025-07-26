@@ -95,11 +95,11 @@ REPY_ON_LOAD_MODULES void _construct_module_ ## module_name (int success) { \
     } \
 } \
 
-#define REPY_GLOBAL_COMPILE_CACHE(bytecode_identifier, code_type, code_str) \
+#define REPY_GLOBAL_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
 REPY_Handle bytecode_identifier = 0; \
 REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
     if (success && bytecode_identifier == 0) { \
-        bytecode_identifier = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier '" #bytecode_identifier "' ", code_type); \
+        bytecode_identifier = REPY_CompileCStr(code, __FILE_NAME__ ", in identifier '" #bytecode_identifier "' ", code_mode); \
     } \
 } \
 
