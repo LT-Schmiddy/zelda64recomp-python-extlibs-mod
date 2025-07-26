@@ -126,9 +126,9 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
     REPY_HandleEntry* entry = &py_objects.at(handle);
     if (entry->is_single_use) {
         suh_release_queue.push(handle);
-        PLOGD.printf("-> REPY_Handle %u Accessed (SUH)", handle);
+        PLOGD.printf("-> REPY_Handle %08X Accessed (SUH)", handle);
     } else {
-        PLOGD.printf("-> REPY_Handle %u Accessed", handle);
+        PLOGD.printf("-> REPY_Handle %08X Accessed", handle);
     }
 
     return &entry->py_object;
@@ -147,7 +147,7 @@ bool PyInterpreterController::get_handle_suh(REPY_Handle handle) {
 void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_use) {
     REPY_HandleEntry* entry = &py_objects.at(handle);
     entry->is_single_use = is_single_use;
-    PLOGD.printf("-> REPY_Handle %u Setting SUH = %i", handle, is_single_use);
+    PLOGD.printf("-> REPY_Handle %08X Setting SUH = %i", handle, is_single_use);
 }
 
 void PyInterpreterController::release_suh_handles() {
@@ -155,13 +155,13 @@ void PyInterpreterController::release_suh_handles() {
         REPY_Handle handle = suh_release_queue.front();
         suh_release_queue.pop();
         py_objects.erase(handle);
-        PLOGD.printf("-> REPY_Handle %u Released (SUH)", handle);
+        PLOGD.printf("-> REPY_Handle %08X Released (SUH)", handle);
     }
 }
 
 void PyInterpreterController::release_handle(REPY_Handle handle) {
     py_objects.erase(handle);
-    PLOGD.printf("-> REPY_Handle %u Released", handle);
+    PLOGD.printf("-> REPY_Handle %08X Released", handle);
 }
 
 py::module_ PyInterpreterController::construct_module(std::string module_name, std::string module_code, bool add_to_sys) {

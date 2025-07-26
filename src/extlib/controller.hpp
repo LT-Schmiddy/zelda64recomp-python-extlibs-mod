@@ -8,13 +8,8 @@
 
 
 #include "lib_recomp.hpp"
+#include "pyobject_slotmap.hpp"
 
-typedef unsigned int REPY_Handle;
-
-struct REPY_HandleEntry {
-    py::object py_object = py::none();
-    bool is_single_use = false;
-};
 
 class PyInterpreterController {
 public:
