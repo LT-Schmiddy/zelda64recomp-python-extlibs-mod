@@ -355,12 +355,12 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(RE
 // Flow Control - If
 #define REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count, py_expression) \
 static REPY_Handle bytecode_array_identifier[elif_count + 1]; \
-static bool bytecode_array_identifier ## _init = false; \
-if (! bytecode_array_identifier ## _init) { \
+static bool bytecode_array_identifier ## _is_init = false; \
+if (! bytecode_array_identifier ## _is_init) { \
     for (int i = 0; i < elif_count + 1; i++) { \
         bytecode_array_identifier[i] = 0; \
     } \
-    bytecode_array_identifier ## _init = 1; \
+    bytecode_array_identifier ## _is_init = 1; \
 } \
 u32 bytecode_array_identifier ## _index = 0; \
 
@@ -390,6 +390,13 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
 #define REPY_FN_FOREACH(bytecode_identifier, var_name, py_expression) \
 REPY_FN_CODE_CACHE(bytecode_identifier, REPY_CODE_EVAL, py_expression); \
 REPY_FOREACH_BLOCK(bytecode_identifier ## _iter, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), _py_locals, var_name)
+
+
+#define REPY_FN_FOR(bytecode_identifier, py_init_statement, py_eval_expression, py_after_statement) \
+REPY_FN_CODE_CACHE(bytecode_identifier ## _init_statement, REPY_CODE_EXEC, py_init_statement); \
+REPY_FN_CODE_CACHE(bytecode_identifier ## _eval_expression, REPY_CODE_EVAL, py_eval_expression); \
+REPY_FN_CODE_CACHE(bytecode_identifier ## _after_statement, REPY_CODE_EXEC, py_after_statement); \
+for (REPY_FN_EXEC(bytecode_identifier ## _init_statement); REPY_FN_EVAL_BOOL(bytecode_identifier ## _eval_expression); REPY_FN_EXEC(bytecode_identifier ## _after_statement)) 
 
 // General:
 REPY_IMPORT(void REPY_Release(REPY_Handle py_object));

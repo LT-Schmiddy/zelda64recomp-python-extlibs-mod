@@ -429,9 +429,6 @@ RECOMP_DLL_FUNC(PythonNative_Object_Next) {
             entry = controller->py_next(*obj);
         }
     } catch (py::error_already_set &e) {
-        py::print(e.type());
-        py::print(controller->py_stop_iteration_type);
-
         if (!e.type().is(controller->py_stop_iteration_type) || !process_stop_iteration) {
             controller->handle_exception(&e);
         } else {

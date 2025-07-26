@@ -362,7 +362,14 @@ REPY_ON_INIT void run_misc_tests() {
     
     REPY_FN_FOREACH(foreach_test1, "i", "[1, 2, 3, 4, 5]") {
         REPY_FN_EXEC_BLOCK(
-            loop_print_test,
+            foreach_print_test,
+            "print(i)\n"
+        );
+    }
+
+    REPY_FN_FOR(for_test1, "i = 0", "i < 10", "i += 1") {
+        REPY_FN_EXEC_BLOCK(
+            for_print_test,
             "print(i)\n"
         );
     }
