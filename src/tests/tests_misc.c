@@ -16,7 +16,7 @@ void inline_test() {
     REPY_FN_SET("new_dict", new_dict);
     REPY_Release(new_dict);
 
-    // REPY_FN_EXEC_BLOCK(
+    // REPY_FN_EXEC_CACHE(
     //     inline_test_exec1, 
     //     "print(f'Hello Mr. {count=}')\n"
     //     "print(f'Hello Mr. {new_dict=}')\n"
@@ -37,7 +37,7 @@ void inline_test() {
 
 void file_access_test() {
     REPY_FN_SETUP;
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         file_access_test_exec1, 
         "from pathlib import Path\n"
         "sound_json_str = Path('sound.json').read_text()\n"
@@ -68,7 +68,7 @@ void mem_test() {
     REPY_FN_SETUP;
     const char* addr_test = "Hello Alex";
     REPY_FN_SET_S32("addr_test", (s32)addr_test);
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         mem_test_exec1, 
         "import recomp_mem\n"
         "print(type(addr_test))\n"
@@ -83,7 +83,7 @@ void mem_test() {
 
 void time_test() {
     REPY_FN_SETUP;
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         time_start1,
         "import time\n"
         "start_time = time.time()\n"
@@ -97,7 +97,7 @@ void time_test() {
     }
 
 
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         time_end1,
         "end_time = time.time() - start_time\n"
         "print(f'{end_time=}')\n"
@@ -122,7 +122,7 @@ void print_dict_test_no_code() {
 
 void print_dict_test_code() {
     REPY_FN_SETUP;
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         code_test1, 
         "import builtins\n"
         "my_dict = {\n"
@@ -138,7 +138,7 @@ void print_dict_test_code() {
 
 void no_code_block_test() {
     REPY_FN_SETUP;
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         time_start1,
         "import time\n"
         "nc_start_time = time.time()\n"
@@ -148,7 +148,7 @@ void no_code_block_test() {
         print_dict_test_no_code();
     }
 
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         time_end1,
         "nc_run_time = time.time() - nc_start_time\n"
         "c_start_time = time.time()\n"
@@ -158,7 +158,7 @@ void no_code_block_test() {
         print_dict_test_code();
     }
 
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         time_end2,
         "c_run_time = time.time() - c_start_time\n"
         "print(f'{nc_run_time=}, {c_run_time=}')\n"
@@ -176,7 +176,7 @@ REPY_ON_INIT void REPY_Tests() {
     REPY_FN_SET_U64("u64val1", 99);
     REPY_FN_SET_S64("s64val1", -99);
     REPY_FN_SET_F64("f64val1", 99.5);
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         create_int1,
         "print(f'{u64val1=}')\n"
         "print(f'{s64val1=}')\n"
@@ -225,7 +225,7 @@ REPY_ON_INIT void REPY_Tests() {
     REPY_FN_SET_S32("f32_test_ptr", (s32)&f32_test);
     REPY_FN_SET_S32("f64_test_ptr", (s32)&f64_test);
 
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         recomp_mem_test1,
         "import recomp_mem\n"
         "print(f'{recomp_mem.read_u8(u8_test_ptr)=}')\n"
@@ -275,7 +275,7 @@ REPY_ON_INIT void REPY_Tests() {
     REPY_Handle bytes_test = REPY_MemcpyToByteArray(bytes_array, 10, false);
     REPY_FN_SET("bytes_test", bytes_test);
 
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         memcpy_test1,
         "print(f'{len(bytes_test)=}')\n"
         "print(f'{bytes_test=}')\n"
@@ -300,13 +300,13 @@ REPY_ON_INIT void REPY_Tests() {
 REPY_ON_INIT void REPY_Tests() {
     REPY_FN_SETUP;
     recomp_printf("REPY Tests Loaded\n");
-        REPY_FN_EXEC_BLOCK(
+        REPY_FN_EXEC_CACHE(
         time_start1,
         "import time\n"
         "nc_start_time = time.time()\n"
     );
 
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         bad_fib1,
         "count_holder = 0\n"
         "def count_step():\n"
@@ -326,7 +326,7 @@ REPY_ON_INIT void REPY_Tests() {
         }
     }
     
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         time_end1,
         "fib_run_time = time.time() - nc_start_time\n"
     );
@@ -335,7 +335,7 @@ REPY_ON_INIT void REPY_Tests() {
         recomp_printf("%llu, ", fib_table[FIB_TABLE_SIZE - 6 + i]);
     }
 
-    REPY_FN_EXEC_BLOCK(
+    REPY_FN_EXEC_CACHE(
         time_print1,
         "print(f'{fib_run_time=}')\n"
     );
@@ -361,14 +361,14 @@ REPY_ON_INIT void run_misc_tests() {
     }
     
     REPY_FN_FOREACH(foreach_test1, "i", "[1, 2, 3, 4, 5]") {
-        REPY_FN_EXEC_BLOCK(
+        REPY_FN_EXEC_CACHE(
             foreach_print_test,
             "print(i)\n"
         );
     }
 
     REPY_FN_FOR(for_test1, "i = 0", "i < 10", "i += 1") {
-        REPY_FN_EXEC_BLOCK(
+        REPY_FN_EXEC_CACHE(
             for_print_test,
             "print(i)\n"
         );
