@@ -36,7 +36,7 @@ RECOMP_EXPORT u32 REPY_CompileHelper (
     }
 }
 
-RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name) {
+RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name) {
     REPY_IteratorHelper* helper = recomp_alloc(sizeof(REPY_IteratorHelper));
     helper->_first_update = true;
     helper->index = 0;
@@ -48,7 +48,14 @@ RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_objec
     return helper;
 }
 
-RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper) {
+RECOMP_EXPORT void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper) {
+    PythonNative_Object_Release(helper->iter);
+    PythonNative_Object_Release(helper->py_scope);
+    PythonNative_Object_Release(helper->var_name);
+    recomp_free(helper);
+}
+
+RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool auto_destroy) {
     if (helper->_first_update) {
         helper->_first_update = false;
     } else {
@@ -61,7 +68,6 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper) {
     }
 
     helper->curr = PythonNative_Object_Next(helper->iter, 0, true);
-
     if (helper->curr) {
         if (helper->py_scope) {
             // If given a python scope, add current to the scope under the given variable name:
@@ -71,10 +77,10 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper) {
         return true;
     } else {
         // Iterator complete. Time to clean up.
-        PythonNative_Object_Release(helper->iter);
-        PythonNative_Object_Release(helper->py_scope);
-        PythonNative_Object_Release(helper->var_name);
-        recomp_free(helper);
+        if (auto_destroy) {
+            REPY_IteratorHelper_Destroy(helper);
+        }
         return false;   
     }
 }
+

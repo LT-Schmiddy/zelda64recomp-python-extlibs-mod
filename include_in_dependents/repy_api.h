@@ -119,10 +119,13 @@ if (bytecode_identifier == 0) { \
 
 // Python Object Flow Control
 #define REPY_FOREACH_BLOCK(iter_identifier, py_object, py_scope, var_name) \
-for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Init(py_object, py_scope, var_name); REPY_IteratorHelper_Update(iter_identifier);)
+for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object, py_scope, var_name); REPY_IteratorHelper_Update(iter_identifier, true);)
 
 #define REPY_FOREACH(iter_identifier, py_object) \
 REPY_FOREACH_BLOCK(iter_identifier, py_object, 0, NULL)
+
+#define REPY_FOREACH_CLEANUP_NOW(iter_identifier) \
+REPY_IteratorHelper_Destroy(iter_identifier)
 
 
 // FN - Overhead: 
@@ -393,6 +396,9 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier, REPY_CODE_EVAL, py_expression); \
 REPY_FOREACH_BLOCK(bytecode_identifier ## _iter, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), _py_locals, var_name)
 
+#define REPY_FN_FOREACH_CLEANUP_NOW(bytecode_identifier) \
+REPY_IteratorHelper_Destroy(bytecode_identifier ## _iter)
+
 #define REPY_FN_FOR(bytecode_identifier, py_init_statement, py_eval_expression, py_after_statement) \
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier ## _init_statement, REPY_CODE_EXEC, py_init_statement); \
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier ## _eval_expression, REPY_CODE_EVAL, py_eval_expression); \
@@ -525,7 +531,8 @@ REPY_IMPORT(void REPY_ClearError());
 
 // Helpers:
 REPY_IMPORT(u32 REPY_CompileHelper(REPY_Handle* handle_ptr, const char* code_str, const char* identifier, REPY_CodeMode code_mode, REPY_CHReturnType return_type));
-REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Init(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name));
-REPY_IMPORT(bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper));
+REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name));
+REPY_IMPORT(void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper));
+REPY_IMPORT(bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool auto_destroy));
 
 #endif
