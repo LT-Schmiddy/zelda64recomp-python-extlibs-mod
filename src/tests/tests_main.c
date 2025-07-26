@@ -161,6 +161,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     // From here on, we'll assume that these dict operations are working as expected.
     // The REPY_CreateDict variadic function isn't needed for Python code execution, and depends on Tuple construction. So we'll test that later.
 
+    // The following tests of executing Python code rely on the assumption that Python itself is working correctly.
     // Testing code execution via CStrings. 
     REPY_Handle py_globals = REPY_CreateEmptyDict();
     REPY_Handle py_locals = REPY_CreateEmptyDict();
@@ -181,7 +182,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("REPY_ExecCStr - 'y' assigned to 8", 8 == REPY_CastS32(REPY_MakeSUH(REPY_DictGet(py_locals, test_var_y_name))));
     validate("REPY_EvalCStr - 'y == 8' is true", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStrN("y == 8", 6, py_globals, py_locals))));
     validate("REPY_EvalCStr - 'y == 9' is false", !REPY_CastBool(REPY_MakeSUH(REPY_EvalCStrN("y == 9", 6, py_globals, py_locals))));
-    // We'll need more of the API validated before we can test error handling. That will come later.
+    // We'll need more of the API validated before we can test error handling. That will come after all other execution stuff is tested.
     // From here on, we will assume that running Python code directly from strings works as expected, provided the Python code is correct.
     REPY_Release(test_var_x_name);
     REPY_Release(test_var_y_name);
@@ -210,13 +211,6 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("REPY_Exec - eval 'b == 30' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(b_eval_bytecode, py_globals, py_locals))));
     validate("REPY_Exec - eval 'c == 40' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(c_eval_bytecode, py_globals, py_locals))));
 
-    // Lets check that REPY_Exec and REPY_Eval can use Python strings as well:
-    validate("REPY_Exec - exec str 'd = 100' executed successfully", REPY_Exec(REPY_CreateStr_SUH("d = 100"), py_globals, py_locals));
-    validate("REPY_Exec - eval str 'd == 100' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("d == 100"), py_globals, py_locals))));
-    validate("REPY_Exec - exec str 'e = 1000' executed successfully", REPY_Exec(REPY_CreateStr_SUH("e = 1000"), py_globals, py_locals));
-    validate("REPY_Exec - eval str 'e == 1000' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("e == 1000"), py_globals, py_locals))));
-
-    // From here on, we'll assume that compiling and executing bytecode, as well as executing python strings works correctly, so long as the Python code is correct.
     REPY_Release(py_exec_string);
     REPY_Release(a_assign_bytecode);
     REPY_Release(b_assign_bytecode);
@@ -225,6 +219,16 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(a_eval_bytecode);
     REPY_Release(b_eval_bytecode);
     REPY_Release(c_eval_bytecode);
+
+    // Lets check that REPY_Exec and REPY_Eval can use Python strings as well:
+    validate("REPY_Exec - exec str 'd = 100' executed successfully", REPY_Exec(REPY_CreateStr_SUH("d = 100"), py_globals, py_locals));
+    validate("REPY_Exec - eval str 'd == 100' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("d == 100"), py_globals, py_locals))));
+    validate("REPY_Exec - exec str 'e = 1000' executed successfully", REPY_Exec(REPY_CreateStr_SUH("e = 1000"), py_globals, py_locals));
+    validate("REPY_Exec - eval str 'e == 1000' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("e == 1000"), py_globals, py_locals))));
+
+    // From here on, we'll assume that compiling and executing bytecode, as well as executing python strings works correctly, so long as the Python code is correct.
+    // Time to test exception handling:
+
     REPY_Release(py_globals);
     REPY_Release(py_locals);
 
