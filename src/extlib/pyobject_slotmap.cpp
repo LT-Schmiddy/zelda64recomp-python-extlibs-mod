@@ -70,10 +70,7 @@ PyObjectSlotMap::PyObjectSlotMap() {
 PyObjectSlotMap::~PyObjectSlotMap() {
 if (level1_count != 0) {
         PLOGD.printf("PyObjectSlotMap deleted without being empty. %u items remaining. Cleaning now...", level1_count);
-        for (uint32_t i = 0; i < PYMAP_LEVEL_SIZE; i++) {
-            delete level1[i];
-            level1[i] = NULL;
-        }
+
     } else {
         PLOGD.printf("PyObjectSlotMap deleted (empty).");
     }
@@ -88,25 +85,25 @@ REPY_HandleEntry* PyObjectSlotMap::get(REPY_Handle handle) {
 
     MapLevel2* level2 = level1[l1];
     if (level2 == NULL) {
-        PLOGV.printf("MapLevel2 0x%02X of handle 0x%08X is NULL", l1, handle);
+        PLOGV.printf("Level 1 0x%02X of handle 0x%08X is NULL", l1, handle);
         return NULL;
     }
 
     MapLevel3* level3 = level2->level2[l2];
     if (level3 == NULL) {
-        PLOGV.printf("MapLevel3 0x%02X of handle 0x%08X is NULL", l2, handle);
+        PLOGV.printf("Level 2 0x%02X of handle 0x%08X is NULL", l2, handle);
         return NULL;
     }
 
     MapLevel4* level4 = level3->level3[l3];
     if (level4 == NULL) {
-        PLOGV.printf("MapLevel4 0x%02X of handle 0x%08X is NULL", l3, handle);
+        PLOGV.printf("Level 3 0x%02X of handle 0x%08X is NULL", l3, handle);
         return NULL;
     }
 
     REPY_HandleEntry* entry = level4->level4[l4];
     if (entry == NULL) {
-        PLOGV.printf("REPY_HandleEntry 0x%02X of handle 0x%08X is NULL", l4, handle);
+        PLOGV.printf("Level 4 0x%02X of handle 0x%08X is NULL", l4, handle);
         return NULL;
     }
 
@@ -137,6 +134,7 @@ REPY_Handle PyObjectSlotMap::add(py::object* object) {
         level3->level3[l3] = level4;
         level3->count++;
     }
+
 
     assert(level4->level4[l4] == NULL);
     REPY_HandleEntry* entry = new REPY_HandleEntry {(*object), false};
@@ -195,10 +193,19 @@ void PyObjectSlotMap::del(REPY_Handle handle) {
     REPY_HandleEntry* entry = level4->level4[l4];
     assert(entry != NULL);
 
+    REPY_Handle level4_max = level4->pos + 0xFF;
+    bool preserve_level_4 = false;
+
+    // Don't delete if we KNOW we're gonna allocate on this level4 again. 
+    if (level4->pos <= next_handle_val && next_handle_val < level4_max) {
+        preserve_level_4 = true;
+    }
+
     delete entry;
     level4->level4[l4] = NULL;
     level4->count--;
-    if (level4->count == 0) {
+
+    if (level4->count == 0 && !preserve_level_4) {
         delete level4;
         level3->level3[l3] = NULL;
         level3->count--;
@@ -217,8 +224,23 @@ void PyObjectSlotMap::del(REPY_Handle handle) {
 }
 
 REPY_Handle PyObjectSlotMap::get_next_handle() {
-    while (has(next_handle_val) || next_handle_val == 0) {
+    // next_handle_val starts at 1. The only way to reach 0 is by integer overflow,
+    // which means we need to start checking slots are already in use.
+    if (next_handle_val == 0) {
+        wrapped_around = true;
+    }
+
+    while (wrapped_around && (next_handle_val == 0 || has(next_handle_val))) {
         next_handle_val++;
     }
-    return next_handle_val++;
+    REPY_Handle retVal = next_handle_val;
+    next_handle_val++;
+    return retVal;
+}
+
+void PyObjectSlotMap::del_all() {
+    for (uint32_t i = 0; i < PYMAP_LEVEL_SIZE; i++) {
+        delete level1[i];
+        level1[i] = NULL;
+    }
 }

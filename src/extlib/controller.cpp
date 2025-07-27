@@ -87,14 +87,12 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
 PyInterpreterController::~PyInterpreterController() {
     // Restores the GIL to this thread.
 
-    // The DLL unloading process seems to clean up the interpreter on it's own,
-    // But it doesn't seem to like it when we have handles left over.
-    {
-        // py::gil_scoped_acquire gil;
-        // py_objects_umap.clear();
-    }
     PyEval_RestoreThread(py_main_thread);
+    if (use_slotmap) {
+        py_objects_smap.del_all();
+    }
     py_objects_umap.clear();
+
     PLOGI << "-> Python Interpreter Uninitialized";
 }
 

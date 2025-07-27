@@ -1,7 +1,7 @@
 #pragma once
 #include "globals.hpp"
 
-#define PYMAP_LEVEL_SIZE 255
+#define PYMAP_LEVEL_SIZE 256
 
 typedef unsigned int REPY_Handle;
 
@@ -58,6 +58,7 @@ public:
     REPY_Handle add_and_steal(py::object* object);
     bool has(REPY_Handle handle);
     void del(REPY_Handle handle);
+    void del_all();
 
 private:
     // REPY_HandleEntry* lookup(REPY_Handle handle);
@@ -65,5 +66,6 @@ private:
     uint32_t level1_count = 0;
     uint32_t count = 0;
     MapLevel2* level1[255];
+    bool wrapped_around = false;
     REPY_Handle get_next_handle();
 };
