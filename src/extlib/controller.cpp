@@ -64,7 +64,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     config.install_signal_handlers = true;
 
     py::initialize_interpreter(&config); 
-    PLOGI << "-> Python Interpreter Initialized";
+    PLOGI << "-> Python interpreter initialized";
     PLOGI << "-> REPY_Handle Lookup Mode set to " << (p_use_slotmap ? "Slot Map" : "Unordered Hash Map");
 
     auto sys = py::module_::import("sys");
@@ -93,7 +93,7 @@ PyInterpreterController::~PyInterpreterController() {
     }
     py_objects_umap.clear();
 
-    PLOGI << "-> Python Interpreter Uninitialized";
+    PLOGI << "-> Python interpreter shutdown";
 }
 
 REPY_Handle PyInterpreterController::get_new_handle_value() {
@@ -127,7 +127,7 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
         py_objects_umap.insert({new_handle, {(*obj), false}});
     }
 
-    PLOGD.printf("-> REPY_Handle 0x%08X Created", new_handle);
+    PLOGD.printf("-> REPY_Handle 0x%08X created", new_handle);
     return new_handle;
 }
 
@@ -136,18 +136,18 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
         REPY_HandleEntry* entry = py_objects_smap.get(handle);
         if (entry->is_single_use) {
             suh_release_queue.push(handle);
-            PLOGD.printf("-> REPY_Handle 0x%08X Accessed (SUH)", handle);
+            PLOGD.printf("-> REPY_Handle 0x%08X accessed (SUH)", handle);
         } else {
-            PLOGD.printf("-> REPY_Handle 0x%08X Accessed", handle);
+            PLOGD.printf("-> REPY_Handle 0x%08X accessed", handle);
         }
         return &entry->py_object;
     } else {
         REPY_HandleEntry* entry = &py_objects_umap.at(handle);
         if (entry->is_single_use) {
             suh_release_queue.push(handle);
-            PLOGD.printf("-> REPY_Handle 0x%08X Accessed (SUH)", handle);
+            PLOGD.printf("-> REPY_Handle 0x%08X accessed (SUH)", handle);
         } else {
-            PLOGD.printf("-> REPY_Handle 0x%08X Accessed", handle);
+            PLOGD.printf("-> REPY_Handle 0x%08X accessed", handle);
         }
 
         return &entry->py_object;
@@ -182,7 +182,7 @@ void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_
     }
 
     entry->is_single_use = is_single_use;
-    PLOGD.printf("-> REPY_Handle %08X Setting SUH = %i", handle, is_single_use);
+    PLOGD.printf("-> REPY_Handle %08X setting SUH = %i", handle, is_single_use);
 }
 
 void PyInterpreterController::release_suh_handles() {
@@ -194,7 +194,7 @@ void PyInterpreterController::release_suh_handles() {
         } else {
             py_objects_umap.erase(handle);
         }
-        PLOGD.printf("-> REPY_Handle %08X Released (SUH)", handle);
+        PLOGD.printf("-> REPY_Handle %08X released (SUH)", handle);
     }
 }
 
@@ -204,7 +204,7 @@ void PyInterpreterController::release_handle(REPY_Handle handle) {
     } else {
         py_objects_umap.erase(handle);
     }
-    PLOGD.printf("-> REPY_Handle %08X Released", handle);
+    PLOGD.printf("-> REPY_Handle %08X released", handle);
 }
 
 py::module_ PyInterpreterController::construct_module(std::string module_name, std::string module_code, bool add_to_sys) {

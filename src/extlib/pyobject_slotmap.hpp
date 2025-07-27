@@ -42,7 +42,6 @@ public:
     void del_all();
 
 private:
-    // REPY_HandleEntry* lookup(REPY_Handle handle);
     REPY_Handle next_handle_val = 1;
     uint32_t page_count = 0;
     uint32_t count = 0;

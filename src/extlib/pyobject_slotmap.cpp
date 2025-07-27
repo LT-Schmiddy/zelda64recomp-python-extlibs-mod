@@ -118,7 +118,6 @@ void PyObjectSlotMap::del(REPY_Handle handle) {
         preserve_page = true;
     }
 
-    
     delete entry;
     page->entries[entry_index] = NULL;
     page->count--;
