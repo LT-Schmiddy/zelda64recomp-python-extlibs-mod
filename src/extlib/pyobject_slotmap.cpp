@@ -197,7 +197,7 @@ void PyObjectSlotMap::del(REPY_Handle handle) {
     bool preserve_level_4 = false;
 
     // Don't delete if we KNOW we're gonna allocate on this level4 again. 
-    if (level4->pos <= next_handle_val && next_handle_val < level4_max) {
+    if (level4->pos <= next_handle_val && next_handle_val <= level4_max) {
         preserve_level_4 = true;
     }
 
