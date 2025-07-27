@@ -5,14 +5,14 @@
 #include "global.h"
 
 /*! \file repy_api.h
-    \version 0.1.3
+    \version 0.1.4
     \brief The main header for Recomp External Python
  */
 
 /**
  * @brief The mod id string for REPY.
  * 
- * The `recomp_py.h` imports all the functions and events needed for RecompPy, 
+ * The `recomp_py.h` imports all the functions and events needed for REPY, 
  * so you probably won't need to use this directly.
  */
 #define REPY_MOD_ID_STR "MM_Recomp_External_Python_API"
@@ -189,34 +189,34 @@ REPY_CastStr(REPY_MakeSUH(REPY_Eval(bytecode_handle, _py_globals, _py_locals)))
 REPY_CastBytes(REPY_MakeSUH(REPY_Eval(bytecode_handle, _py_globals, _py_locals)))
 
 // FN - Eval CStr
-#define REPY_FN_EVAL_CSTR(code) \
+#define REPY_FN_EVAL_CSTR(code_str) \
 REPY_EvalCStr(code, _py_globals, _py_locals) 
 
-#define REPY_FN_EVAL_CSTR_BOOL(code) \
+#define REPY_FN_EVAL_CSTR_BOOL(code_str) \
 REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_U32(code) \
+#define REPY_FN_EVAL_CSTR_U32(code_str) \
 REPY_CastU32(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_S32(code) \
+#define REPY_FN_EVAL_CSTR_S32(code_str) \
 REPY_CastS32(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_F32(code) \
+#define REPY_FN_EVAL_CSTR_F32(code_str) \
 REPY_CastF32(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_U64(code) \
+#define REPY_FN_EVAL_CSTR_U64(code_str) \
 REPY_CastU64(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_S64(code) \
+#define REPY_FN_EVAL_CSTR_S64(code_str) \
 REPY_CastS64(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_F64(code) \
+#define REPY_FN_EVAL_CSTR_F64(code_str) \
 REPY_CastF64(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_STR(code) \
+#define REPY_FN_EVAL_CSTR_STR(code_str) \
 REPY_CastStr(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
-#define REPY_FN_EVAL_CSTR_BYTESTR(code) \
+#define REPY_FN_EVAL_CSTR_BYTESTR(code_str) \
 REPY_CastBytes(REPY_MakeSUH(REPY_EvalCStr(code, _py_globals, _py_locals)))
 
 // FN - Eval Cache Block:

@@ -1,6 +1,6 @@
 {
     "name": "Python_for_Zelda64Recompiled",
-    "version_number": "0.1.3",
+    "version_number": "0.1.4",
     "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
     "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
     "dependencies": []
