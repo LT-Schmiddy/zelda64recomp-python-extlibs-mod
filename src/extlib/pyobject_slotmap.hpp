@@ -1,7 +1,7 @@
 #pragma once
 #include "globals.hpp"
 
-#define PYMAP_LEVEL_SIZE 256
+#define PYMAP_LEVEL_SIZE 65536
 
 typedef unsigned int REPY_Handle;
 
@@ -10,44 +10,25 @@ struct REPY_HandleEntry {
     bool is_single_use = false;
 };
 
-#define PY_SPLIT_HANDLE(handle, level1_name, level2_name, level3_name, level4_name) \
-uint8_t level1_name = ((handle & 0xFF000000) >> 24); \
-uint8_t level2_name = ((handle & 0x00FF0000) >> 16); \
-uint8_t level3_name = ((handle & 0x0000FF00) >> 8); \
-uint8_t level4_name = ((handle & 0x000000FF))
+#define PY_SPLIT_HANDLE(handle, page_index_name, entry_index_name) \
+uint16_t page_index_name = ((handle & 0xFFFF0000) >> 16); \
+uint16_t entry_index_name = ((handle & 0x0000FFFF)); 
+
 
 #define PY_SPLIT_HANDLE_DEFAULT(handle) \
-PY_SPLIT_HANDLE(handle, l1, l2, l3, l4)
+PY_SPLIT_HANDLE(handle, page_index, entry_index)
 
-#define PY_HANDLE_LEVEL1_POS(handle) 0
-#define PY_HANDLE_LEVEL2_POS(handle) (handle & 0xFF000000)
-#define PY_HANDLE_LEVEL3_POS(handle) (handle & 0xFFFF0000)
-#define PY_HANDLE_LEVEL4_POS(handle) (handle & 0xFFFFFF00)
+#define PY_HANDLE_PAGE_TABLE_POS(handle) (handle & 0xFFFF0000)
+
 
 class PyObjectSlotMap {
 public:
-    struct MapLevel4 {
+    struct MapPage {
         uint32_t pos = 0;
         uint32_t count = 0;
-        REPY_HandleEntry* level4[PYMAP_LEVEL_SIZE];
-        MapLevel4(uint32_t p_pos);
-        ~MapLevel4();
-    };
-
-    struct MapLevel3 {
-        uint32_t pos = 0;
-        uint32_t count = 0;
-        MapLevel4* level3[PYMAP_LEVEL_SIZE];
-        MapLevel3(uint32_t p_pos);
-        ~MapLevel3();
-    };
-
-    struct MapLevel2 {
-        uint32_t pos = 0;
-        uint32_t count = 0;
-        MapLevel3* level2[PYMAP_LEVEL_SIZE];
-        MapLevel2(uint32_t p_pos);
-        ~MapLevel2();
+        REPY_HandleEntry* entries[PYMAP_LEVEL_SIZE];
+        MapPage(uint32_t p_pos);
+        ~MapPage();
     };
 
     PyObjectSlotMap();
@@ -63,9 +44,9 @@ public:
 private:
     // REPY_HandleEntry* lookup(REPY_Handle handle);
     REPY_Handle next_handle_val = 1;
-    uint32_t level1_count = 0;
+    uint32_t page_count = 0;
     uint32_t count = 0;
-    MapLevel2* level1[255];
+    MapPage* pages[PYMAP_LEVEL_SIZE];
     bool wrapped_around = false;
     REPY_Handle get_next_handle();
 };
