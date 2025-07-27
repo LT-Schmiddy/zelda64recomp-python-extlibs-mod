@@ -45,13 +45,13 @@ REPY_HandleEntry* PyObjectSlotMap::get(REPY_Handle handle) {
 
     MapPage* page = pages[page_index];
     if (page == NULL) {
-        PLOGV.printf("Page index 0x%02X of handle 0x%08X is NULL", page_index, handle);
+        PLOGV.printf("Page index 0x%04X of handle 0x%08X is NULL", page_index, handle);
         return NULL;
     }
 
     REPY_HandleEntry* entry = page->entries[entry_index];
     if (entry == NULL) {
-        PLOGV.printf("Entry index 0x%02X of handle 0x%08X is NULL", entry_index, handle);
+        PLOGV.printf("Entry index 0x%04X of handle 0x%08X is NULL", entry_index, handle);
         return NULL;
     }
 
