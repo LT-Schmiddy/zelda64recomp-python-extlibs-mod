@@ -3,6 +3,7 @@
 
 #include "modding.h"
 #include "global.h"
+#include "recomputils.h"
 
 /*! \file repy_api.h
     \version 0.1.4
@@ -116,7 +117,10 @@ REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success
 #define REPY_INLINE_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
 static REPY_Handle bytecode_identifier = 0; \
 if (bytecode_identifier == 0) { \
-    bytecode_identifier = REPY_CompileCStr(code_str, __FILE_NAME__ ", in identifier '" #bytecode_identifier "' ", code_mode); \
+    /* bytecode_identifier = REPY_CompileCStr(code_str, __FILE_NAME__ ", in identifier '" #bytecode_identifier "' ", code_mode);*/ \
+    char* iden_str = REPY_CodeSourceStrHelper(__FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
+    bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
+    recomp_free(iden_str); \
 } \
 
 // Python Object Flow Control
@@ -542,5 +546,6 @@ REPY_IMPORT(u32 REPY_CompileHelper(REPY_Handle* handle_ptr, const char* code_str
 REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name));
 REPY_IMPORT(void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper));
 REPY_IMPORT(bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool auto_destroy));
+REPY_IMPORT(char* REPY_CodeSourceStrHelper(char* filename, char* function_name, u32 line_number, char* identifier));
 
 #endif

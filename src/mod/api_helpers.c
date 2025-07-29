@@ -4,7 +4,7 @@
 #include "recompconfig.h"
 #include "recomp_incbin.h"
 #include "libc/stdarg.h"
-
+#include "printf.h"
 #include "extlib_functions.h"
 
 RECOMP_EXPORT u32 REPY_CompileHelper (
@@ -82,5 +82,13 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool 
         }
         return false;   
     }
+}
+
+#define PYCODE_IDENTIFIER_FORMAT "File %s, Function %s, Line %u, Identifier %s -> "
+RECOMP_EXPORT char* REPY_CodeSourceStrHelper(char* filename, char* function_name, u32 line_number, char* identifier) {
+    int idlen = lenprintf_(PYCODE_IDENTIFIER_FORMAT, filename, function_name, line_number,identifier);
+    char* retVal = recomp_alloc(idlen + 1);
+    snprintf(retVal, idlen + 1, PYCODE_IDENTIFIER_FORMAT, filename, function_name, line_number,identifier);
+    return retVal;
 }
 

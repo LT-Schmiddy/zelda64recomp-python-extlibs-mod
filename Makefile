@@ -103,7 +103,7 @@ CFLAGS   := -target mips -mips2 -mabi=32 -O2 -G0 -mno-abicalls -mno-odd-spreg -m
 CPPFLAGS := -nostdinc -D_LANGUAGE_C -DMIPS -DF3DEX_GBI_2 -DF3DEX_GBI_PL -DGBI_DOWHILE -I include -I include/mod -I include/mod/dummy_headers \
 			-I include/shared -I mm-decomp/include -I mm-decomp/src -I mm-decomp/extracted/n64-us -I mm-decomp/include/libc \
 			-I include_in_dependents -I assets_extracted -I assets_extracted/assets -I assets_extracted/assets/assets
-LDFLAGS  := -nostdlib -T $(LDSCRIPT) -Map $(MOD_BUILD_DIR)/mod.map --unresolved-symbols=ignore-all --emit-relocs -e 0 --no-nmagic
+LDFLAGS  := -nostdlib -T $(LDSCRIPT) -Map $(MOD_BUILD_DIR)/mod.map --unresolved-symbols=ignore-all --emit-relocs -e 0 --no-nmagic -L lib -lgcc_vr4300
 
 MOD_C_SRCS := $(wildcard src/mod/*.c)
 MOD_C_OBJS := $(addprefix $(MOD_BUILD_DIR)/, $(MOD_C_SRCS:.c=.o))
