@@ -267,97 +267,97 @@ REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(module_name)), REPY_MakeSUH
 
 // Scope Management - Primatives:
 #define REPY_FN_GET(var_name) \
-REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)));
+REPY_DictGet_CStr(_py_locals, var_name);
 
 #define REPY_FN_SET(var_name, py_object) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), py_object)
+REPY_DictSet_CStr(_py_locals, var_name, py_object)
 
 #define REPY_FN_GET_BOOL(var_name) \
-REPY_CastBool(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastBool(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_BOOL(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBool(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBool(value)))
 
 #define REPY_FN_GET_U8(var_name) \
-REPY_CastU8(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastU8(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_U8(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU8(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateU8(value)))
 
 #define REPY_FN_GET_S8(var_name) \
-REPY_CastS8(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastS8(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_S8(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS8(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateS8(value)))
 
 #define REPY_FN_GET_U16(var_name) \
-REPY_CastU16(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastU16(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_U16(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU16(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateU16(value)))
 
 #define REPY_FN_GET_S16(var_name) \
-REPY_CastS16(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastS16(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_S16(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS16(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateS16(value)))
 
 #define REPY_FN_GET_U32(var_name) \
-REPY_CastU32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastU32(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_U32(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU32(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateU32(value)))
 
 #define REPY_FN_GET_S32(var_name) \
-REPY_CastS32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastS32(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_S32(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS32(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateS32(value)))
 
 #define REPY_FN_GET_F32(var_name) \
-REPY_CastF32(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastF32(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_F32(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateF32(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateF32(value)))
 
 #define REPY_FN_GET_U64(var_name) \
-REPY_CastU64(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastU64(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_U64(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateU64(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateU64(value)))
 
 #define REPY_FN_GET_S64(var_name) \
-REPY_CastS64(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastS64(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_S64(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateS64(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateS64(value)))
 
 #define REPY_FN_GET_F64(var_name) \
-REPY_CastF64(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastF64(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_F64(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateF64(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateF64(value)))
 
 // Scope Management - Strings
 #define REPY_FN_GET_STR(var_name) \
-REPY_CastStr(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)))))
+REPY_CastStr(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, var_name)))
 
 #define REPY_FN_SET_STR(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateStr(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateStr(value)))
 
 #define REPY_FN_SET_STR_N(var_name, value, len) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateStr(value, len)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateStr(value, len)))
 
 
 // Scope Management - Strings
 #define REPY_FN_GET_BYTESTR(var_name) \
-REPY_CastBytes(REPY_MakeSUH(REPY_DictGet(_py_locals, REPY_MakeSUH(REPY_CreateBytes(var_name)))))
+REPY_CastBytes(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, REPY_MakeSUH(REPY_CreateBytes(var_name)))))
 
 #define REPY_FN_SET_BYTESTR(var_name, value) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBytes(value)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value)))
 
 #define REPY_FN_SET_BYTESTR_N(var_name, value, len) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(var_name)), REPY_MakeSUH(REPY_CreateBytes(value, len)))
+REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value, len)))
 
 // Flow Control - If
 #define REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count, py_expression) \
@@ -502,9 +502,13 @@ REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict_SUH());
 REPY_IMPORT(REPY_Handle REPY_CreateDict(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreateDict_SUH(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));
+REPY_IMPORT(REPY_Handle REPY_DictGet_CStr(REPY_Handle dict, char* key));
 REPY_IMPORT(void REPY_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle value));
+REPY_IMPORT(void REPY_DictSet_CStr(REPY_Handle dict, char* key, REPY_Handle value));
 REPY_IMPORT(bool REPY_DictHas(REPY_Handle dict, REPY_Handle key));
+REPY_IMPORT(bool REPY_DictHas_CStr(REPY_Handle dict, char* key));
 REPY_IMPORT(void REPY_DictDel(REPY_Handle dict, REPY_Handle key));
+REPY_IMPORT(void REPY_DictDel_CStr(REPY_Handle dict, char* key));
 
 // Execution:
 REPY_IMPORT(REPY_Handle REPY_Compile(REPY_Handle code, REPY_Handle identifier, REPY_Handle mode));
@@ -520,8 +524,10 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle gl
 // Python Function Calls
 REPY_IMPORT(bool REPY_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
 REPY_IMPORT(REPY_Handle REPY_CallReturn(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
-REPY_IMPORT(bool REPY_CallAttr(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs));
-REPY_IMPORT(REPY_Handle REPY_CallAttrReturn(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(bool REPY_CallAttr(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(bool REPY_CallAttr_CStr(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(REPY_Handle REPY_CallAttr_Return(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(REPY_Handle REPY_CallAttr_CStr_Return(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs));
 
 // Error Handling
 REPY_IMPORT(bool REPY_IsErrorSet());

@@ -497,6 +497,19 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Get) {
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
+RECOMP_DLL_FUNC(PythonNative_Dict_Get_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+
+    py::object obj = (*d)[(char*)key.c_str()];
+
+    REPY_Handle retVal = controller->create_handle(&obj);
+    controller->release_suh_handles();
+    RECOMP_RETURN(REPY_Handle, retVal);
+}
+
 RECOMP_DLL_FUNC(PythonNative_Dict_Set) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
@@ -505,6 +518,17 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Set) {
     py::object* value = RECOMP_ARG_PYOBJECT(2);
 
     (*d)[*key] = value;
+    controller->release_suh_handles();
+}
+
+RECOMP_DLL_FUNC(PythonNative_Dict_Set_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+    py::object* value = RECOMP_ARG_PYOBJECT(2);
+
+    (*d)[(char*)key.c_str()] = value;
     controller->release_suh_handles();
 }
 
@@ -519,13 +543,34 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
     RECOMP_RETURN(uint32_t, retVal);
 }
 
+RECOMP_DLL_FUNC(PythonNative_Dict_Has_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+
+    uint32_t retVal = d->contains(key.c_str());
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, retVal);
+}
+
 RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
     py::object* key = RECOMP_ARG_PYOBJECT(1);
 
-    d->attr("pop")(key);
+    d->attr("pop")(*key);
+    controller->release_suh_handles();
+}
+
+RECOMP_DLL_FUNC(PythonNative_Dict_Remove_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+
+    d->attr("pop")(key.c_str());
     controller->release_suh_handles();
 }
 
@@ -550,6 +595,26 @@ RECOMP_DLL_FUNC(PythonNative_Object_GetAttr) {
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
+RECOMP_DLL_FUNC(PythonNative_Object_GetAttr_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+    
+    py::object r;
+    // If a default was passed:
+    if (RECOMP_ARG(uint32_t, 2)) {
+        py::object* default_r = RECOMP_ARG_PYOBJECT(2);
+        r = py::getattr(*obj, (char*)key.c_str(), *default_r);
+    } else {
+        r = py::getattr(*obj, (char*)key.c_str());
+    }
+    
+    REPY_Handle retVal = controller->create_handle(&r);
+    controller->release_suh_handles();
+    RECOMP_RETURN(REPY_Handle, retVal);
+}
+
 RECOMP_DLL_FUNC(PythonNative_Object_SetAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
@@ -558,6 +623,17 @@ RECOMP_DLL_FUNC(PythonNative_Object_SetAttr) {
     py::object* value = RECOMP_ARG_PYOBJECT(2);
 
     py::setattr(*obj, *key, *value);
+    controller->release_suh_handles();
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_SetAttr_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+    py::object* value = RECOMP_ARG_PYOBJECT(2);
+
+    py::setattr(*obj, (char*)key.c_str(), *value);
     controller->release_suh_handles();
 }
 
@@ -572,6 +648,17 @@ RECOMP_DLL_FUNC(PythonNative_Object_HasAttr) {
     RECOMP_RETURN(uint32_t, retVal);
 }
 
+RECOMP_DLL_FUNC(PythonNative_Object_HasAttr_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+
+    uint32_t retVal = py::hasattr(*obj, (char*)key.c_str());
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, retVal);
+}
+
 RECOMP_DLL_FUNC(PythonNative_Object_DelAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
@@ -579,6 +666,17 @@ RECOMP_DLL_FUNC(PythonNative_Object_DelAttr) {
     py::object* key = RECOMP_ARG_PYOBJECT(1);
 
     py::delattr(*obj, *key);
+    
+    controller->release_suh_handles();
+}
+
+RECOMP_DLL_FUNC(PythonNative_Object_DelAttr_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    std::u8string key = RECOMP_ARG_U8STR(1);
+
+    py::delattr(*obj, (char*)key.c_str());
     
     controller->release_suh_handles();
 }
@@ -844,6 +942,28 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* name = RECOMP_ARG_PYOBJECT(0);
+    py::tuple empty_tuple = py::tuple();
+    py::dict empty_dict = py::dict();
+    py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : &empty_tuple;
+    py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : &empty_dict;
+    
+    try {
+        obj->attr(*name)(*(*args), **(*kwargs));
+    } catch (py::error_already_set &e) {
+        controller->handle_exception(&e);
+        controller->release_suh_handles();
+        RECOMP_RETURN(uint32_t, 0);
+    }
+
+    controller->release_suh_handles();
+    RECOMP_RETURN(uint32_t, 1);
+}
+
+RECOMP_DLL_FUNC(PythonNative_CallAttr_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
     std::u8string name = RECOMP_ARG_U8STR(1);
     py::tuple empty_tuple = py::tuple();
     py::dict empty_dict = py::dict();
@@ -863,6 +983,31 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    py::object* obj = RECOMP_ARG_PYOBJECT(0);
+    py::object* name = RECOMP_ARG_PYOBJECT(0);
+    py::tuple empty_tuple = py::tuple();
+    py::dict empty_dict = py::dict();
+    REPY_Handle h1 = RECOMP_ARG(REPY_Handle, 2) ;
+    REPY_Handle h2 = RECOMP_ARG(REPY_Handle, 3) ;
+    py::tuple* args = h1 ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : &empty_tuple;
+    py::dict* kwargs = h2 ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : &empty_dict;
+    py::object result;
+    try {
+        result = obj->attr(*name)(*(*args), **(*kwargs));
+    } catch (py::error_already_set &e) {
+        controller->handle_exception(&e);
+        controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
+    
+    REPY_Handle handle = controller->create_handle(&result);
+    controller->release_suh_handles();
+    RECOMP_RETURN(REPY_Handle, handle);
+}
+
+RECOMP_DLL_FUNC(PythonNative_CallAttr_CStr_Return) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -886,6 +1031,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
     controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
+
 
 // ====================================== Errors: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_IsErrorSet) {

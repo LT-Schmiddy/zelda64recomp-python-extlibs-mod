@@ -275,26 +275,17 @@ REPY_ON_INIT void REPY_Lookup_And_Call_Speed_Test() {
         "nc_start_time = time.time()\n"
     );
 
-    REPY_FN_EXEC_CACHE(
-        bad_fib1,
-        "count_holder = 0\n"
-        "def count_step():\n"
-        "    global count_holder\n"
-        "    count_holder += 1\n"
-        "\n"
-    );
-    
+
     u64* count_table = recomp_alloc(sizeof(u64)* COUNT_TABLE_SIZE);
-    REPY_Handle count_fn = REPY_FN_GET("count_step");
 
     for (int i = 0; i < COUNT_TABLE_SIZE; i++) {
-        REPY_Call(count_fn, 0, 0);
-        count_table[i] = REPY_FN_GET_U64("count_holder");
+        REPY_FN_SET_U32("x", i);
+        count_table[i] = REPY_FN_GET_U64("x");
         if (i % (COUNT_TABLE_SIZE / 10) == 0) {
             recomp_printf("=");
         }
     }
-    
+
     REPY_FN_EXEC_CACHE(
         time_end1,
         "fib_run_time = time.time() - nc_start_time\n"

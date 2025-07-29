@@ -26,7 +26,7 @@ void inline_test() {
     // );
 
     REPY_Handle os_handle = REPY_FN_GET("os");
-    const char* os_name = REPY_CastStr(REPY_MakeSUH(REPY_CallAttrReturn(os_handle, "getcwd", 0, 0)));
+    const char* os_name = REPY_CastStr(REPY_MakeSUH(REPY_CallAttr_Return(os_handle, "getcwd", 0, 0)));
     recomp_printf("Python says the CWD is '%s'\n", os_name);
 
     REPY_Release(os_handle);
