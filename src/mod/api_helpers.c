@@ -84,11 +84,11 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool 
     }
 }
 
-#define PYCODE_IDENTIFIER_FORMAT "File %s, Function %s, Line %u, Identifier %s -> "
-RECOMP_EXPORT char* REPY_CodeSourceStrHelper(char* filename, char* function_name, u32 line_number, char* identifier) {
-    int idlen = lenprintf_(PYCODE_IDENTIFIER_FORMAT, filename, function_name, line_number,identifier);
+#define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s -> "
+RECOMP_EXPORT char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, u32 line_number, char* identifier) {
+    int idlen = lenprintf_(PYCODE_INLINE_IDENTIFIER_FORMAT, category, filename, function_name, line_number,identifier);
     char* retVal = recomp_alloc(idlen + 1);
-    snprintf(retVal, idlen + 1, PYCODE_IDENTIFIER_FORMAT, filename, function_name, line_number,identifier);
+    snprintf(retVal, idlen + 1, PYCODE_INLINE_IDENTIFIER_FORMAT, category, filename, function_name, line_number,identifier);
     return retVal;
 }
 
