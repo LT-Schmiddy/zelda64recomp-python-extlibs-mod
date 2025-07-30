@@ -43,15 +43,25 @@ RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_obj
     helper->iter = PythonNative_Object_Iter(py_object);
     helper->curr = 0;
     helper->py_scope = PythonNative_Object_CopyHandle(py_scope);
-    helper->var_name = PythonNative_Object_CreateStr(var_name);
+    if (py_scope != 0) {
+        helper->var_name = PythonNative_Object_CreateStr(var_name);
+    }
+
     
     return helper;
 }
 
 RECOMP_EXPORT void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper) {
     PythonNative_Object_Release(helper->iter);
-    PythonNative_Object_Release(helper->py_scope);
-    PythonNative_Object_Release(helper->var_name);
+    if (PythonNative_Object_IsValidHandle(helper->curr)) {
+        PythonNative_Object_Release(helper->curr);
+    }
+
+    if (helper->py_scope != 0) {
+        PythonNative_Object_Release(helper->py_scope);
+        PythonNative_Object_Release(helper->var_name);
+    }
+
     recomp_free(helper);
 }
 

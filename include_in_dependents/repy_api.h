@@ -367,7 +367,7 @@ REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value)))
 REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value, len)))
 
 // Flow Control - If
-#define REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count, py_expression) \
+#define REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count) \
 static REPY_Handle bytecode_array_identifier[elif_count + 1]; \
 static bool bytecode_array_identifier ## _is_init = false; \
 if (! bytecode_array_identifier ## _is_init) { \
@@ -390,7 +390,7 @@ if ( \
 ) 
 
 #define REPY_FN_IF(bytecode_array_identifier, elif_count, py_expression) \
-REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count, py_expression) \
+REPY_FN_IF_INIT_BLOCK(bytecode_array_identifier, elif_count) \
 REPY_FN_IF_STMT(bytecode_array_identifier, py_expression) 
 
 #define REPY_FN_ELIF(bytecode_array_identifier, py_expression) \
