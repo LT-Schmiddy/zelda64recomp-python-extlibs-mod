@@ -234,5 +234,16 @@ REPY_ON_INIT void REPY_API_Tests() {
 
 
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
+
+    REPY_FN_SETUP;
+    REPY_FN_SET_U32("x", 32);
+    REPY_FN_IF(if_test1, "x == 0") {
+        recomp_printf("bytecode_index -> 0\n");
+    } REPY_FN_ELIF(if_test1, "x == 32") {
+        recomp_printf("bytecode_index -> 1\n");
+    } else {
+        recomp_printf("bytecode ran else statement\n");
+    }
+    REPY_FN_CLEANUP;
 }
 
