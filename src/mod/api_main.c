@@ -6,6 +6,7 @@
 #include "libc/stdarg.h"
 
 #include "extlib_functions.h"
+#include "mod_logging.h"
 
 RECOMP_DECLARE_EVENT(REPY_OnLoadModules(int success));
 RECOMP_DECLARE_EVENT(REPY_OnMakeGlobalCaches(int success));
@@ -17,9 +18,9 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
     recomp_free((void*)mod_folder);
 
     if (py_init == 1) {
-        recomp_printf("Python interpreter initialized successfully.\n");
+        LOGI("Python interpreter initialized successfully.\n");
     } else {
-        recomp_printf("There was an error initializing the Python interpreter.\n");
+        LOGF("There was an error initializing the Python interpreter.\n");
     }
 
     REPY_OnLoadModules(py_init);

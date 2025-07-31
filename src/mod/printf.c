@@ -877,6 +877,20 @@ int printf_(const char* format, ...)
   return ret;
 }
 
+int vlenprintf_(const char* format, va_list va)
+{
+  char buffer[1];
+  const int ret = _vsnprintf(_out_null, buffer, (size_t)-1, format, va);
+  return ret;
+}
+
+int vlennprintf_(size_t count, const char* format, va_list va)
+{
+  char buffer[1];
+  const int ret = _vsnprintf(_out_buffer, buffer, count, format, va);
+  return ret;
+}
+
 int lenprintf_(const char* format, ...)
 {
   va_list va;
@@ -896,8 +910,6 @@ int lennprintf_(size_t count, const char* format, ...)
   va_end(va);
   return ret;
 }
-
-
 
 
 int sprintf_(char* buffer, const char* format, ...)

@@ -6,6 +6,7 @@
 #include "libc/stdarg.h"
 #include "printf.h"
 #include "extlib_functions.h"
+#include "mod_logging.h"
 
 RECOMP_EXPORT u32 REPY_CompileHelper (
     REPY_Handle* handle_ptr, 
@@ -82,7 +83,7 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool 
         if (helper->curr != 0) {
             PythonNative_Object_Release(helper->curr);
         } else {
-            recomp_printf("Warning: helper->curr should be 0. You may be trying to update an REPY_IteratorHelper after the iterator is finished.\n");
+            LOGW("Warning: helper->curr should not be 0. You may be trying to update an REPY_IteratorHelper after the iterator is finished.\n");
         }
     }
 

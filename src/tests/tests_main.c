@@ -284,12 +284,12 @@ REPY_ON_INIT void REPY_API_Tests() {
     // Testing Tuple construction.
     py_list_match = true;
     REPY_Handle py_tuple2 = REPY_CreateTuple(4, REPY_CreateS32_SUH(3), REPY_CreateS32_SUH(2), REPY_CreateS32_SUH(1), REPY_CreateS32_SUH(0));
-    REPY_Handle py_builtins = REPY_ImportModule("builtins");
 
     for (int i = 3; i >= 0; i--) {
         py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_TupleGetIndexS32(py_tuple2, 3 - i))));
     }
     validate("REPY_TupleGetIndexS32 returned correct values for (3, 2, 1, 0) created with REPY_CreateTuple", py_list_match);
+    REPY_Release(py_tuple2);
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);

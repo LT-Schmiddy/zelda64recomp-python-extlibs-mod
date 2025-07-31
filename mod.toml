@@ -154,6 +154,9 @@ native_libraries = [
         "PythonNative_GetErrorValue",
         "PythonNative_ClearError",
 
+        # Logging
+        "PythonNative_SetLogMetaData",
+        "PythonNative_CommitLogMessage"
     ] }
 ]
 

@@ -70,7 +70,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     auto sys = py::module_::import("sys");
     auto sys_path = sys.attr("path");
 
-    py::print(sys_path);
+    // py::print(sys_path);
 
     auto builtins = py::module_::import("builtins");
     py_compile = builtins.attr("compile");

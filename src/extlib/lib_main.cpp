@@ -1129,3 +1129,28 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
     py::gil_scoped_acquire gil;
     controller->clear_py_error();
 }
+
+// ====================================== Logging: ====================================== 
+static plog::Severity py_log_severity;
+static std::string py_log_func;
+static uint32_t py_log_line_number;
+static std::string py_log_file_name;
+
+RECOMP_DLL_FUNC(PythonNative_SetLogMetaData) { 
+    py_log_severity = (plog::Severity)RECOMP_ARG(uint32_t, 0);
+    py_log_func = RECOMP_ARG_STR(1);
+    py_log_line_number = RECOMP_ARG(uint32_t, 2);
+    py_log_file_name = RECOMP_ARG_STR(3);
+}
+
+RECOMP_DLL_FUNC(PythonNative_CommitLogMessage) {
+    std::string log_message = RECOMP_ARG_STR(0);
+    if (!plog::get<0>() || !plog::get<0>()->checkSeverity(py_log_severity)) {
+        ;
+    } else {
+        (*plog::get<0>()) += plog::Record(
+            py_log_severity, py_log_func.c_str(), py_log_line_number, py_log_file_name.c_str(), reinterpret_cast<void*>(0), 0
+        ).ref().printf("%s", log_message.c_str());
+    };
+}
+

@@ -64,6 +64,18 @@ int printf_(const char* format, ...);
  * Gets size of the string that would result from a printf call. Add 1 to get the required buffer size.
  * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
  */
+int vlenprintf_(const char* format, va_list va);
+
+/**
+ * Gets size of the string that would result from a printf call, given a maximum possible size. Add 1 to get the required buffer size.
+ * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
+ */
+int vlennprintf_(size_t count, const char* format, va_list va);
+
+/**
+ * Gets size of the string that would result from a printf call. Add 1 to get the required buffer size.
+ * \return The number of characters that are WRITTEN into the buffer, not counting the terminating null character
+ */
 int lenprintf_(const char* format, ...);
 
 /**
@@ -97,7 +109,7 @@ int sprintf_(char* buffer, const char* format, ...);
 int  snprintf_(char* buffer, size_t count, const char* format, ...);
 int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
 
-int lenprintf_(const char* format, ...);
+
 /**
  * Tiny vprintf implementation
  * \param format A string that specifies the format of the output
