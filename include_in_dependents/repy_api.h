@@ -536,7 +536,7 @@ REPY_IMPORT(void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj,
 
 // Indexing and Slicing:
 REPY_IMPORT(u32 REPY_Len(REPY_Handle object));
-REPY_IMPORT(REPY_Handle REPY_GetIndex(REPY_Handle object, int index));
+REPY_IMPORT(REPY_Handle REPY_GetIndexS32(REPY_Handle object, int index));
 
 // Iteration
 REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));

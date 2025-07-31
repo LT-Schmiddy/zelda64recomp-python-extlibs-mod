@@ -390,7 +390,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_Len) {
     RECOMP_RETURN(uint32_t, len_val);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_GetIndex) {
+RECOMP_DLL_FUNC(PythonNative_Object_GetIndexS32) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 

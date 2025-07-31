@@ -97,7 +97,7 @@ native_libraries = [
 
         # Indexing and Slicing
         "PythonNative_Object_Len",
-        "PythonNative_Object_GetIndex",
+        "PythonNative_Object_GetIndexS32",
 
         # Iteration
         "PythonNative_Object_Iter",

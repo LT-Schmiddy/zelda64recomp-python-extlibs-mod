@@ -63,7 +63,7 @@ RECOMP_IMPORT(".", u32 PythonNative_Memcpy_FromByteArray(void* src, u32 len, u32
 
 // Indexing and Slicing
 RECOMP_IMPORT(".", u32 PythonNative_Object_Len(REPY_Handle object));
-RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_GetIndex(REPY_Handle object, int index));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_GetIndexS32(REPY_Handle object, int index));
 
 // Iteration
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_Iter(REPY_Handle object));
@@ -104,6 +104,7 @@ RECOMP_IMPORT(".", REPY_Handle PythonNative_Eval(REPY_Handle code, REPY_Handle g
 RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope));
 
+// Function Calling Operations:
 RECOMP_IMPORT(".", u32 PythonNative_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Call_Return(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
 RECOMP_IMPORT(".", u32 PythonNative_CallAttr(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs));

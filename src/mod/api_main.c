@@ -298,8 +298,8 @@ RECOMP_EXPORT u32 REPY_Len(REPY_Handle object) {
     return PythonNative_Object_Len(object);
 }
 
-RECOMP_EXPORT REPY_Handle REPY_GetIndex(REPY_Handle object, int index) {
-    return PythonNative_Object_GetIndex(object, index);
+RECOMP_EXPORT REPY_Handle REPY_GetIndexS32(REPY_Handle object, int index) {
+    return PythonNative_Object_GetIndexS32(object, index);
 }
 
 // Iteration
