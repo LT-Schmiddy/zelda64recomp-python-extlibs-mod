@@ -63,7 +63,7 @@ RECOMP_IMPORT(".", u32 PythonNative_Memcpy_FromByteArray(void* src, u32 len, u32
 
 // Indexing and Slicing
 RECOMP_IMPORT(".", u32 PythonNative_Object_Len(REPY_Handle object));
-RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_GetIndexS32(REPY_Handle object, int index));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_TupleGetIndexS32(REPY_Handle object, int index));
 
 // Iteration
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_Iter(REPY_Handle object));

@@ -150,14 +150,26 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("REPY_DictSet - REPY_Len(test_dict) == 1", REPY_Len(test_dict) == 1);
     validate("REPY_DictHas(test_key_1) == true", REPY_DictHas(test_dict, test_key_1) == true);
     REPY_Handle test_value_1 = REPY_DictGet(test_dict, test_key_1);
-    validate("REPY_DictSet - test_value_1_val == REPY_CastS32(test_value_1)", test_value_1_val == REPY_CastS32(test_value_1));
+    validate("REPY_DictGet - test_value_1_val == REPY_CastS32(test_value_1)", test_value_1_val == REPY_CastS32(test_value_1));
     REPY_DictDel(test_dict, test_key_1);
     validate("REPY_DictDel - REPY_DictHas(test_key_1) == false", REPY_DictHas(test_dict, test_key_1) == false);
     validate("REPY_DictDel - test_dict is empty again", REPY_Len(test_dict) == 0);
+
+    s32 test_value_2_val = 888;
+    char* test_key_2 = "test_key_2";
+    REPY_DictSet_CStr(test_dict, test_key_2, REPY_CreateS32_SUH(test_value_2_val));
+    validate("REPY_DictSet_CStr - REPY_Len(test_dict) == 1", REPY_Len(test_dict) == 1);
+    validate("REPY_DictHas_CStr(test_key_2) == true", REPY_DictHas_CStr(test_dict, test_key_2) == true);
+    REPY_Handle test_value_2 = REPY_DictGet_CStr(test_dict, test_key_2);
+    validate("REPY_DictGet_CStr - test_value_2_val == REPY_CastS32(test_value_2)", test_value_2_val == REPY_CastS32(test_value_2));
+    REPY_DictDel_CStr(test_dict, test_key_2);
+    validate("REPY_DictDel_CStr - REPY_DictHas_CStr(test_key_2) == false", REPY_DictHas_CStr(test_dict, test_key_2) == false);
+    validate("REPY_DictDel_CStr - test_dict is empty again", REPY_Len(test_dict) == 0);
     // Admittedly, we only tested a dict with a single entry. Might need to expand that later.
     REPY_Release(test_dict);
     REPY_Release(test_key_1);
     REPY_Release(test_value_1);
+    REPY_Release(test_value_2);
     // From here on, we'll assume that these dict operations are working as expected.
     // The REPY_CreateDict variadic function isn't needed for Python code execution, and depends on Tuple construction. So we'll test that later.
 
@@ -227,23 +239,61 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("REPY_Exec - eval str 'e == 1000' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("e == 1000"), py_globals, py_locals))));
 
     // From here on, we'll assume that compiling and executing bytecode, as well as executing python strings works correctly, so long as the Python code is correct.
-    // Time to test exception handling:
+    // Testing the Memcpy functions:
+    char memcpy_test_cstr[13] = "Hello World!";
+    REPY_Handle test_bstr = REPY_CreateByteStr(memcpy_test_cstr);
+    REPY_Handle memcpy_test_byte_str = REPY_MemcpyToByteStr(memcpy_test_cstr, 12, false); // Don't include the null-terminator for this
+    REPY_Handle memcpy_test_byte_array = REPY_MemcpyToByteArray(memcpy_test_cstr, 12, false); // Don't include the null-terminator for this
+    REPY_DictSet_CStr(py_locals, "memcpy_test_byte_str", memcpy_test_byte_str);
+    REPY_DictSet_CStr(py_locals, "test_bstr", test_bstr);
+    REPY_DictSet_CStr(py_locals, "memcpy_test_byte_array", memcpy_test_byte_array);
+    validate("REPY_MemcpyToByteStr - eval 'memcpy_test_byte_str == test_bstr' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("memcpy_test_byte_str == test_bstr"), py_globals, py_locals))));
+    REPY_ExecCStr("memcpy_test_byte_array2 = bytearray(memcpy_test_byte_str)", py_globals, py_locals);
+    validate("REPY_MemcpyToByteArray - eval 'memcpy_test_byte_array == memcpy_test_byte_array2' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("memcpy_test_byte_array == memcpy_test_byte_array"), py_globals, py_locals))));
+
+    // Testing writing back into recomp memory:
+    char memcpy_from_test [13];
+    memcpy_from_test [12] = 0; 
+    REPY_MemcpyFromByteStr(memcpy_from_test, 12, false, memcpy_test_byte_str);
+    validate("REPY_MemcpyFromByteStr - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(memcpy_from_test, memcpy_test_cstr, 12) == 0);
+    REPY_MemcpyFromByteArray(memcpy_from_test, 12, false, memcpy_test_byte_array);
+    validate("REPY_MemcpyFromByteArray - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(memcpy_from_test, memcpy_test_cstr, 12) == 0);
+    u32 alloc_write_size = 0;
+    char* alloc_byte_str = REPY_AllocAndCopyByteStr(false, memcpy_test_byte_str, &alloc_write_size);
+    validate("REPY_AllocAndCopyByteStr - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(alloc_byte_str, memcpy_test_cstr, 12) == 0);
+    validate("REPY_AllocAndCopyByteStr - alloc_write_size == 12", alloc_write_size == 12);
+    char* alloc_byte_array = REPY_AllocAndCopyByteArray(false, memcpy_test_byte_array, &alloc_write_size);
+    validate("REPY_AllocAndCopyByteArray - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(alloc_byte_array, memcpy_test_cstr, 12) == 0);
+    validate("REPY_AllocAndCopyByteArray - alloc_write_size == 12", alloc_write_size == 12);
+    recomp_free(alloc_byte_str);
+    recomp_free(alloc_byte_array);
+    REPY_Release(test_bstr);
+    REPY_Release(memcpy_test_byte_str);
+    REPY_Release(memcpy_test_byte_array);
+
+    // From here on, we'll assume the memcpy functions are working correctly.
+    // Testing index lookup:
+    REPY_Handle py_tuple1 = REPY_EvalCStr("(0, 1, 2, 3, 4, 5)", 0, 0);
+    bool py_list_match = true;
+    for (int i = 0; i < 6; i++) {
+        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_TupleGetIndexS32(py_tuple1, i))));
+    }
+    validate("REPY_TupleGetIndexS32 returned correct values for (0, 1, 2, 3, 4, 5)", py_list_match);
+    REPY_Release(py_tuple1);
+    // From here on, we'll assume that REPY_TupleGetIndexS32 is working.
+    // Testing Tuple construction.
+    py_list_match = true;
+    REPY_Handle py_tuple2 = REPY_CreateTuple(4, REPY_CreateS32_SUH(3), REPY_CreateS32_SUH(2), REPY_CreateS32_SUH(1), REPY_CreateS32_SUH(0));
+    REPY_Handle py_builtins = REPY_ImportModule("builtins");
+
+    for (int i = 3; i >= 0; i--) {
+        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_TupleGetIndexS32(py_tuple2, 3 - i))));
+    }
+    validate("REPY_TupleGetIndexS32 returned correct values for (3, 2, 1, 0) created with REPY_CreateTuple", py_list_match);
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);
-
-
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 
-    REPY_FN_SETUP;
-    REPY_FN_SET_U32("x", 32);
-    REPY_FN_IF(if_test1, "x == 0") {
-        recomp_printf("bytecode_index -> 0\n");
-    } REPY_FN_ELIF(if_test1, "x == 32") {
-        recomp_printf("bytecode_index -> 1\n");
-    } else {
-        recomp_printf("bytecode ran else statement\n");
-    }
-    REPY_FN_CLEANUP;
 }
 

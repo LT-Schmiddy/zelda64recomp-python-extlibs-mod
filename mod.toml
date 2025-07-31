@@ -97,7 +97,7 @@ native_libraries = [
 
         # Indexing and Slicing
         "PythonNative_Object_Len",
-        "PythonNative_Object_GetIndexS32",
+
 
         # Iteration
         "PythonNative_Object_Iter",
@@ -105,8 +105,8 @@ native_libraries = [
         
         # Tuple
         "PythonNative_Tuple_Create",
-
-
+        "PythonNative_Object_TupleGetIndexS32",
+        
         # Dicts    
         "PythonNative_Dict_Create",
         "PythonNative_Dict_Get",

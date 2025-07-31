@@ -381,37 +381,6 @@ REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value)))
 
 #define REPY_FN_SET_BYTESTR_N(var_name, value, len) \
 REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value, len)))
-
-// Flow Control - If (Array)
-#define REPY_FN_ARRAYIF_INIT_BLOCK(bytecode_array_identifier, elif_count) \
-static REPY_Handle bytecode_array_identifier[elif_count + 1]; \
-static bool bytecode_array_identifier ## _is_init = false; \
-if (! bytecode_array_identifier ## _is_init) { \
-    for (int i = 0; i < elif_count + 1; i++) { \
-        bytecode_array_identifier[i] = 0; \
-    } \
-    bytecode_array_identifier ## _is_init = 1; \
-} \
-u32 bytecode_array_identifier ## _index = 0; \
-
-#define REPY_FN_ARRAYIF_STMT(bytecode_array_identifier, py_expression) \
-if ( \
-    REPY_CompileHelper( \
-        &bytecode_array_identifier[bytecode_array_identifier ## _index], \
-        py_expression, \
-        __FILE_NAME__ ", in REPY_FN_IF with identifier '" #bytecode_array_identifier "' -> " #py_expression , \
-        REPY_CODE_EVAL, \
-        REPY_CH_RETURN_TRUE \
-    )  && REPY_FN_EVAL_BOOL(bytecode_array_identifier[bytecode_array_identifier ## _index++]) \
-) 
-
-#define REPY_FN_ARRAYIF(bytecode_array_identifier, elif_count, py_expression) \
-REPY_FN_ARRAYIF_INIT_BLOCK(bytecode_array_identifier, elif_count) \
-REPY_FN_ARRAYIF_STMT(bytecode_array_identifier, py_expression) 
-
-#define REPY_FN_ARRAYELIF(bytecode_array_identifier, py_expression) \
-else REPY_FN_ARRAYIF_STMT(bytecode_array_identifier, py_expression)
-
 // Flow Control - If:
 
 #define REPY_FN_IF_INIT_BLOCK(helper_identifier) \
@@ -527,16 +496,15 @@ REPY_IMPORT(REPY_Handle REPY_CreateByteStrN_SUH(const char* string, u32 len));
 REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
 
 // Memcpy:
-REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse));
-REPY_IMPORT(u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
-REPY_IMPORT(void* REPY_AllocAndCopyBytes(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
+REPY_IMPORT(REPY_Handle REPY_MemcpyToByteStr(void* src, u32 len, u32 reverse));
+REPY_IMPORT(u32 REPY_MemcpyFromByteStr(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(void* REPY_AllocAndCopyByteStr(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
 REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse));
 REPY_IMPORT(u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
 REPY_IMPORT(void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
 
 // Indexing and Slicing:
 REPY_IMPORT(u32 REPY_Len(REPY_Handle object));
-REPY_IMPORT(REPY_Handle REPY_GetIndexS32(REPY_Handle object, int index));
 
 // Iteration
 REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));
@@ -547,7 +515,7 @@ REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
-
+REPY_IMPORT(REPY_Handle REPY_TupleGetIndexS32(REPY_Handle object, int index));
 // Dicts:
 REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict());
 REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict_SUH());
