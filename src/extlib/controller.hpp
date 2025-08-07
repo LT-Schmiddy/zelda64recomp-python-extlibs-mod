@@ -38,7 +38,7 @@ public:
     uint8_t* rdram;
     // bool use_slotmap = false;
 
-    PyInterpreterController(plog::Severity severity, fs::path mod_dir);
+    PyInterpreterController(plog::Severity severity, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
 
     // Handle Operations:

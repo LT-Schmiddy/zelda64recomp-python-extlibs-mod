@@ -41,6 +41,9 @@ dependencies = [
 native_libraries = [
 # Example native library:
     { name = "PythonForRecompNative", funcs = [
+        # Preinit
+        "PythonNative_Preinit_RegisterNrmInModuleSearchPath",
+
         # General
         "PythonNative_Init",
         "PythonNative_Object_Release",

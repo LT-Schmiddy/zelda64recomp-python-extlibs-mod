@@ -1,6 +1,6 @@
 #include <chrono>
 #include <random>
-#include <unordered_map>
+#include <queue>
 #include <plog/Log.h> // Step1: include the headers
 
 #include "lib_main.hpp"
@@ -18,15 +18,23 @@ static const char* code_type_strs[] = {
 static std::u8string cached_return_u8string;
 static std::string cached_return_string;
 
+static std::queue<fs::path> preinit_module_nrms;
+
+RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterNrmInModuleSearchPath) {
+    std::u8string nrm_path_str = RECOMP_ARG_U8STR(0);
+    fs::path nrm_path(nrm_path_str);
+
+    preinit_module_nrms.push(nrm_path);
+}
+
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
     uint32_t log_level = RECOMP_ARG(uint32_t, 0);
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(1);
-
     fs::path mod_dir(mod_dir_text);
 
     // Set up logging:
-    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level, mod_dir);
+    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level, mod_dir, &preinit_module_nrms);
     controller->set_rdram(rdram);
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());

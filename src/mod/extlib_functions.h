@@ -8,6 +8,7 @@
 
 
 // General
+RECOMP_IMPORT(".", void PythonNative_Preinit_RegisterNrmInModuleSearchPath(const unsigned char* str));
 RECOMP_IMPORT(".", int PythonNative_Init(u32 log_level, const unsigned char* str));
 RECOMP_IMPORT(".", void PythonNative_Object_Release(REPY_Handle py_object));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_MakeSUH(REPY_Handle py_object));

@@ -13,6 +13,11 @@ RECOMP_DECLARE_EVENT(REPY_OnMakeGlobalCaches(int success));
 RECOMP_DECLARE_EVENT(REPY_OnInit(int success));
 
 RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
+    const unsigned char* nrm_file_path = recomp_get_mod_file_path();
+    PythonNative_Preinit_RegisterNrmInModuleSearchPath(nrm_file_path);
+    recomp_free((void*)nrm_file_path);
+
+    
     const unsigned char* mod_folder = recomp_get_mod_folder_path();
     int py_init = PythonNative_Init(recomp_get_config_u32("log_level"), mod_folder);
     recomp_free((void*)mod_folder);

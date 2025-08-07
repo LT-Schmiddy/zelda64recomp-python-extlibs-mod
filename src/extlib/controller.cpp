@@ -25,11 +25,13 @@ void py_preinit_add_search_path(PyConfig* config, fs::path path) {
     wchar_t* pathstr = nullptr;
     status = PyConfig_SetBytesString(config, &pathstr, path_to_string_utf8(path).c_str());
     PyWideStringList_Append(&config->module_search_paths, pathstr);
+    PLOGI.printf("'%s' added to Python module search path", path.string().c_str());
+
     PyMem_RawFree(pathstr);
 }
 
 // ======================================  Handle Control: ====================================== 
-PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir) {
+PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
     file_appender = new plog::RollingFileAppender<plog::TxtFormatter>("REPY.log");
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
     log = &plog::init((plog::Severity)severity);
@@ -53,8 +55,13 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     
     py_preinit_add_search_path(&config, mod_dir_Lib);
     py_preinit_add_search_path(&config, mod_dir_DLLs);
-    // py_preinit_add_search_path(&config, mod_dir_nrm);
-    // py_preinit_add_search_path(&config, mod_dir_site);
+    if (registered_nrms != NULL) {
+        while (!registered_nrms->empty()) {
+            py_preinit_add_search_path(&config, registered_nrms->front());
+            registered_nrms->pop();
+        }
+    }
+
 
     config.module_search_paths_set = 1;
 

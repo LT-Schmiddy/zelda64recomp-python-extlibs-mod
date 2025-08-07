@@ -33,6 +33,6 @@ RECOMP_IMPORT("*", unsigned char* recomp_get_mod_folder_path());
 // Returns a UTF-8 encoded zero-terminated string containing the absolute path to the mod that called this function (i.e. the path to the .nrm file).
 // The return type is an unsigned char pointer to indicate the UTF-8 encoding.
 // `recomp_free` (found in `recomputils.h`) MUST be called on the return value of this when the value is no longer in use to prevent a memory leak.
-// RECOMP_IMPORT("*", unsigned char* recomp_get_mod_file_path());
+RECOMP_IMPORT("*", unsigned char* recomp_get_mod_file_path());
 
 #endif
