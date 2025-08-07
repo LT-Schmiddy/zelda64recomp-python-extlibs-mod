@@ -3,6 +3,7 @@
 #include "modding.h"
 #include "global.h"
 #include "extlib_functions.h"
+#include "recompconfig.h"
 // Config Area:
 #define RECOMP_CONFIG_LOG_LEVEL recomp_get_config_u32("log_level")
 
@@ -21,7 +22,7 @@ typedef enum {
     RECOMP_LOG_VERBOSE = 6
 } RecompLogLevel;
 
-#define IS_LOG_LEVEL(log_level) log_level <= RECOMP_CONFIG_LOG_LEVEL
+#define IS_LOG_LEVEL(log_level) (log_level <= RECOMP_CONFIG_LOG_LEVEL)
 #define IF_LOG_LEVEL(log_level) if (IS_LOG_LEVEL(log_level))
 
 #define IS_LOG_FATAL IS_LOG_LEVEL(RECOMP_LOG_FATAL)
@@ -37,8 +38,6 @@ typedef enum {
 #define IF_LOG_INFO IF_LOG_LEVEL(RECOMP_LOG_INFO)
 #define IF_LOG_DEBUG IF_LOG_LEVEL(RECOMP_LOG_DEBUG)
 #define IF_LOG_VERBOSE IF_LOG_LEVEL(RECOMP_LOG_VERBOSE)
-
-#define _LOG_PRINTF_CALL(...) RECOMP_LOG_CONFIG_PRINTF_FUNC(__VA_ARGS__)
 
 #define LOG_FORMAT(log_level, ...) \
 mod_handle_log(log_level, __func__, __LINE__, __FILE_NAME__, __VA_ARGS__)

@@ -1131,6 +1131,7 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
 }
 
 // ====================================== Logging: ====================================== 
+// The following enable the mod-code of this library to use PLOG for logging.
 static plog::Severity py_log_severity;
 static std::string py_log_func;
 static uint32_t py_log_line_number;

@@ -115,6 +115,11 @@ REPY_Handle PyInterpreterController::create_handle_and_steal(py::object* obj) {
     }
 
     PLOGD.printf("-> REPY_Handle 0x%08X Created", new_handle);
+    IF_PLOG(plog::verbose) {
+        std::u8string repr_str = py::repr(*obj).cast<std::u8string>();
+        PLOGV.printf("-> Handle %08X: %s", new_handle, repr_str.c_str());
+    }
+
     return new_handle;
 }
 
@@ -128,6 +133,10 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
     }
 
     PLOGD.printf("-> REPY_Handle 0x%08X created", new_handle);
+    IF_PLOG(plog::verbose) {
+        std::u8string repr_str = py::repr(*obj).cast<std::u8string>();
+        PLOGV.printf("-> Handle %08X: %s", new_handle, repr_str.c_str());
+    }
     return new_handle;
 }
 
@@ -140,6 +149,10 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
         } else {
             PLOGD.printf("-> REPY_Handle 0x%08X accessed", handle);
         }
+        IF_PLOG(plog::verbose) {
+            std::u8string repr_str = py::repr(entry->py_object).cast<std::u8string>();
+            PLOGV.printf("Handle %08X: %s", handle, repr_str.c_str());
+        }
         return &entry->py_object;
     } else {
         REPY_HandleEntry* entry = &py_objects_umap.at(handle);
@@ -148,6 +161,10 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
             PLOGD.printf("-> REPY_Handle 0x%08X accessed (SUH)", handle);
         } else {
             PLOGD.printf("-> REPY_Handle 0x%08X accessed", handle);
+        }
+        IF_PLOG(plog::verbose) {
+            std::u8string repr_str = py::repr(entry->py_object).cast<std::u8string>();
+            PLOGV.printf("-> Handle %08X: %s", handle, repr_str.c_str());
         }
 
         return &entry->py_object;
@@ -188,23 +205,43 @@ void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_
 void PyInterpreterController::release_suh_handles() {
     while (suh_release_queue.size() > 0) {
         REPY_Handle handle = suh_release_queue.front();
+        PLOGD.printf("-> REPY_Handle %08X released (SUH)", handle);
+        IF_PLOG(plog::verbose) {
+            if (use_slotmap) {
+                std::u8string repr_str = py::repr(py_objects_smap.get(handle)->py_object).cast<std::u8string>();
+                PLOGV.printf("-> Handle %08X: %s", handle, repr_str.c_str());
+            } else {
+                std::u8string repr_str = py::repr(py_objects_umap.at(handle).py_object).cast<std::u8string>();
+                PLOGV.printf("-> Handle %08X: %s", handle, repr_str.c_str());
+            }
+        }
         suh_release_queue.pop();
         if (use_slotmap) {
             py_objects_smap.del(handle);
         } else {
             py_objects_umap.erase(handle);
         }
-        PLOGD.printf("-> REPY_Handle %08X released (SUH)", handle);
     }
 }
 
 void PyInterpreterController::release_handle(REPY_Handle handle) {
+    PLOGD.printf("-> REPY_Handle %08X released", handle);
+    IF_PLOG(plog::verbose) {
+        if (use_slotmap) {
+            std::u8string repr_str = py::repr(py_objects_smap.get(handle)->py_object).cast<std::u8string>();
+            PLOGV.printf("-> Handle %08X: %s", handle, repr_str.c_str());
+        } else {
+            std::u8string repr_str = py::repr(py_objects_umap.at(handle).py_object).cast<std::u8string>();
+            PLOGV.printf("-> Handle %08X: %s", handle, repr_str.c_str());
+        }
+    }
+
     if (use_slotmap) {
         py_objects_smap.del(handle);
     } else {
         py_objects_umap.erase(handle);
     }
-    PLOGD.printf("-> REPY_Handle %08X released", handle);
+
 }
 
 py::module_ PyInterpreterController::construct_module(std::string module_name, std::string module_code, bool add_to_sys) {
