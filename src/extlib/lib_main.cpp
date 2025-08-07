@@ -22,12 +22,11 @@ static std::string cached_return_string;
 RECOMP_DLL_FUNC(PythonNative_Init) {
     uint32_t log_level = RECOMP_ARG(uint32_t, 0);
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(1);
-    uint32_t handle_lookup_mode = RECOMP_ARG(uint32_t, 2);
 
     fs::path mod_dir(mod_dir_text);
 
     // Set up logging:
-    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level, mod_dir, handle_lookup_mode);
+    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level, mod_dir);
     controller->set_rdram(rdram);
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());

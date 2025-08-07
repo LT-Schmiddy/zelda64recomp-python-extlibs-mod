@@ -14,7 +14,6 @@
 class PyInterpreterController {
 public:
     PyThreadState* py_main_thread = NULL;
-    std::unordered_map<REPY_Handle, REPY_HandleEntry> py_objects_umap;
     PyObjectSlotMap py_objects_smap;
     std::queue<REPY_Handle> suh_release_queue;
 
@@ -37,13 +36,12 @@ public:
     py::object py_stop_iteration_type;
 
     uint8_t* rdram;
-    bool use_slotmap = false;
+    // bool use_slotmap = false;
 
-    PyInterpreterController(plog::Severity severity, fs::path mod_dir, bool p_use_slotmap);
+    PyInterpreterController(plog::Severity severity, fs::path mod_dir);
     ~PyInterpreterController();
 
     // Handle Operations:
-    REPY_Handle get_new_handle_value();
     REPY_Handle create_handle_and_steal(py::object* obj);
     REPY_Handle create_handle(py::object* obj);
     py::object* get_py_object(REPY_Handle handle);
