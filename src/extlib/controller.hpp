@@ -17,8 +17,6 @@ public:
     PyObjectSlotMap py_objects_smap;
     std::queue<REPY_Handle> suh_release_queue;
 
-    REPY_Handle next_handle_val = 1;
-
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
     plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
     plog::Logger<0>* log = NULL;
@@ -34,6 +32,7 @@ public:
     py::function py_next;
 
     py::object py_stop_iteration_type;
+    py::object py_invalid_handle_exception_type;
 
     uint8_t* rdram;
     // bool use_slotmap = false;
@@ -60,7 +59,6 @@ public:
     void clear_py_error();
 
     py::module_ construct_module(std::string module_name, std::string module_code, bool add_to_sys); 
-    int random_in_range(int low, int high);
 
     void set_rdram(uint8_t* p_rdram);
 };

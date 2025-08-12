@@ -61,8 +61,6 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
             registered_nrms->pop();
         }
     }
-
-
     config.module_search_paths_set = 1;
 
     config.parse_argv = 0;
@@ -83,7 +81,9 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     py_next = builtins.attr("next");
 
     py_stop_iteration_type = py::eval("StopIteration");
-    
+    auto repy_api = py::module_::import("repy_api");
+    py_invalid_handle_exception_type = repy_api.attr("InvalidHandleException");
+
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
 };
