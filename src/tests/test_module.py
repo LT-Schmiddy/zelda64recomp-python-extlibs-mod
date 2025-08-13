@@ -1,4 +1,4 @@
-print("Hello from recomp test module");
+print("Hello from recomp incbin test module");
 
 fib_holder_0 = 0
 fib_holder_1 = 1

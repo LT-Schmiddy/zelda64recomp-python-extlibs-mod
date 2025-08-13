@@ -103,8 +103,8 @@ typedef struct REPY_IfStmtHelper {
     extern u8 identifier##_end[]
 #endif
 
-#define REPY_INCBIN_MODULE(module_name, file_name) \
-REPY_INCBIN_PYFILE(module_name ## _code, file_name); \
+#define REPY_INCBIN_MODULE(module_name, filename) \
+REPY_INCBIN_PYFILE(module_name ## _code, filename); \
 REPY_ON_LOAD_MODULES void _construct_module_ ## module_name (int success) { \
     if (success) { \
         REPY_LoadModuleN(#module_name, (const char*)module_name ## _code, (u32) (module_name ## _code_end - module_name ## _code)); \
@@ -127,6 +127,31 @@ REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success
     if (success && bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_CACHE", __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
+        recomp_free(iden_str); \
+    } \
+}
+
+#define REPY_GLOBAL_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
+REPY_INCBIN_PYFILE(bytecode_identifier ## _code_str, filename); \
+REPY_Handle bytecode_identifier = 0; \
+REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
+    if (success && bytecode_identifier == 0) { \
+        char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_GLOBAL_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
+        bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
+            (const char*)iden_str, code_mode); \
+        recomp_free(iden_str); \
+    } \
+}
+
+
+#define REPY_STATIC_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
+REPY_INCBIN_PYFILE(bytecode_identifier ## _code_str, filename); \
+REPY_Handle bytecode_identifier = 0; \
+REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
+    if (success && bytecode_identifier == 0) { \
+        char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
+        bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
+            (const char*)iden_str, code_mode); \
         recomp_free(iden_str); \
     } \
 }
@@ -553,7 +578,7 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle gl
 
 // Python Function Calls
 REPY_IMPORT(bool REPY_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
-REPY_IMPORT(REPY_Handle REPY_CallReturn(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
+REPY_IMPORT(REPY_Handle REPY_Call_Return(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
 REPY_IMPORT(bool REPY_CallAttr(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs));
 REPY_IMPORT(bool REPY_CallAttr_CStr(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs));
 REPY_IMPORT(REPY_Handle REPY_CallAttr_Return(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs));

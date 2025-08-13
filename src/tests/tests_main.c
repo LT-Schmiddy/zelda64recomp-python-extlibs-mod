@@ -291,6 +291,33 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("REPY_TupleGetIndexS32 returned correct values for (3, 2, 1, 0) created with REPY_CreateTuple", py_list_match);
     REPY_Release(py_tuple2);
 
+    // Testing function invokations. We'll use the built-in `int` function for that.
+    REPY_Handle py_int_fn = REPY_EvalCStr("int", 0, 0);
+    validate("REPY_Call ran without error", REPY_Call(py_int_fn, REPY_MakeSUH(REPY_CreateTuple(1, REPY_CreateByteStr_SUH("33"))), 0));
+    REPY_Handle py_int_return1 = REPY_Call_Return(py_int_fn, REPY_MakeSUH(REPY_CreateTuple(1, REPY_CreateByteStr_SUH("33"))), 0);
+    validate("REPY_Call_Return ran without error", py_int_return1);
+    validate("py_int_return1 == 33", py_int_return1 && REPY_CastS32(py_int_return1) == 33);
+    REPY_Release(py_int_fn);
+    REPY_Release(py_int_return1);
+    // For calling attributes, we'll the attributes of an int object:
+    REPY_Handle py_test_int = REPY_CreateU32(99);
+    validate("REPY_CallAttr ran without error", REPY_CallAttr(py_test_int, REPY_CreateStr("bit_length"), 0, 0));
+    validate("REPY_CallAttr_CStr ran without error", REPY_CallAttr_CStr(py_test_int,"bit_length", 0, 0));
+
+    REPY_Handle py_int_return2 = REPY_CallAttr_Return(py_test_int, REPY_CreateStr("bit_length"), 0, 0);
+    validate("REPY_CallAttr_Return ran without error", py_int_return2);
+    validate("py_int_return2 == 7", py_int_return2 && REPY_CastS32(py_int_return2) == 7);
+    REPY_Release(py_int_return2);
+
+    REPY_Handle py_int_return3 = REPY_CallAttr_CStr_Return(py_test_int,"bit_length", 0, 0);
+    validate("REPY_CallAttr_CStr_Return ran without error", py_int_return3);
+    validate("py_int_return3 == 7", py_int_return3 && REPY_CastS32(py_int_return3) == 7);
+    REPY_Release(py_int_return3);
+    // From here on, we'll assume that function calls work correctly.
+    REPY_Release(py_test_int);
+
+    
+
     REPY_Release(py_globals);
     REPY_Release(py_locals);
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);

@@ -32,7 +32,6 @@ public:
     py::function py_next;
 
     py::object py_stop_iteration_type;
-    py::object py_invalid_handle_exception_type;
 
     uint8_t* rdram;
     // bool use_slotmap = false;
