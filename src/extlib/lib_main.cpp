@@ -126,9 +126,15 @@ RECOMP_DLL_FUNC(PythonNative_ImportModule) {
     py::gil_scoped_acquire gil;
     std::string module_name = RECOMP_ARG_STR(0);
 
-    py::module_ mod = py::module_::import(module_name.c_str());
-    REPY_Handle handle = controller->create_handle(&mod);
-    RECOMP_RETURN(REPY_Handle, handle);
+    try {
+        py::module_ mod = py::module_::import(module_name.c_str());
+        REPY_Handle handle = controller->create_handle(&mod);
+        RECOMP_RETURN(REPY_Handle, handle);
+    } catch (py::error_already_set &e) {
+        controller->handle_exception(&e);
+        controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 // ====================================== Primative Casting: ======================================  
