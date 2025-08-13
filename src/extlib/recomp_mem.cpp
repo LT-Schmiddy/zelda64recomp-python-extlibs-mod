@@ -125,6 +125,17 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
         memcpy_rev_to_recomp(controller->rdram, ptr, &val, sizeof(char));
     });
 
+    m.def("read_byte_char", [](int32_t ptr){
+        char val;
+        memcpy_rev_from_recomp(controller->rdram, &val, ptr, sizeof(char));
+        return py::bytes(&val, 1);
+    });
+
+    m.def("write_byte_char", [](int32_t ptr, py::bytes obj){
+        char val = obj.cast<char>();
+        memcpy_rev_to_recomp(controller->rdram, ptr, &val, sizeof(char));
+    });
+
     m.def("read_str", [](int32_t ptr){
         std::u8string str = ptr_to_u8string(controller->rdram, ptr);
         return py::str(str);
@@ -205,7 +216,20 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
         }
     });
 
-    m.def("write_bytes_n", [](int32_t ptr, py::bytearray bytes, uint32_t size) {
+    m.def("read_bytearray_n", [](int32_t ptr, uint32_t size) {
+        uint8_t* rdram = controller->rdram;
+
+        uint8_t* buf = new uint8_t[size];
+
+        memcpy_from_recomp(rdram, buf, ptr, size);
+
+        py::bytearray retVal = py::bytearray((char*)buf);
+        delete[] buf;
+
+        return retVal;
+    });
+
+    m.def("write_bytearray_n", [](int32_t ptr, py::bytearray bytes, uint32_t size) {
         uint8_t* rdram = controller->rdram; // Used by MEM_B
 
         uint32_t index = 0;

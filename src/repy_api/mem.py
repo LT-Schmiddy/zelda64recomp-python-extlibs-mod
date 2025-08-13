@@ -1,2 +1,262 @@
-from . import mem
+import _recomp_mem
 
+def read_u8(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    return _recomp_mem.read_u8(ptr)
+    
+def write_u8(ptr: int, value: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_u8(ptr, value)
+
+def read_u16(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    return _recomp_mem.read_u16(ptr)
+    
+def write_u16(ptr: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_u16(ptr, value)
+
+def read_u32(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_u32(ptr)
+    
+def write_u32(ptr: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_u32(ptr, value)
+
+def read_u64(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_u64(ptr)
+    
+def write_u64(ptr: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_u64(ptr, value)
+
+# Signed Ints:
+def read_s8(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    return _recomp_mem.read_s8(ptr)
+    
+def write_s8(ptr: int, value: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_s8(ptr, value)
+
+def read_s16(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    return _recomp_mem.read_s16(ptr)
+    
+def write_s16(ptr: int, value: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_s16(ptr, value)
+
+def read_s32(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    return _recomp_mem.read_s32(ptr)
+    
+def write_s32(ptr: int, value: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_s32(ptr, value)
+
+def read_s64(ptr: int) -> int:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    return _recomp_mem.read_s64(ptr)
+    
+def write_s64(ptr: int, value: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(value, int):
+        value = int(value)
+        
+    _recomp_mem.write_s64(ptr, value)
+
+# Floats:
+def read_f32(ptr: int) -> float:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_f32(ptr)
+    
+def write_f32(ptr: int, value: float):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(value, float):
+        value = float(value)
+    
+    _recomp_mem.write_f32(ptr, value)
+
+
+def read_f64(ptr: int) -> float:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_f32(ptr)
+    
+def write_f64(ptr: int, value: float):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(value, float):
+        value = float(value)
+    
+    _recomp_mem.write_f32(ptr, value)
+
+# Text:
+def read_char(ptr: int) -> str:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_char(ptr)
+    
+def write_char(ptr: int, char: str):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(char, str):
+        char = str(char)
+        
+    if len(char) > 1:
+        raise ValueError(f"{char=} has a length greater than 1")
+    
+    _recomp_mem.write_char(ptr, char)
+
+def read_byte_char(ptr: int) -> bytes:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_byte_char(ptr)
+    
+def write_byte_char(ptr: int, char: bytes):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(char, bytes):
+        char = str(char)
+        
+    if len(char) > 1:
+        raise ValueError(f"{char=} has a length greater than 1")
+    
+    _recomp_mem.write_byte_char(ptr, char)
+
+def read_str(ptr: int) -> str:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_str(ptr)
+
+def read_str_n(ptr: int, size: int) -> str:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(size, int):
+        size = int(size)
+        
+    return _recomp_mem.read_str_n(ptr, size)
+
+def write_str_n(ptr: int, data: str, size: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(size, int):
+        size = int(size)
+        
+    _recomp_mem.write_str_n(ptr, data, size)
+
+def read_byte_str(ptr: int) -> bytes:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    return _recomp_mem.read_byte_str(ptr)
+
+def read_byte_str_n(ptr: int) -> bytes:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(size, int):
+        size = int(size)
+        
+    return _recomp_mem.read_byte_str_n(ptr, size)
+
+def write_byte_str_n(ptr: int, data: str, size: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+        
+    if not isinstance(size, int):
+        size = int(size)
+        
+    _recomp_mem.write_byte_str_n(ptr, data, size)
+
+# Memory
+def read_bytes_n(ptr: int, size: int) -> bytes:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    if not isinstance(size, int):
+        size = int(size)
+        
+    return _recomp_mem.read_bytes_n(ptr, size)
+    
+def write_bytes_n(ptr: int, data: bytes, size: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    if not isinstance(size, int):
+        size = int(size)
+        
+    if not isinstance(data, bytes):
+        data = bytes(data)
+    
+    _recomp_mem.read_bytes_n(ptr, data, size)
+    
