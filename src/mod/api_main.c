@@ -403,6 +403,40 @@ RECOMP_EXPORT void REPY_DictDel_CStr(REPY_Handle dict, char* key) {
     PythonNative_Dict_Remove_CStr(dict, key);
 }
 
+// Object Attributes:
+RECOMP_EXPORT REPY_Handle REPY_GetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle default_value) {
+    return PythonNative_Object_GetAttr(obj, key, default_value);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_GetAttr_CStr(REPY_Handle obj, char* key, REPY_Handle default_value) {
+    return PythonNative_Object_GetAttr_CStr(obj, key, default_value);
+}
+
+RECOMP_EXPORT void REPY_SetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle value) {
+    PythonNative_Object_SetAttr(obj, key, value);
+}
+
+RECOMP_EXPORT void REPY_SetAttr_CStr(REPY_Handle obj, char* key, REPY_Handle value) {
+    PythonNative_Object_SetAttr_CStr(obj, key, value);
+}
+
+RECOMP_EXPORT bool REPY_HasAttr(REPY_Handle obj, REPY_Handle key) {
+    return PythonNative_Object_HasAttr(obj, key);
+}
+
+RECOMP_EXPORT bool REPY_HasAttr_CStr(REPY_Handle obj, char* key) {
+    return PythonNative_Object_HasAttr_CStr(obj, key);
+}
+
+RECOMP_EXPORT void REPY_DelAttr(REPY_Handle obj, REPY_Handle key) {
+    PythonNative_Object_DelAttr(obj, key);
+}
+
+RECOMP_EXPORT void REPY_DelAttr_CStr(REPY_Handle obj, char* key) {
+    PythonNative_Object_DelAttr_CStr(obj, key);
+}
+
+
 // Execution:
 RECOMP_EXPORT REPY_Handle REPY_Compile(REPY_Handle code, REPY_Handle identifier, REPY_Handle mode) {
     return PythonNative_Compile(code, identifier, mode);

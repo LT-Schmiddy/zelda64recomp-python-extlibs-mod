@@ -530,6 +530,16 @@ REPY_IMPORT(bool REPY_DictHas_CStr(REPY_Handle dict, char* key));
 REPY_IMPORT(void REPY_DictDel(REPY_Handle dict, REPY_Handle key));
 REPY_IMPORT(void REPY_DictDel_CStr(REPY_Handle dict, char* key));
 
+// Object Attributes:
+REPY_IMPORT(REPY_Handle REPY_GetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle default_value));
+REPY_IMPORT(REPY_Handle REPY_GetAttr_CStr(REPY_Handle obj, char* key, REPY_Handle default_value));
+REPY_IMPORT(void REPY_SetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle value));
+REPY_IMPORT(void REPY_SetAttr_CStr(REPY_Handle obj, char* key, REPY_Handle value));
+REPY_IMPORT(bool REPY_HasAttr(REPY_Handle obj, REPY_Handle key));
+REPY_IMPORT(bool REPY_HasAttr_CStr(REPY_Handle obj, char* key));
+REPY_IMPORT(void REPY_DelAttr(REPY_Handle obj, REPY_Handle key));
+REPY_IMPORT(void REPY_DelAttr_CStr(REPY_Handle obj, char* key));
+
 // Execution:
 REPY_IMPORT(REPY_Handle REPY_Compile(REPY_Handle code, REPY_Handle identifier, REPY_Handle mode));
 REPY_IMPORT(REPY_Handle REPY_CompileCStr(const char* code, const char* identifier, REPY_CodeMode mode));
