@@ -352,22 +352,22 @@ REPY_ON_INIT void run_misc_tests() {
     REPY_FN_SETUP;
     REPY_FN_SET_S32("x", 32);
 
-    REPY_FN_IF(if_test1, 1, "x == 0") {
+    REPY_FN_IF_CACHE(if_test1, 1, "x == 0") {
         recomp_printf("bytecode_index -> 0\n");
-    } REPY_FN_ELIF(if_test1, "x == 32") {
+    } REPY_FN_ELIF_CACHE(if_test1, "x == 32") {
         recomp_printf("bytecode_index -> 1\n");
     } else {
         recomp_printf("bytecode ran else statement\n");
     }
     
-    REPY_FN_FOREACH(foreach_test1, "i", "[1, 2, 3, 4, 5]") {
+    REPY_FN_FOREACH_CACHE(foreach_test1, "i", "[1, 2, 3, 4, 5]") {
         REPY_FN_EXEC_CACHE(
             foreach_print_test,
             "print(i)\n"
         );
     }
 
-    REPY_FN_FOR(for_test1, "i = 0", "i < 10", "i += 1") {
+    REPY_FN_FOR_CACHE(for_test1, "i = 0", "i < 10", "i += 1") {
         REPY_FN_EXEC_CACHE(
             for_print_test,
             "print(i)\n"

@@ -315,8 +315,40 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(py_int_return3);
     // From here on, we'll assume that function calls work correctly.
     REPY_Release(py_test_int);
-
     
+    // Testing module loading:
+    REPY_Handle py_os_module = REPY_ImportModule("os");
+    REPY_Handle py_cwd = REPY_CallAttr_CStr_Return(py_os_module, "getcwd", 0, 0);
+    validate("os.getcwd() returns without error", py_cwd);
+    // I guess we can consider the stdlib modules to be working. Let's try with NRM modules.
+    
+    // Testing object attribute manipulation using using the OS module as the object.
+    s32 obj_test_value_1_val = 999;
+    REPY_Handle obj_test_key_1 = REPY_CreateStr("obj_test_key_1");
+    REPY_SetAttr(py_os_module, obj_test_key_1, REPY_CreateS32_SUH(obj_test_value_1_val));
+    validate("REPY_HasAttr(test_key_1) == true", REPY_HasAttr(py_os_module, obj_test_key_1) == true);
+    REPY_Handle obj_test_value_1 = REPY_GetAttr(py_os_module, obj_test_key_1, 0);
+    validate("REPY_GetAttr -> test_value_1_val == REPY_CastS32(test_value_1)", obj_test_value_1_val == REPY_CastS32(obj_test_value_1));
+    REPY_DelAttr(py_os_module, obj_test_key_1);
+    validate("REPY_DelAttr -> REPY_HasAttr(test_key_1) == false", REPY_HasAttr(py_os_module, obj_test_key_1) == false);
+
+    // Testing CStr versions:
+    s32 obj_test_value_2_val = 999;
+    char* obj_test_key_2_cstr = "obj_test_key_1";
+    REPY_SetAttr_CStr(py_os_module, obj_test_key_2_cstr, REPY_CreateS32_SUH(obj_test_value_2_val));
+    validate("REPY_SetAttr_CStr-> REPY_HasAttr_CStr(test_key_1) == true", REPY_HasAttr_CStr(py_os_module, obj_test_key_2_cstr) == true);
+    REPY_Handle obj_test_value_2 = REPY_GetAttr_CStr(py_os_module, obj_test_key_2_cstr, 0);
+    validate("REPY_GetAttr_CStr -> test_value_1_val == REPY_CastS32(test_value_1)", obj_test_value_2_val == REPY_CastS32(obj_test_value_2));
+    REPY_DelAttr_CStr(py_os_module, obj_test_key_2_cstr);
+    validate("REPY_DelAttr_CStr -> REPY_HasAttr_CStr(test_key_1) == false", REPY_HasAttr_CStr(py_os_module, obj_test_key_2_cstr) == false);
+    // We'll assume that object attribute manipulation works from here on.
+
+    REPY_Release(obj_test_key_1);
+    REPY_Release(obj_test_value_1);
+    REPY_Release(obj_test_value_2);
+    REPY_Release(py_os_module);
+    REPY_Release(py_cwd);
+
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);

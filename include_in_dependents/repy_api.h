@@ -408,12 +408,12 @@ REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value)))
 REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateBytes(value, len)))
 // Flow Control - If:
 
-#define REPY_FN_IF_INIT_BLOCK(helper_identifier) \
+#define REPY_FN_IF_CACHE_INIT_BLOCK(helper_identifier) \
 static REPY_IfStmtChain* helper_identifier ## _chain_root = NULL; \
 REPY_IfStmtHelper helper_identifier; \
 REPY_IfStmtHelper_InitInPlace(&helper_identifier, &helper_identifier ## _chain_root); 
 
-#define REPY_FN_IF_STMT(helper_identifier, py_expression) \
+#define REPY_FN_IF_STMT_CACHE(helper_identifier, py_expression) \
 if ( \
     REPY_IfStmtHelper_Step( \
         &helper_identifier, \
@@ -427,27 +427,27 @@ if ( \
     ) \
 ) 
 
-#define REPY_FN_IF(helper_identifier, py_expression) \
-REPY_FN_IF_INIT_BLOCK(helper_identifier) \
-REPY_FN_IF_STMT(helper_identifier, py_expression) 
+#define REPY_FN_IF_CACHE(helper_identifier, py_expression) \
+REPY_FN_IF_CACHE_INIT_BLOCK(helper_identifier) \
+REPY_FN_IF_STMT_CACHE(helper_identifier, py_expression) 
 
-#define REPY_FN_ELIF(helper_identifier, py_expression) \
-else REPY_FN_IF_STMT(helper_identifier, py_expression)
+#define REPY_FN_ELIF_CACHE(helper_identifier, py_expression) \
+else REPY_FN_IF_STMT_CACHE(helper_identifier, py_expression)
 
 
 // Flow Control - Loops
-#define REPY_FN_WHILE(bytecode_identifier, py_expression) \
+#define REPY_FN_WHILE_CACHE(bytecode_identifier, py_expression) \
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier, REPY_CODE_EVAL, py_expression); \
 while (REPY_FN_EVAL_BOOL(bytecode_identifier))
 
-#define REPY_FN_FOREACH(bytecode_identifier, var_name, py_expression) \
+#define REPY_FN_FOREACH_CACHE(bytecode_identifier, var_name, py_expression) \
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier, REPY_CODE_EVAL, py_expression); \
 REPY_FOREACH_BLOCK(bytecode_identifier ## _iter, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), _py_locals, var_name)
 
-#define REPY_FN_FOREACH_CLEANUP_NOW(bytecode_identifier) \
+#define REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier) \
 REPY_IteratorHelper_Destroy(bytecode_identifier ## _iter)
 
-#define REPY_FN_FOR(bytecode_identifier, py_init_statement, py_eval_expression, py_after_statement) \
+#define REPY_FN_FOR_CACHE(bytecode_identifier, py_init_statement, py_eval_expression, py_after_statement) \
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier ## _init_statement, REPY_CODE_EXEC, py_init_statement); \
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier ## _eval_expression, REPY_CODE_EVAL, py_eval_expression); \
 REPY_INLINE_COMPILE_CACHE(bytecode_identifier ## _after_statement, REPY_CODE_EXEC, py_after_statement); \
@@ -594,6 +594,7 @@ REPY_IMPORT(void REPY_ClearError());
 // Helpers:
 REPY_IMPORT(u32 REPY_CompileHelper(REPY_Handle* handle_ptr, const char* code_str, const char* identifier, REPY_CodeMode code_mode, REPY_CHReturnType return_type));
 REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, u32 line_number, char* identifier));
+
 REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name));
 REPY_IMPORT(void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper));
 REPY_IMPORT(bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool auto_destroy));
