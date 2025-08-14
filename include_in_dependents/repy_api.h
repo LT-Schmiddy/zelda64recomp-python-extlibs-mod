@@ -41,14 +41,6 @@ typedef enum REPY_CodeMode {
     REPY_CODE_SINGLE = 2
 } REPY_CodeMode;
 
-typedef enum REPY_CHReturnType {
-    REPY_CH_RETURN_FALSE = 0,
-    REPY_CH_RETURN_TRUE = 1,
-    REPY_CH_RETURN_WAS_COMPILED = 2,
-    REPY_CH_RETURN_WAS_COMPILED_SUCCESSFULLY = 3,
-    REPY_CH_RETURN_HANDLE = 4
-} REPY_CHReturnType;
-
 typedef struct REPY_IteratorHelper {
     REPY_Handle iter;
     u32 index;
@@ -592,7 +584,6 @@ REPY_IMPORT(REPY_Handle REPY_GetErrorValue());
 REPY_IMPORT(void REPY_ClearError());
 
 // Helpers:
-REPY_IMPORT(u32 REPY_CompileHelper(REPY_Handle* handle_ptr, const char* code_str, const char* identifier, REPY_CodeMode code_mode, REPY_CHReturnType return_type));
 REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, u32 line_number, char* identifier));
 
 REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name));

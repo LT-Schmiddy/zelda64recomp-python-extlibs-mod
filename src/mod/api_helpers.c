@@ -7,35 +7,8 @@
 #include "printf.h"
 #include "extlib_functions.h"
 #include "mod_logging.h"
+#include "mod_logging.h"
 
-RECOMP_EXPORT u32 REPY_CompileHelper (
-    REPY_Handle* handle_ptr, 
-    const char* code_str, 
-    const char* identifier,
-    REPY_CodeMode code_mode, 
-    REPY_CHReturnType return_type
-) {
-    bool was_compiled = false;
-    if (*handle_ptr == 0) {
-        *handle_ptr = REPY_CompileCStr(code_str, identifier, code_mode);
-        bool was_compiled = true;
-    } 
-
-    // Handling Return:
-    switch(return_type) {
-        case REPY_CH_RETURN_TRUE:
-            return true;
-        case REPY_CH_RETURN_WAS_COMPILED:
-            return was_compiled;
-        case REPY_CH_RETURN_WAS_COMPILED_SUCCESSFULLY:
-            return was_compiled && *handle_ptr;
-        case REPY_CH_RETURN_HANDLE:
-            return *handle_ptr;
-        case REPY_CH_RETURN_FALSE:
-        default:
-            return false;
-    }
-}
 
 #define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s -> "
 RECOMP_EXPORT char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, u32 line_number, char* identifier) {
