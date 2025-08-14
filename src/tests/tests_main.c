@@ -138,8 +138,8 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     // Dicts are needed for execution contexts. Test those next.
     REPY_Handle test_dict = REPY_CreateEmptyDict_SUH();
-    validate("REPY_CreateEmptyDict_SUH - test_dict created and is empty", REPY_Len(test_dict) == 0);
-    validate("REPY_CreateEmptyDict_SUH - test_dict is just invalidated", REPY_IsValidHandle(test_dict) == false);
+    validate("REPY_CreateEmptyDict_SUH -> test_dict created and is empty", REPY_Len(test_dict) == 0);
+    validate("REPY_CreateEmptyDict_SUH -> test_dict is just invalidated", REPY_IsValidHandle(test_dict) == false);
 
     // Testing Dict Get/Set/Has/Del
     test_dict = REPY_CreateEmptyDict();
@@ -147,13 +147,13 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Handle test_key_1 = REPY_CreateStr("test_key_1");
     validate("REPY_CreateEmptyDict: test_dict re-created and is empty", REPY_Len(test_dict) == 0);
     REPY_DictSet(test_dict, test_key_1, REPY_CreateS32_SUH(test_value_1_val));
-    validate("REPY_DictSet - REPY_Len(test_dict) == 1", REPY_Len(test_dict) == 1);
+    validate("REPY_DictSet -> REPY_Len(test_dict) == 1", REPY_Len(test_dict) == 1);
     validate("REPY_DictHas(test_key_1) == true", REPY_DictHas(test_dict, test_key_1) == true);
     REPY_Handle test_value_1 = REPY_DictGet(test_dict, test_key_1);
-    validate("REPY_DictGet - test_value_1_val == REPY_CastS32(test_value_1)", test_value_1_val == REPY_CastS32(test_value_1));
+    validate("REPY_DictGet -> test_value_1_val == REPY_CastS32(test_value_1)", test_value_1_val == REPY_CastS32(test_value_1));
     REPY_DictDel(test_dict, test_key_1);
-    validate("REPY_DictDel - REPY_DictHas(test_key_1) == false", REPY_DictHas(test_dict, test_key_1) == false);
-    validate("REPY_DictDel - test_dict is empty again", REPY_Len(test_dict) == 0);
+    validate("REPY_DictDel -> REPY_DictHas(test_key_1) == false", REPY_DictHas(test_dict, test_key_1) == false);
+    validate("REPY_DictDel -> test_dict is empty again", REPY_Len(test_dict) == 0);
 
     s32 test_value_2_val = 888;
     char* test_key_2 = "test_key_2";
@@ -178,22 +178,22 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Handle py_globals = REPY_CreateEmptyDict();
     REPY_Handle py_locals = REPY_CreateEmptyDict();
     REPY_Handle test_var_x_name = REPY_CreateStr("x");
-    validate("REPY_ExecCStr - 'x = 5' ran without error", REPY_ExecCStr("x = 5", py_globals, py_locals));
-    validate("REPY_ExecCStr - 'x' is in local scope", REPY_DictHas(py_locals, test_var_x_name));
-    validate("REPY_ExecCStr - 'x' is NOT in global scope", !REPY_DictHas(py_globals, test_var_x_name));
-    validate("REPY_ExecCStr - 'x' assigned to 5", 5 == REPY_CastS32(REPY_MakeSUH(REPY_DictGet(py_locals, test_var_x_name))));
-    validate("REPY_EvalCStr - 'x == 5' is true", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("x == 5", py_globals, py_locals))));
-    validate("REPY_EvalCStr - 'x == 6' is false", !REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("x == 6", py_globals, py_locals))));
+    validate("REPY_ExecCStr -> 'x = 5' ran without error", REPY_ExecCStr("x = 5", py_globals, py_locals));
+    validate("REPY_ExecCStr -> 'x' is in local scope", REPY_DictHas(py_locals, test_var_x_name));
+    validate("REPY_ExecCStr -> 'x' is NOT in global scope", !REPY_DictHas(py_globals, test_var_x_name));
+    validate("REPY_ExecCStr -> 'x' assigned to 5", 5 == REPY_CastS32(REPY_MakeSUH(REPY_DictGet(py_locals, test_var_x_name))));
+    validate("REPY_EvalCStr -> 'x == 5' is true", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("x == 5", py_globals, py_locals))));
+    validate("REPY_EvalCStr -> 'x == 6' is false", !REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("x == 6", py_globals, py_locals))));
 
     // Repeat these with N functions and different vars:
     REPY_Handle test_var_y_name = REPY_CreateStr("y");
     // The purpose of these functions is to not need null-terminated code strings. So we'll set the length args to exclude that.
-    validate("REPY_ExecCStr - 'y = 8' ran without error", REPY_ExecCStrN("y = 8", 5, py_globals, py_locals));
-    validate("REPY_ExecCStr - 'y' is in local scope", REPY_DictHas(py_locals, test_var_y_name));
-    validate("REPY_ExecCStr - 'y' is NOT in global scope", !REPY_DictHas(py_globals, test_var_y_name));
-    validate("REPY_ExecCStr - 'y' assigned to 8", 8 == REPY_CastS32(REPY_MakeSUH(REPY_DictGet(py_locals, test_var_y_name))));
-    validate("REPY_EvalCStr - 'y == 8' is true", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStrN("y == 8", 6, py_globals, py_locals))));
-    validate("REPY_EvalCStr - 'y == 9' is false", !REPY_CastBool(REPY_MakeSUH(REPY_EvalCStrN("y == 9", 6, py_globals, py_locals))));
+    validate("REPY_ExecCStr -> 'y = 8' ran without error", REPY_ExecCStrN("y = 8", 5, py_globals, py_locals));
+    validate("REPY_ExecCStr -> 'y' is in local scope", REPY_DictHas(py_locals, test_var_y_name));
+    validate("REPY_ExecCStr -> 'y' is NOT in global scope", !REPY_DictHas(py_globals, test_var_y_name));
+    validate("REPY_ExecCStr -> 'y' assigned to 8", 8 == REPY_CastS32(REPY_MakeSUH(REPY_DictGet(py_locals, test_var_y_name))));
+    validate("REPY_EvalCStr -> 'y == 8' is true", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStrN("y == 8", 6, py_globals, py_locals))));
+    validate("REPY_EvalCStr -> 'y == 9' is false", !REPY_CastBool(REPY_MakeSUH(REPY_EvalCStrN("y == 9", 6, py_globals, py_locals))));
     // We'll need more of the API validated before we can test error handling. That will come after all other execution stuff is tested.
     // From here on, we will assume that running Python code directly from strings works as expected, provided the Python code is correct.
     REPY_Release(test_var_x_name);
@@ -316,12 +316,14 @@ REPY_ON_INIT void REPY_API_Tests() {
     // From here on, we'll assume that function calls work correctly.
     REPY_Release(py_test_int);
     
-    // Testing module loading:
+    // Testing module loading and attribute manipulation:
     REPY_Handle py_os_module = REPY_ImportModule("os");
+    validate("Python module 'os' imported without error", py_os_module);
+
     REPY_Handle py_cwd = REPY_CallAttr_CStr_Return(py_os_module, "getcwd", 0, 0);
     validate("os.getcwd() returns without error", py_cwd);
-    // I guess we can consider the stdlib modules to be working. Let's try with NRM modules.
-    
+
+
     // Testing object attribute manipulation using using the OS module as the object.
     s32 obj_test_value_1_val = 999;
     REPY_Handle obj_test_key_1 = REPY_CreateStr("obj_test_key_1");
@@ -342,12 +344,26 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_DelAttr_CStr(py_os_module, obj_test_key_2_cstr);
     validate("REPY_DelAttr_CStr -> REPY_HasAttr_CStr(test_key_1) == false", REPY_HasAttr_CStr(py_os_module, obj_test_key_2_cstr) == false);
     // We'll assume that object attribute manipulation works from here on.
-
+    REPY_Release(py_os_module);
+    REPY_Release(py_cwd);
     REPY_Release(obj_test_key_1);
     REPY_Release(obj_test_value_1);
     REPY_Release(obj_test_value_2);
-    REPY_Release(py_os_module);
-    REPY_Release(py_cwd);
+
+    // I guess we can consider the stdlib modules to be working. Let's try with NRM modules.
+    REPY_Handle py_repy_api = REPY_ImportModule("repy_api");
+    validate("Python module from NRM 'repy_api' imported without error", py_repy_api);
+    validate("repy_api has member 'version_str'", REPY_HasAttr_CStr(py_repy_api, "version_str"));
+
+    // What about incbinned modules:
+    REPY_Handle py_test_module = REPY_ImportModule("test_module");
+    validate("INCBIN Python module 'test_module' imported without error", py_test_module);
+    validate("repy_api has member 'test_string'", REPY_HasAttr_CStr(py_test_module, "test_string"));
+    // From here on, we'll assume that all module functionality works.
+
+    REPY_Release(py_repy_api);
+    REPY_Release(py_test_module);
+
 
 
     REPY_Release(py_globals);
