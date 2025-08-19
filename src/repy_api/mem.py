@@ -21,7 +21,7 @@ def read_u16(ptr: int) -> int:
     
     return _recomp_mem.read_u16(ptr)
     
-def write_u16(ptr: int):
+def write_u16(ptr: int, value: int):
     if not isinstance(ptr, int):
         ptr = int(ptr)
     
@@ -36,7 +36,7 @@ def read_u32(ptr: int) -> int:
         
     return _recomp_mem.read_u32(ptr)
     
-def write_u32(ptr: int):
+def write_u32(ptr: int, value: int):
     if not isinstance(ptr, int):
         ptr = int(ptr)
     
@@ -51,7 +51,7 @@ def read_u64(ptr: int) -> int:
         
     return _recomp_mem.read_u64(ptr)
     
-def write_u64(ptr: int):
+def write_u64(ptr: int, value: int):
     if not isinstance(ptr, int):
         ptr = int(ptr)
     
@@ -142,7 +142,7 @@ def read_f64(ptr: int) -> float:
     if not isinstance(ptr, int):
         ptr = int(ptr)
         
-    return _recomp_mem.read_f32(ptr)
+    return _recomp_mem.read_f64(ptr)
     
 def write_f64(ptr: int, value: float):
     if not isinstance(ptr, int):
@@ -151,7 +151,7 @@ def write_f64(ptr: int, value: float):
     if not isinstance(value, float):
         value = float(value)
     
-    _recomp_mem.write_f32(ptr, value)
+    _recomp_mem.write_f64(ptr, value)
 
 # Text:
 def read_char(ptr: int) -> str:
@@ -220,7 +220,7 @@ def read_byte_str(ptr: int) -> bytes:
         
     return _recomp_mem.read_byte_str(ptr)
 
-def read_byte_str_n(ptr: int) -> bytes:
+def read_byte_str_n(ptr: int, size: int) -> bytes:
     if not isinstance(ptr, int):
         ptr = int(ptr)
         

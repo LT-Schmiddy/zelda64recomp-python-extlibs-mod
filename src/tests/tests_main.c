@@ -96,6 +96,26 @@ CREATE_CAST_STRN_TEST_BLOCK(char*, py_type ## N, py_type, value, max_size) \
 CREATE_CAST_STR_TEST_BLOCK_SUH(char*, py_type ## _SUH, py_type, value, max_size) \
 CREATE_CAST_STRN_TEST_BLOCK_SUH(char*, py_type ## N_SUH, py_type, value, max_size) 
 
+#define REPY_MEM_TEST(c_type, py_create, value) \
+{ \
+    c_type value_var = value; \
+    REPY_DictSet_CStr(py_locals, "test_ptr", REPY_CreatePtr_SUH(&value_var)); \
+    REPY_DictSet_CStr(py_locals, "test_value", REPY_MakeSUH(REPY_Create ## py_create (value))); \
+    validate("repy_api.mem.read_" #c_type " works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_" #c_type "(test_ptr) == test_value", py_globals, py_locals)))); \
+    REPY_ExecCStr("mem.write_" #c_type "(test_ptr, test_value + 1)", py_globals, py_locals); \
+    validate("repy_api.mem.write_" #c_type " works", value_var == value + 1); \
+} \
+
+#define REPY_MEM_TEST_STR(c_type, py_create, value) \
+{ \
+    c_type value_var = value; \
+    REPY_DictSet_CStr(py_locals, "test_ptr", REPY_CreatePtr_SUH(&value_var)); \
+    REPY_DictSet_CStr(py_locals, "test_value", REPY_MakeSUH(REPY_Create ## py_create (value))); \
+    validate("repy_api.mem.read_" #c_type " works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_" #c_type "(test_ptr) == test_value", py_globals, py_locals)))); \
+    REPY_ExecCStr("mem.write_" #c_type "(test_ptr, test_value + 1)", py_globals, py_locals); \
+    validate("repy_api.mem.write_" #c_type " works", value_var == value + 1); \
+} \
+
 
 REPY_ON_INIT void REPY_API_Tests() {
     // Testing Handle Operations:
@@ -519,6 +539,21 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("Error Handling -> error_value1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_value1 is None", py_globals, py_locals))));
     // Handling thrown errors works. We'll test that every potential error thrower works correctly another time.
 
+    // Let's test the repy_api.mem functions.
+    REPY_ExecCStr("from repy_api import mem", py_globals, py_locals);
+
+    REPY_MEM_TEST(u8, U8, 66);
+    REPY_MEM_TEST(u16, U16, 700);
+    REPY_MEM_TEST(u32, U32, 80000);
+    REPY_MEM_TEST(u64, U64, 9000000000);
+    
+    REPY_MEM_TEST(s8, S8, -66);
+    REPY_MEM_TEST(s16, S16, -700);
+    REPY_MEM_TEST(s32, S32, -80000);
+    REPY_MEM_TEST(s64, S64, -9000000000);
+    
+    REPY_MEM_TEST(f32, F32, 80000.5f);
+    REPY_MEM_TEST(f64, F64, 9000000000);
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);
