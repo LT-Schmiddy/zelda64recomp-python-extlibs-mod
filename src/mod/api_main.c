@@ -390,7 +390,7 @@ RECOMP_EXPORT REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key) {
     return PythonNative_Dict_Get(dict, key);
 }
 
-RECOMP_EXPORT REPY_Handle REPY_DictGet_CStr(REPY_Handle dict, char* key) {
+RECOMP_EXPORT REPY_Handle REPY_DictGetCStr(REPY_Handle dict, char* key) {
     return PythonNative_Dict_Get_CStr(dict, key);
 }
 
@@ -398,7 +398,7 @@ RECOMP_EXPORT void REPY_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle v
     PythonNative_Dict_Set(dict, key, value);
 }
 
-RECOMP_EXPORT void REPY_DictSet_CStr(REPY_Handle dict, char* key, REPY_Handle value) {
+RECOMP_EXPORT void REPY_DictSetCStr(REPY_Handle dict, char* key, REPY_Handle value) {
     PythonNative_Dict_Set_CStr(dict, key, value);
 }
 
@@ -406,7 +406,7 @@ RECOMP_EXPORT bool REPY_DictHas(REPY_Handle dict, REPY_Handle key) {
     return PythonNative_Dict_Has(dict, key);
 }
 
-RECOMP_EXPORT bool REPY_DictHas_CStr(REPY_Handle dict, char* key) {
+RECOMP_EXPORT bool REPY_DictHasCStr(REPY_Handle dict, char* key) {
     return PythonNative_Dict_Has_CStr(dict, key);
 }
 
@@ -414,7 +414,7 @@ RECOMP_EXPORT void REPY_DictDel(REPY_Handle dict, REPY_Handle key) {
     PythonNative_Dict_Remove(dict, key);
 }
 
-RECOMP_EXPORT void REPY_DictDel_CStr(REPY_Handle dict, char* key) {
+RECOMP_EXPORT void REPY_DictDelCStr(REPY_Handle dict, char* key) {
     PythonNative_Dict_Remove_CStr(dict, key);
 }
 
@@ -423,7 +423,7 @@ RECOMP_EXPORT REPY_Handle REPY_GetAttr(REPY_Handle obj, REPY_Handle key, REPY_Ha
     return PythonNative_Object_GetAttr(obj, key, default_value);
 }
 
-RECOMP_EXPORT REPY_Handle REPY_GetAttr_CStr(REPY_Handle obj, char* key, REPY_Handle default_value) {
+RECOMP_EXPORT REPY_Handle REPY_GetAttrCStr(REPY_Handle obj, char* key, REPY_Handle default_value) {
     return PythonNative_Object_GetAttr_CStr(obj, key, default_value);
 }
 
@@ -431,7 +431,7 @@ RECOMP_EXPORT void REPY_SetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle va
     PythonNative_Object_SetAttr(obj, key, value);
 }
 
-RECOMP_EXPORT void REPY_SetAttr_CStr(REPY_Handle obj, char* key, REPY_Handle value) {
+RECOMP_EXPORT void REPY_SetAttrCStr(REPY_Handle obj, char* key, REPY_Handle value) {
     PythonNative_Object_SetAttr_CStr(obj, key, value);
 }
 
@@ -439,7 +439,7 @@ RECOMP_EXPORT bool REPY_HasAttr(REPY_Handle obj, REPY_Handle key) {
     return PythonNative_Object_HasAttr(obj, key);
 }
 
-RECOMP_EXPORT bool REPY_HasAttr_CStr(REPY_Handle obj, char* key) {
+RECOMP_EXPORT bool REPY_HasAttrCStr(REPY_Handle obj, char* key) {
     return PythonNative_Object_HasAttr_CStr(obj, key);
 }
 
@@ -447,7 +447,7 @@ RECOMP_EXPORT void REPY_DelAttr(REPY_Handle obj, REPY_Handle key) {
     PythonNative_Object_DelAttr(obj, key);
 }
 
-RECOMP_EXPORT void REPY_DelAttr_CStr(REPY_Handle obj, char* key) {
+RECOMP_EXPORT void REPY_DelAttrCStr(REPY_Handle obj, char* key) {
     PythonNative_Object_DelAttr_CStr(obj, key);
 }
 
@@ -494,7 +494,7 @@ RECOMP_EXPORT bool REPY_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwa
     return PythonNative_Call(func, args, kwargs);
 }
 
-RECOMP_EXPORT REPY_Handle REPY_Call_Return(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs) {
+RECOMP_EXPORT REPY_Handle REPY_CallReturn(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_Call_Return(func, args, kwargs);
 }
 
@@ -502,15 +502,15 @@ RECOMP_EXPORT bool REPY_CallAttr(REPY_Handle func, REPY_Handle name, REPY_Handle
     return PythonNative_CallAttr(func, name, args, kwargs);
 }
 
-RECOMP_EXPORT bool REPY_CallAttr_CStr(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs) {
+RECOMP_EXPORT bool REPY_CallAttrCStr(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_CallAttr_CStr(func, name, args, kwargs);
 }
 
-RECOMP_EXPORT REPY_Handle REPY_CallAttr_Return(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs) {
+RECOMP_EXPORT REPY_Handle REPY_CallAttrReturn(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_CallAttr_Return(func, name, args, kwargs);
 }
 
-RECOMP_EXPORT REPY_Handle REPY_CallAttr_CStr_Return(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs) {
+RECOMP_EXPORT REPY_Handle REPY_CallAttrCStrReturn(REPY_Handle func, char* name, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_CallAttr_CStr_Return(func, name, args, kwargs);
 }
 

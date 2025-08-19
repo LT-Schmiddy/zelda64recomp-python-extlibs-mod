@@ -99,8 +99,8 @@ CREATE_CAST_STRN_TEST_BLOCK_SUH(char*, py_type ## N_SUH, py_type, value, max_siz
 #define REPY_MEM_TEST(c_type, py_create, value) \
 { \
     c_type value_var = value; \
-    REPY_DictSet_CStr(py_locals, "test_ptr", REPY_CreatePtr_SUH(&value_var)); \
-    REPY_DictSet_CStr(py_locals, "test_value", REPY_MakeSUH(REPY_Create ## py_create (value))); \
+    REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH(&value_var)); \
+    REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_Create ## py_create (value))); \
     validate("repy_api.mem.read_" #c_type " works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_" #c_type "(test_ptr) == test_value", py_globals, py_locals)))); \
     REPY_ExecCStr("mem.write_" #c_type "(test_ptr, test_value + 1)", py_globals, py_locals); \
     validate("repy_api.mem.write_" #c_type " works", value_var == value + 1); \
@@ -168,14 +168,14 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     s32 test_value_2_val = 888;
     char* test_key_2 = "test_key_2";
-    REPY_DictSet_CStr(test_dict, test_key_2, REPY_CreateS32_SUH(test_value_2_val));
-    validate("REPY_DictSet_CStr - REPY_Len(test_dict) == 1", REPY_Len(test_dict) == 1);
-    validate("REPY_DictHas_CStr(test_key_2) == true", REPY_DictHas_CStr(test_dict, test_key_2) == true);
-    REPY_Handle test_value_2 = REPY_DictGet_CStr(test_dict, test_key_2);
-    validate("REPY_DictGet_CStr - test_value_2_val == REPY_CastS32(test_value_2)", test_value_2_val == REPY_CastS32(test_value_2));
-    REPY_DictDel_CStr(test_dict, test_key_2);
-    validate("REPY_DictDel_CStr - REPY_DictHas_CStr(test_key_2) == false", REPY_DictHas_CStr(test_dict, test_key_2) == false);
-    validate("REPY_DictDel_CStr - test_dict is empty again", REPY_Len(test_dict) == 0);
+    REPY_DictSetCStr(test_dict, test_key_2, REPY_CreateS32_SUH(test_value_2_val));
+    validate("REPY_DictSetCStr - REPY_Len(test_dict) == 1", REPY_Len(test_dict) == 1);
+    validate("REPY_DictHasCStr(test_key_2) == true", REPY_DictHasCStr(test_dict, test_key_2) == true);
+    REPY_Handle test_value_2 = REPY_DictGetCStr(test_dict, test_key_2);
+    validate("REPY_DictGetCStr - test_value_2_val == REPY_CastS32(test_value_2)", test_value_2_val == REPY_CastS32(test_value_2));
+    REPY_DictDelCStr(test_dict, test_key_2);
+    validate("REPY_DictDelCStr - REPY_DictHasCStr(test_key_2) == false", REPY_DictHasCStr(test_dict, test_key_2) == false);
+    validate("REPY_DictDelCStr - test_dict is empty again", REPY_Len(test_dict) == 0);
     // Admittedly, we only tested a dict with a single entry. Might need to expand that later.
     REPY_Release(test_dict);
     REPY_Release(test_key_1);
@@ -255,9 +255,9 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Handle test_bstr = REPY_CreateByteStr(memcpy_test_cstr);
     REPY_Handle memcpy_test_byte_str = REPY_MemcpyToBytes(memcpy_test_cstr, 12, false); // Don't include the null-terminator for this
     REPY_Handle memcpy_test_byte_array = REPY_MemcpyToByteArray(memcpy_test_cstr, 12, false); // Don't include the null-terminator for this
-    REPY_DictSet_CStr(py_locals, "memcpy_test_byte_str", memcpy_test_byte_str);
-    REPY_DictSet_CStr(py_locals, "test_bstr", test_bstr);
-    REPY_DictSet_CStr(py_locals, "memcpy_test_byte_array", memcpy_test_byte_array);
+    REPY_DictSetCStr(py_locals, "memcpy_test_byte_str", memcpy_test_byte_str);
+    REPY_DictSetCStr(py_locals, "test_bstr", test_bstr);
+    REPY_DictSetCStr(py_locals, "memcpy_test_byte_array", memcpy_test_byte_array);
     validate("REPY_MemcpyToBytes - eval 'memcpy_test_byte_str == test_bstr' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("memcpy_test_byte_str == test_bstr"), py_globals, py_locals))));
     REPY_ExecCStr("memcpy_test_byte_array2 = bytearray(memcpy_test_byte_str)", py_globals, py_locals);
     validate("REPY_MemcpyToByteArray - eval 'memcpy_test_byte_array == memcpy_test_byte_array2' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("memcpy_test_byte_array == memcpy_test_byte_array"), py_globals, py_locals))));
@@ -305,23 +305,23 @@ REPY_ON_INIT void REPY_API_Tests() {
     // Testing function invokations. We'll use the built-in `int` function for that.
     REPY_Handle py_int_fn = REPY_EvalCStr("int", 0, 0);
     validate("REPY_Call ran without error", REPY_Call(py_int_fn, REPY_MakeSUH(REPY_CreateTuple(1, REPY_CreateByteStr_SUH("33"))), 0));
-    REPY_Handle py_int_return1 = REPY_Call_Return(py_int_fn, REPY_MakeSUH(REPY_CreateTuple(1, REPY_CreateByteStr_SUH("33"))), 0);
-    validate("REPY_Call_Return ran without error", py_int_return1);
+    REPY_Handle py_int_return1 = REPY_CallReturn(py_int_fn, REPY_MakeSUH(REPY_CreateTuple(1, REPY_CreateByteStr_SUH("33"))), 0);
+    validate("REPY_CallReturn ran without error", py_int_return1);
     validate("py_int_return1 == 33", py_int_return1 && REPY_CastS32(py_int_return1) == 33);
     REPY_Release(py_int_fn);
     REPY_Release(py_int_return1);
     // For calling attributes, we'll the attributes of an int object:
     REPY_Handle py_test_int = REPY_CreateU32(99);
     validate("REPY_CallAttr ran without error", REPY_CallAttr(py_test_int, REPY_CreateStr("bit_length"), 0, 0));
-    validate("REPY_CallAttr_CStr ran without error", REPY_CallAttr_CStr(py_test_int,"bit_length", 0, 0));
+    validate("REPY_CallAttrCStr ran without error", REPY_CallAttrCStr(py_test_int,"bit_length", 0, 0));
 
-    REPY_Handle py_int_return2 = REPY_CallAttr_Return(py_test_int, REPY_CreateStr("bit_length"), 0, 0);
+    REPY_Handle py_int_return2 = REPY_CallAttrReturn(py_test_int, REPY_CreateStr("bit_length"), 0, 0);
     validate("REPY_CallAttr_Return ran without error", py_int_return2);
     validate("py_int_return2 == 7", py_int_return2 && REPY_CastS32(py_int_return2) == 7);
     REPY_Release(py_int_return2);
 
-    REPY_Handle py_int_return3 = REPY_CallAttr_CStr_Return(py_test_int,"bit_length", 0, 0);
-    validate("REPY_CallAttr_CStr_Return ran without error", py_int_return3);
+    REPY_Handle py_int_return3 = REPY_CallAttrCStrReturn(py_test_int,"bit_length", 0, 0);
+    validate("REPY_CallAttrCStrReturn ran without error", py_int_return3);
     validate("py_int_return3 == 7", py_int_return3 && REPY_CastS32(py_int_return3) == 7);
     REPY_Release(py_int_return3);
     // From here on, we'll assume that function calls work correctly.
@@ -331,7 +331,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Handle py_os_module = REPY_ImportModule("os");
     validate("Python module 'os' imported without error", py_os_module);
 
-    REPY_Handle py_cwd = REPY_CallAttr_CStr_Return(py_os_module, "getcwd", 0, 0);
+    REPY_Handle py_cwd = REPY_CallAttrCStrReturn(py_os_module, "getcwd", 0, 0);
     validate("os.getcwd() returns without error", py_cwd);
 
 
@@ -348,12 +348,12 @@ REPY_ON_INIT void REPY_API_Tests() {
     // Testing CStr versions:
     s32 obj_test_value_2_val = 999;
     char* obj_test_key_2_cstr = "obj_test_key_1";
-    REPY_SetAttr_CStr(py_os_module, obj_test_key_2_cstr, REPY_CreateS32_SUH(obj_test_value_2_val));
-    validate("REPY_SetAttr_CStr-> REPY_HasAttr_CStr(test_key_1) == true", REPY_HasAttr_CStr(py_os_module, obj_test_key_2_cstr) == true);
-    REPY_Handle obj_test_value_2 = REPY_GetAttr_CStr(py_os_module, obj_test_key_2_cstr, 0);
-    validate("REPY_GetAttr_CStr -> test_value_1_val == REPY_CastS32(test_value_1)", obj_test_value_2_val == REPY_CastS32(obj_test_value_2));
-    REPY_DelAttr_CStr(py_os_module, obj_test_key_2_cstr);
-    validate("REPY_DelAttr_CStr -> REPY_HasAttr_CStr(test_key_1) == false", REPY_HasAttr_CStr(py_os_module, obj_test_key_2_cstr) == false);
+    REPY_SetAttrCStr(py_os_module, obj_test_key_2_cstr, REPY_CreateS32_SUH(obj_test_value_2_val));
+    validate("REPY_SetAttrCStr-> REPY_HasAttrCStr(test_key_1) == true", REPY_HasAttrCStr(py_os_module, obj_test_key_2_cstr) == true);
+    REPY_Handle obj_test_value_2 = REPY_GetAttrCStr(py_os_module, obj_test_key_2_cstr, 0);
+    validate("REPY_GetAttrCStr -> test_value_1_val == REPY_CastS32(test_value_1)", obj_test_value_2_val == REPY_CastS32(obj_test_value_2));
+    REPY_DelAttrCStr(py_os_module, obj_test_key_2_cstr);
+    validate("REPY_DelAttrCStr -> REPY_HasAttrCStr(test_key_1) == false", REPY_HasAttrCStr(py_os_module, obj_test_key_2_cstr) == false);
     // We'll assume that object attribute manipulation works from here on.
     REPY_Release(py_os_module);
     REPY_Release(py_cwd);
@@ -364,12 +364,12 @@ REPY_ON_INIT void REPY_API_Tests() {
     // I guess we can consider the stdlib modules to be working. Let's try with NRM modules.
     REPY_Handle py_repy_api = REPY_ImportModule("repy_api");
     validate("Python module from NRM 'repy_api' imported without error", py_repy_api);
-    validate("repy_api has member 'version_str'", REPY_HasAttr_CStr(py_repy_api, "version_str"));
+    validate("repy_api has member 'version_str'", REPY_HasAttrCStr(py_repy_api, "version_str"));
 
     // What about incbinned modules:
     REPY_Handle py_test_module = REPY_ImportModule("test_module");
     validate("INCBIN Python module 'test_module' imported without error", py_test_module);
-    validate("repy_api has member 'test_string'", REPY_HasAttr_CStr(py_test_module, "test_string"));
+    validate("repy_api has member 'test_string'", REPY_HasAttrCStr(py_test_module, "test_string"));
     // From here on, we'll assume that all module functionality works.
 
     REPY_Release(py_repy_api);
@@ -388,7 +388,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name); REPY_IteratorHelper_Update(iter, true);) {
         iter_index_works = iter_index_works && (iter_array[iter->index] == iter->index);
         iter_curr_works = iter_curr_works && (iter_array[iter->index] == REPY_CastU32(iter->curr));
-        iter_scope_works = iter_scope_works && (iter_array[iter->index] == REPY_CastU32(REPY_MakeSUH(REPY_DictGet_CStr(iter_test_dict, var_name))));
+        iter_scope_works = iter_scope_works && (iter_array[iter->index] == REPY_CastU32(REPY_MakeSUH(REPY_DictGetCStr(iter_test_dict, var_name))));
 
         iter_handles[iter->index] = iter->curr;
         iter_handles[7] = iter->iter;
@@ -430,7 +430,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     // From here on, we assume the iterator helper works.
 
     // Creating a value to check:
-    REPY_DictSet_CStr(py_locals, "if_check", REPY_CreateS32_SUH(2));
+    REPY_DictSetCStr(py_locals, "if_check", REPY_CreateS32_SUH(2));
 
     // Testing the IfStmtHelper:
     static REPY_IfStmtChain* if_helper_chain_root = NULL;
@@ -509,9 +509,9 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_ExecCStr("pront('hello world')", py_globals, py_locals);
     validate("Error Handling -> Python error has been captured", REPY_IsErrorSet());
 
-    REPY_DictSet_CStr(py_locals, "error_trace1", REPY_MakeSUH(REPY_GetErrorTrace()));
-    REPY_DictSet_CStr(py_locals, "error_type1", REPY_MakeSUH(REPY_GetErrorType()));
-    REPY_DictSet_CStr(py_locals, "error_value1", REPY_MakeSUH(REPY_GetErrorValue()));
+    REPY_DictSetCStr(py_locals, "error_trace1", REPY_MakeSUH(REPY_GetErrorTrace()));
+    REPY_DictSetCStr(py_locals, "error_type1", REPY_MakeSUH(REPY_GetErrorType()));
+    REPY_DictSetCStr(py_locals, "error_value1", REPY_MakeSUH(REPY_GetErrorValue()));
 
     validate("Error Handling -> error_trace1 is not None", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_trace1 is not None", py_globals, py_locals))));
     validate("Error Handling -> error_type1 is not None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_type1 is not None", py_globals, py_locals))));
@@ -520,9 +520,9 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     REPY_ClearError();
     validate("Error Handling -> Python error has been released", !REPY_IsErrorSet());
-    REPY_DictSet_CStr(py_locals, "error_trace1", REPY_MakeSUH(REPY_GetErrorTrace()));
-    REPY_DictSet_CStr(py_locals, "error_type1", REPY_MakeSUH(REPY_GetErrorType()));
-    REPY_DictSet_CStr(py_locals, "error_value1", REPY_MakeSUH(REPY_GetErrorValue()));
+    REPY_DictSetCStr(py_locals, "error_trace1", REPY_MakeSUH(REPY_GetErrorTrace()));
+    REPY_DictSetCStr(py_locals, "error_type1", REPY_MakeSUH(REPY_GetErrorType()));
+    REPY_DictSetCStr(py_locals, "error_value1", REPY_MakeSUH(REPY_GetErrorValue()));
     validate("Error Handling -> error_trace1 is None", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_trace1 is None", py_globals, py_locals))));
     validate("Error Handling -> error_type1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_type1 is None", py_globals, py_locals))));
     validate("Error Handling -> error_value1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_value1 is None", py_globals, py_locals))));
@@ -545,24 +545,24 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_MEM_TEST(f64, F64, 9000000000);
     // Testing char
     char string_char[2] = "c";
-    REPY_DictSet_CStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_char));
-    REPY_DictSet_CStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateStr((const char*)&string_char)));
+    REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_char));
+    REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateStr((const char*)&string_char)));
     validate("repy_api.mem.read_char works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_char(test_ptr) == test_value", py_globals, py_locals))));
     REPY_ExecCStr("mem.write_char(test_ptr, 'd')", py_globals, py_locals);
     validate("repy_api.mem.write_char works", string_char[0] == 'd');
 
     // Testing byte char
     char string_byte_char[2] = "c";
-    REPY_DictSet_CStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_byte_char));
-    REPY_DictSet_CStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateByteStr((const char*)&string_byte_char)));
+    REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_byte_char));
+    REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateByteStr((const char*)&string_byte_char)));
     validate("repy_api.mem.read_byte_char works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_byte_char(test_ptr) == test_value", py_globals, py_locals))));
     REPY_ExecCStr("mem.write_byte_char(test_ptr, b'd')", py_globals, py_locals);
     validate("repy_api.mem.write_byte_char works", string_byte_char[0] == 'd');
 
     // testing str
     char string_str[50] = "hello world";
-    REPY_DictSet_CStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_str));
-    REPY_DictSet_CStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateStr((const char*)&string_str)));
+    REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_str));
+    REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateStr((const char*)&string_str)));
     validate("repy_api.mem.read_str works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_str(test_ptr) == test_value", py_globals, py_locals))));
     validate("repy_api.mem.read_str_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_str_n(test_ptr, 50) == test_value", py_globals, py_locals))));
     REPY_ExecCStr("print(f'{mem.read_str_n(test_ptr, 50)=}')", py_globals, py_locals);
@@ -572,8 +572,8 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     // testing bytes str
     char string_byte_str[50] = "hello world";
-    REPY_DictSet_CStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_byte_str));
-    REPY_DictSet_CStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateByteStr((const char*)&string_byte_str)));
+    REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_byte_str));
+    REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateByteStr((const char*)&string_byte_str)));
     validate("repy_api.mem.read_byte_str works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_byte_str(test_ptr) == test_value", py_globals, py_locals))));
     validate("repy_api.mem.read_byte_str_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_byte_str_n(test_ptr, 50) == test_value", py_globals, py_locals))));
     REPY_ExecCStr("mem.write_byte_str_n(test_ptr, b'hello recomp', 50)", py_globals, py_locals);
@@ -582,15 +582,15 @@ REPY_ON_INIT void REPY_API_Tests() {
 
 
     char mem_bytes[20] = "hello world";
-    REPY_DictSet_CStr(py_locals, "mem_bytes_ptr", REPY_CreatePtr_SUH((void*)&mem_bytes));
-    REPY_DictSet_CStr(py_locals, "mem_bytes_value", REPY_MakeSUH(REPY_MemcpyToBytes(mem_bytes, 20, false)));
+    REPY_DictSetCStr(py_locals, "mem_bytes_ptr", REPY_CreatePtr_SUH((void*)&mem_bytes));
+    REPY_DictSetCStr(py_locals, "mem_bytes_value", REPY_MakeSUH(REPY_MemcpyToBytes(mem_bytes, 20, false)));
     validate("repy_api.mem.read_bytes_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytes_n(mem_bytes_ptr, 20) == mem_bytes_value", py_globals, py_locals))));
     // REPY_ExecCStr("print(f'{mem.read_bytes_n(mem_bytes_ptr, 20)=}, {mem_bytes_value=}')", py_globals, py_locals);
     REPY_ExecCStr("mem.write_bytes_n(mem_bytes_ptr, b'hello recomp', 20)", py_globals, py_locals);
     validate("repy_api.mem.write_bytes_n matches target", strncmp((const char*)mem_bytes, "hello recomp", 20) == 0);
     
 
-    REPY_DictSet_CStr(py_locals, "mem_bytearray_value", REPY_MakeSUH(REPY_MemcpyToByteArray(mem_bytes, 20, false)));
+    REPY_DictSetCStr(py_locals, "mem_bytearray_value", REPY_MakeSUH(REPY_MemcpyToByteArray(mem_bytes, 20, false)));
     validate("repy_api.mem.read_bytearray_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytearray_n(mem_bytes_ptr, 20) == mem_bytearray_value", py_globals, py_locals))));
     // REPY_ExecCStr("print(f'{mem.read_bytes_n(mem_bytes_ptr, 20)=}, {mem_bytearray_value=}')", py_globals, py_locals);
     REPY_ExecCStr("mem.write_bytearray_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
