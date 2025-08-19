@@ -170,6 +170,21 @@ RECOMP_EXPORT f32 REPY_CastF32(REPY_Handle object) {
     return PythonNative_Object_CastF32(object);
 }
 
+// Pointers:
+RECOMP_EXPORT REPY_Handle REPY_CreatePtr(void* value) {
+    return PythonNative_Object_CreateS32((s32)value);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_CreatePtr_SUH(void* value) {
+    return PythonNative_Object_MakeSUH(PythonNative_Object_CreateS32((s32)value));
+}
+
+RECOMP_EXPORT void* REPY_CastPtr(REPY_Handle object) {
+    return (void*) PythonNative_Object_CastS32(object);
+}
+
+
+
 // 64-bit Primatives:
 RECOMP_EXPORT REPY_Handle REPY_CreateU64(u64 value) {
     return PythonNative_Object_U64Operation(&value, 0);

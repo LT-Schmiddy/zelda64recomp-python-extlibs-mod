@@ -490,6 +490,11 @@ REPY_IMPORT(REPY_Handle REPY_CreateF32(f32 value));
 REPY_IMPORT(REPY_Handle REPY_CreateF32_SUH(f32 value));
 REPY_IMPORT(f32 REPY_CastF32(REPY_Handle object));
 
+// Pointers:
+REPY_IMPORT(REPY_Handle REPY_CreatePtr(void* value));
+REPY_IMPORT(REPY_Handle REPY_CreatePtr_SUH(void* value));
+REPY_IMPORT(void* REPY_CastPtr(REPY_Handle object));
+
 // 64-bit Primatives
 REPY_IMPORT(REPY_Handle REPY_CreateU64(u64 value));
 REPY_IMPORT(REPY_Handle REPY_CreateU64_SUH(u64 value));
