@@ -142,7 +142,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
     });
 
     m.def("read_str_n", [](int32_t ptr, uint32_t size){
-        std::u8string str = ptr_to_u8string_n(controller->rdram, ptr, size);
+        std::u8string str = ptr_to_u8string_n(controller->rdram, size, ptr);
         return py::str(str);
     });
 
@@ -151,13 +151,17 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
         
         // write_size
         std::u8string cached_return_string = str.cast<std::u8string>();
-        uint32_t str_len = cached_return_string.size();
+        uint32_t str_len = cached_return_string.size() + 1;
         if (str_len > size) {
             str_len = size;
         }
 
         for (int i = 0; i < str_len; i++) {
-            MEM_B(ptr, i) = cached_return_string.at(i);
+            if (i == str_len - 1) {
+                MEM_B(ptr, i) = '\0';
+            } else {
+                MEM_B(ptr, i) = cached_return_string.at(i);
+            }
         }
     });
 
@@ -167,7 +171,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
     });
 
     m.def("read_byte_str_n", [](int32_t ptr, uint32_t size){
-        std::string str = ptr_to_string_n(controller->rdram, ptr, size);
+        std::string str = ptr_to_string_n(controller->rdram, size, ptr);
         return py::bytes(str);
     });
 
@@ -176,13 +180,17 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
         
         // write_size
         std::string cached_return_string = str.cast<std::string>();
-        uint32_t str_len = cached_return_string.size();
+        uint32_t str_len = cached_return_string.size() + 1;
         if (str_len > size) {
             str_len = size;
         }
 
         for (int i = 0; i < str_len; i++) {
-            MEM_B(ptr, i) = cached_return_string.at(i);
+            if (i == str_len - 1) {
+                MEM_B(ptr, i) = '\0';
+            } else {
+                MEM_B(ptr, i) = cached_return_string.at(i);
+            }
         }
     });
 
@@ -195,7 +203,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
 
         memcpy_from_recomp(rdram, buf, ptr, size);
 
-        py::bytes retVal = py::bytes((char*)buf);
+        py::bytes retVal = py::bytes((char*)buf, size);
         delete[] buf;
 
         return retVal;
@@ -223,7 +231,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
 
         memcpy_from_recomp(rdram, buf, ptr, size);
 
-        py::bytearray retVal = py::bytearray((char*)buf);
+        py::bytearray retVal = py::bytearray((char*)buf, size);
         delete[] buf;
 
         return retVal;

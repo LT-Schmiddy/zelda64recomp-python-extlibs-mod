@@ -39,10 +39,16 @@ inline std::string ptr_to_string_n(uint8_t* rdram, size_t len, PTR(char) str) {
     std::string ret{};
     ret.reserve(len + 1);
 
+    size_t total = 0;
     for (size_t i = 0; i < len; i++) {
-        ret += (char)MEM_B(str, i);
+        char next = (char)MEM_B(str, i);
+        if (next == 0x00) {
+            break;
+        }
+        total++;
+        ret += next;
     }
-
+    ret.resize(total);
     return ret;
 }
 
@@ -50,9 +56,16 @@ inline std::u8string ptr_to_u8string_n(uint8_t* rdram, size_t len, PTR(char) str
     std::u8string ret{};
     ret.reserve(len + 1);
 
+    size_t total = 0;
     for (size_t i = 0; i < len; i++) {
-        ret += (char)MEM_B(str, i);
+        char next = (char)MEM_B(str, i);
+        if (next == 0x00) {
+            break;
+        }
+        total++;
+        ret += next;
     }
+    ret.resize(total);
 
     return ret;
 }

@@ -183,7 +183,7 @@ def write_byte_char(ptr: int, char: bytes):
         ptr = int(ptr)
         
     if not isinstance(char, bytes):
-        char = str(char)
+        char = bytes(char)
         
     if len(char) > 1:
         raise ValueError(f"{char=} has a length greater than 1")
@@ -258,5 +258,26 @@ def write_bytes_n(ptr: int, data: bytes, size: int):
     if not isinstance(data, bytes):
         data = bytes(data)
     
-    _recomp_mem.read_bytes_n(ptr, data, size)
+    _recomp_mem.write_bytes_n(ptr, data, size)
+    
+def read_bytearray_n(ptr: int, size: int) -> bytearray:
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    if not isinstance(size, int):
+        size = int(size)
+        
+    return _recomp_mem.read_bytearray_n(ptr, size)
+    
+def write_bytearray_n(ptr: int, data: bytearray, size: int):
+    if not isinstance(ptr, int):
+        ptr = int(ptr)
+    
+    if not isinstance(size, int):
+        size = int(size)
+        
+    if not isinstance(data, bytearray):
+        data = bytearray(data)
+    
+    _recomp_mem.write_bytearray_n(ptr, data, size)
     

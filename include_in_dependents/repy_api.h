@@ -519,9 +519,9 @@ REPY_IMPORT(REPY_Handle REPY_CreateByteStrN_SUH(const char* string, u32 len));
 REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
 
 // Memcpy:
-REPY_IMPORT(REPY_Handle REPY_MemcpyToByteStr(void* src, u32 len, u32 reverse));
-REPY_IMPORT(u32 REPY_MemcpyFromByteStr(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
-REPY_IMPORT(void* REPY_AllocAndCopyByteStr(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
+REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse));
+REPY_IMPORT(u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(void* REPY_AllocAndCopyBytes(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
 REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse));
 REPY_IMPORT(u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
 REPY_IMPORT(void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
