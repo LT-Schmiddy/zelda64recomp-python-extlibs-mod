@@ -32,17 +32,17 @@ void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 
 // ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
-    file_appender = new plog::RollingFileAppender<plog::TxtFormatter>("REPY.log");
+    fs::path file_appender_path = fs::path(mod_dir).append("REPY.log");
+    file_appender = new plog::RollingFileAppender<plog::TxtFormatter>(path_to_string_utf8(file_appender_path).c_str());
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
     log = &plog::init((plog::Severity)severity);
     log->addAppender(file_appender);
     log->addAppender(console_appender);
 
     fs::path mod_dir_Lib = fs::path(mod_dir).append("python313.zip");
-    fs::path mod_dir_DLLs = fs::path(mod_dir);
-    // fs::path mod_dir_nrm = fs::path(mod_dir).append("MM_Recomp_External_Python_API.nrm");
+    fs::path mod_dir_DLLs = fs::path(mod_dir).append("PyDLLs");
     extract_python_stdlib(mod_dir_Lib);
-    setup_python_stdlib_dlls(mod_dir);
+    setup_python_stdlib_dlls(mod_dir, mod_dir_DLLs);
 
     PyPreConfig preconfig;
     PyPreConfig_InitPythonConfig(&preconfig);
@@ -55,6 +55,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     
     py_preinit_add_search_path(&config, mod_dir_Lib);
     py_preinit_add_search_path(&config, mod_dir_DLLs);
+    py_preinit_add_search_path(&config, mod_dir);
     if (registered_nrms != NULL) {
         while (!registered_nrms->empty()) {
             py_preinit_add_search_path(&config, registered_nrms->front());

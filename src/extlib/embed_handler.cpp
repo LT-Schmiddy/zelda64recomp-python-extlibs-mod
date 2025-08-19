@@ -58,15 +58,31 @@ static const char* dll_modules[] = {
     NULL
 };
 
+static const char* other_dlls[] = {
+    "libcrypto-3-x64.dll",
+    "libffi-8.dll",
+    "libssl-3-x64.dll",
+    "sqlite3.dll",
+    "tcl86t.dll",
+    "tk86t.dll",
+    NULL
+};
+
+
 #define PY_NATIVE_EXTENSION ".pyd"
 
 #endif
-void setup_python_stdlib_dlls(fs::path dll_dir) {
+void setup_python_stdlib_dlls(fs::path mod_dir, fs::path dll_dir) {
 #ifdef _WIN32
     PLOGI.printf("Checking extensions on native modules...");
+    if (!fs::exists(dll_dir)) {
+        fs::create_directories(dll_dir);
+    }
+
+    // Handle PYDs
     for (int i = 0; dll_modules[i] != NULL; i++) {
-        fs::path target_module = fs::path(dll_dir).append(dll_modules[i]);
-        fs::path renamed_module = fs::path(target_module).replace_extension(PY_NATIVE_EXTENSION);
+        fs::path target_module = fs::path(mod_dir).append(dll_modules[i]);
+        fs::path renamed_module = fs::path(dll_dir).append(target_module.filename().string().c_str()).replace_extension(PY_NATIVE_EXTENSION);
 
         if (!fs::exists(target_module) && fs::exists(renamed_module)) {
             PLOGD.printf("No rename required for native module '%s'.", renamed_module.string().c_str());
@@ -84,7 +100,33 @@ void setup_python_stdlib_dlls(fs::path dll_dir) {
         }
 
         fs::rename(target_module, renamed_module);
-        PLOGD.printf("Renamed native module from '%s' to '%s'\n", target_module.string().c_str(), renamed_module.string().c_str());
+        
+        PLOGD.printf("Moved native module from '%s' to '%s'\n", target_module.string().c_str(), renamed_module.string().c_str());
+    }
+
+    // Handle DLLs
+    for (int i = 0; other_dlls[i] != NULL; i++) {
+        fs::path target_module = fs::path(mod_dir).append(other_dlls[i]);
+        fs::path renamed_module = fs::path(dll_dir).append(target_module.filename().string().c_str());
+
+        if (!fs::exists(target_module) && fs::exists(renamed_module)) {
+            PLOGD.printf("No rename required for native dll '%s'.", renamed_module.string().c_str());
+            continue;
+        }
+
+        else if (!fs::exists(target_module) && !fs::exists(renamed_module)) {
+            PLOGD.printf("Renamed native dll from '%s' missing.", target_module.string().c_str());
+            continue;
+        }
+
+        else if (fs::exists(target_module) && fs::exists(renamed_module)) {
+            fs::remove(renamed_module);
+            PLOGD.printf("Deleted old renamed native dll '%s'", renamed_module.string().c_str());
+        }
+
+        fs::rename(target_module, renamed_module);
+        
+        PLOGD.printf("Moved native dll from '%s' to '%s'\n", target_module.string().c_str(), renamed_module.string().c_str());
     }
 #endif
 }
