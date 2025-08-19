@@ -37,6 +37,7 @@ RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_obj
 RECOMP_EXPORT void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper) {
     PythonNative_Object_Release(helper->iter);
     if (PythonNative_Object_IsValidHandle(helper->curr)) {
+        // Checking this is important, since curr valid until after the first update, and the iterator COULD be destroyed before then.
         PythonNative_Object_Release(helper->curr);
     }
 

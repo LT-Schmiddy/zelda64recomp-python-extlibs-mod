@@ -69,10 +69,10 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     py::initialize_interpreter(&config); 
     PLOGI << "-> Python interpreter initialized";
 
-    auto sys = py::module_::import("sys");
-    auto sys_path = sys.attr("path");
-
-    // py::print(sys_path);
+    // py_none = py::eval("None");
+    // last_error_type = py_none;
+    // last_error_trace = py_none;
+    // last_error_value = py_none;
 
     auto builtins = py::module_::import("builtins");
     py_compile = builtins.attr("compile");
@@ -122,7 +122,17 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
 }
 
 py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
+    if (handle == 0) {
+        PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
+    } 
+    assert(handle != 0);
+
     REPY_HandleEntry* entry = py_objects_smap.get(handle);
+    if (entry == NULL) {
+        PLOGF.printf("0x%08X is not a valid REPY_Handle");
+    } 
+    assert(entry != NULL);
+
     if (entry->is_single_use) {
         suh_release_queue.push(handle);
         PLOGD.printf("-> REPY_Handle 0x%08X accessed (SUH)", handle);
@@ -131,7 +141,7 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
     }
     IF_PLOG(plog::verbose) {
         std::u8string repr_str = py::repr(entry->py_object).cast<std::u8string>();
-        PLOGV.printf("Handle %08X: %s", handle, repr_str.c_str());
+        PLOGV.printf("Handle 0x%08X: %s", handle, repr_str.c_str());
     }
     return &entry->py_object;
     
@@ -139,20 +149,35 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
 
 bool PyInterpreterController::is_valid_handle(REPY_Handle handle) {
     return py_objects_smap.has(handle);
-
 }
 
 
 bool PyInterpreterController::get_handle_suh(REPY_Handle handle) {
-    REPY_HandleEntry* entry;
-    entry = py_objects_smap.get(handle);
+    if (handle == 0) {
+        PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
+    } 
+    assert(handle != 0);
+
+    REPY_HandleEntry* entry = py_objects_smap.get(handle);
+    if (entry == NULL) {
+        PLOGF.printf("0x%08X is not a valid REPY_Handle");
+    } 
+    assert(entry != NULL);
 
     return entry->is_single_use;
 }
 
 void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_use) {
-    REPY_HandleEntry* entry;
-    entry = py_objects_smap.get(handle);
+    if (handle == 0) {
+        PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
+    } 
+    assert(handle != 0);
+
+    REPY_HandleEntry* entry = py_objects_smap.get(handle);
+    if (entry == NULL) {
+        PLOGF.printf("0x%08X is not a valid REPY_Handle");
+    } 
+    assert(entry != NULL);
 
     entry->is_single_use = is_single_use;
     PLOGD.printf("-> REPY_Handle %08X setting SUH = %i", handle, is_single_use);
@@ -218,26 +243,14 @@ void PyInterpreterController::handle_exception(py::error_already_set* e) {
 }
 
 REPY_Handle PyInterpreterController::get_py_error_type_handle() {
-    if(!is_py_error_set) {
-        return 0;
-    }
-
     return create_handle(&last_error_type);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_trace_handle() {
-    if(!is_py_error_set) {
-        return 0;
-    }
-
     return create_handle(&last_error_trace);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_value_handle() {
-    if(!is_py_error_set) {
-        return 0;
-    }
-
     return create_handle(&last_error_value);
 }
 

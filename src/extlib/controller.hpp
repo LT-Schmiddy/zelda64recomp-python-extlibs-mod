@@ -21,6 +21,8 @@ public:
     plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
     plog::Logger<0>* log = NULL;
 
+    // py::object py_none;
+    
     bool is_py_error_set = false;
     py::object last_error_type = py::none();
     py::object last_error_trace = py::none();

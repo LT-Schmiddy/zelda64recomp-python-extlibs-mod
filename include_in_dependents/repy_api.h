@@ -7,7 +7,8 @@
 
 /*! \file repy_api.h
     \version 0.1.4
-    \brief The main header for Recomp External Python
+    \brief The main header for Recomp External Python. Header version 1.
+    \
  */
 
 /**
@@ -303,7 +304,7 @@ char* out_var = REPY_FN_EVAL_BYTESTR(identifier)
 
 // Scope Management - Modules:
 #define REPY_FN_IMPORT(module_name) \
-REPY_DictSet(_py_locals, REPY_MakeSUH(REPY_CreateStr(module_name)), REPY_MakeSUH(REPY_ImportModule(module_name)))
+REPY_DictSet_CStr(_py_locals, module_name, REPY_MakeSUH(REPY_ImportModule(module_name)))
 
 // Scope Management - Primatives:
 #define REPY_FN_GET(var_name) \
@@ -389,7 +390,7 @@ REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateStr(value)))
 REPY_DictSet_CStr(_py_locals, var_name, REPY_MakeSUH(REPY_CreateStr(value, len)))
 
 
-// Scope Management - Strings
+// Scope Management - Byte Strings
 #define REPY_FN_GET_BYTESTR(var_name) \
 REPY_CastBytes(REPY_MakeSUH(REPY_DictGet_CStr(_py_locals, REPY_MakeSUH(REPY_CreateBytes(var_name)))))
 

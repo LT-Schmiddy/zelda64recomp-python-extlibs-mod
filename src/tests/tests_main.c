@@ -364,6 +364,158 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(py_repy_api);
     REPY_Release(py_test_module);
 
+    REPY_Handle iter_test_tuple = REPY_EvalCStr("(0, 1, 2, 3, 4, 5, 6)", 0, 0);
+    REPY_Handle iter_test_dict = REPY_CreateEmptyDict();
+
+    u32 iter_array[7] = {0, 1, 2, 3, 4, 5, 6};
+    bool iter_index_works = true;
+    bool iter_curr_works = true;
+    bool iter_scope_works = true;
+    char* var_name = "val";
+    REPY_Handle iter_handles[10];
+
+    for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name); REPY_IteratorHelper_Update(iter, true);) {
+        iter_index_works = iter_index_works && (iter_array[iter->index] == iter->index);
+        iter_curr_works = iter_curr_works && (iter_array[iter->index] == REPY_CastU32(iter->curr));
+        iter_scope_works = iter_scope_works && (iter_array[iter->index] == REPY_CastU32(REPY_MakeSUH(REPY_DictGet_CStr(iter_test_dict, var_name))));
+
+        iter_handles[iter->index] = iter->curr;
+        iter_handles[7] = iter->iter;
+        iter_handles[8] = iter->var_name;
+        iter_handles[9] = iter->py_scope;
+    }
+
+    validate("REPY_IteratorHelper -> index updated properly", iter_index_works);
+    validate("REPY_IteratorHelper -> curr updated properly", iter_curr_works);
+    validate("REPY_IteratorHelper -> scope updated properly", iter_scope_works);
+    bool iter_released_all = true;
+    for (int i = 0; i < 10; i++) {
+        iter_released_all = iter_released_all && !REPY_IsValidHandle(iter_handles[i]);
+    }
+    validate("REPY_IteratorHelper -> all handles released automatically", iter_released_all);
+    // Checking what happens if we kill the handler early.
+
+    REPY_Handle check_iter;
+    REPY_Handle check_curr;
+    REPY_Handle check_py_scope;
+    REPY_Handle check_var_name;
+    bool iter_break_works = true;
+    for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name); REPY_IteratorHelper_Update(iter, true);) {
+        check_iter = iter->iter;
+        check_curr = iter->curr;
+        check_py_scope = iter->var_name;
+        check_var_name = iter->py_scope;
+
+        REPY_IteratorHelper_Destroy(iter);
+        break;
+    }
+
+    iter_break_works = iter_released_all && !REPY_IsValidHandle(check_iter);
+    iter_break_works = iter_released_all && !REPY_IsValidHandle(check_curr);
+    iter_break_works = iter_released_all && !REPY_IsValidHandle(check_py_scope);
+    iter_break_works = iter_released_all && !REPY_IsValidHandle(check_var_name);
+
+    validate("REPY_IteratorHelper -> early cleanup works", iter_break_works);
+    // From here on, we assume the iterator helper works.
+
+    // Creating a value to check:
+    REPY_DictSet_CStr(py_locals, "if_check", REPY_CreateS32_SUH(2));
+
+    // Testing the IfStmtHelper:
+    static REPY_IfStmtChain* if_helper_chain_root = NULL;
+    REPY_IfStmtHelper if_helper1;
+    REPY_IfStmtHelper_InitInPlace(&if_helper1, &if_helper_chain_root);
+
+    int step_result1 = -1;
+
+    if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 0", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+        step_result1 = 0;
+    } else if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 1", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+        step_result1 = 1;
+    } else if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 2", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+        step_result1 = 2;
+    } else if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 3", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+        step_result1 = 3;
+    }
+
+    validate("REPY_IfStmtHelper -> if_helper1 steps correctly", step_result1 == 2);
+    validate("REPY_IfStmtHelper -> if_helper1 initialized the chain", if_helper_chain_root != NULL);
+
+    // Let's inspect the if_helper_chain_root. 3 links should have been created.
+    int if_helper_chain_depth = 0;
+    bool no_invalid_bytcode_handles = true;
+    REPY_IfStmtChain* if_helper_chain_current_link = if_helper_chain_root;
+    while (if_helper_chain_current_link != NULL) {
+        if_helper_chain_depth++;
+        no_invalid_bytcode_handles = no_invalid_bytcode_handles && REPY_IsValidHandle(if_helper_chain_current_link->eval_expression_bytecode);
+        if_helper_chain_current_link = if_helper_chain_current_link->next;
+    }
+    validate("REPY_IfStmtHelper -> if_helper_chain_root has 3 links", if_helper_chain_depth == 3);
+    validate("REPY_IfStmtHelper -> all eval expressions are valid", no_invalid_bytcode_handles);
+
+    // Checking that the chain isn't being reconstructed on repeated use:
+    // Start by finding all the pointers and handles for each link:
+    REPY_IfStmtChain** if_helper_chain_link_array = recomp_alloc(sizeof(REPY_IfStmtChain*) * if_helper_chain_depth);
+    REPY_Handle* if_helper_chain_handle_array = recomp_alloc(sizeof(REPY_Handle) * if_helper_chain_depth);
+    if_helper_chain_current_link = if_helper_chain_root; // we can reuse this variable.
+    for (int i = 0; i < if_helper_chain_depth; i++) {
+        if_helper_chain_link_array[i] = if_helper_chain_current_link;
+        if_helper_chain_handle_array[i] = if_helper_chain_current_link->eval_expression_bytecode;
+        if_helper_chain_current_link = if_helper_chain_current_link->next;
+    }
+
+    REPY_IfStmtHelper if_helper2;
+    REPY_IfStmtHelper_InitInPlace(&if_helper2, &if_helper_chain_root);
+
+    int step_result2 = -1;
+    if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 0", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+        step_result2 = 0;
+    } else if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 1", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+        step_result2 = 1;
+    } else if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 2", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+        step_result2 = 2;
+    } else if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 3", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+        step_result2 = 3;
+    }
+
+    validate("REPY_IfStmtHelper -> if_helper1 steps correctly", step_result2 == 2);
+    bool if_helper_same_chain = true;
+    if_helper_chain_current_link = if_helper_chain_root; // we can reuse this variable.
+    for (int i = 0; i < if_helper_chain_depth; i++) {
+        if_helper_same_chain = 
+            if_helper_same_chain 
+            && (if_helper_chain_current_link == if_helper_chain_link_array[i]) 
+            && (if_helper_chain_current_link->eval_expression_bytecode == if_helper_chain_handle_array[i])
+        ;
+        if_helper_chain_current_link = if_helper_chain_current_link->next;
+    }
+    validate("REPY_IfStmtHelper -> the if chain was not re-initialized after first use.", if_helper_same_chain);
+    // From here on, we can assume the REPY_IfStmtHelper works.
+    // Checking error handling:
+
+    // Execute Something that throws an error:
+    validate("Error Handling -> Starting with no Python error raised", !REPY_IsErrorSet());
+    REPY_ExecCStr("pront('hello world')", py_globals, py_locals);
+    validate("Error Handling -> Python error has been captured", REPY_IsErrorSet());
+
+    REPY_DictSet_CStr(py_locals, "error_trace1", REPY_MakeSUH(REPY_GetErrorTrace()));
+    REPY_DictSet_CStr(py_locals, "error_type1", REPY_MakeSUH(REPY_GetErrorType()));
+    REPY_DictSet_CStr(py_locals, "error_value1", REPY_MakeSUH(REPY_GetErrorValue()));
+
+    validate("Error Handling -> error_trace1 is not None", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_trace1 is not None", py_globals, py_locals))));
+    validate("Error Handling -> error_type1 is not None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_type1 is not None", py_globals, py_locals))));
+    validate("Error Handling -> error_value1 is not None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_value1 is not None", py_globals, py_locals))));
+    validate("Error Handling -> isinstance(error_value1, error_type1)",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("isinstance(error_value1, error_type1)", py_globals, py_locals))));
+
+    REPY_ClearError();
+    validate("Error Handling -> Python error has been released", !REPY_IsErrorSet());
+    REPY_DictSet_CStr(py_locals, "error_trace1", REPY_MakeSUH(REPY_GetErrorTrace()));
+    REPY_DictSet_CStr(py_locals, "error_type1", REPY_MakeSUH(REPY_GetErrorType()));
+    REPY_DictSet_CStr(py_locals, "error_value1", REPY_MakeSUH(REPY_GetErrorValue()));
+    validate("Error Handling -> error_trace1 is None", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_trace1 is None", py_globals, py_locals))));
+    validate("Error Handling -> error_type1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_type1 is None", py_globals, py_locals))));
+    validate("Error Handling -> error_value1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_value1 is None", py_globals, py_locals))));
+    // Handling thrown errors works. We'll test that every potential error thrower works correctly another time.
 
 
     REPY_Release(py_globals);
