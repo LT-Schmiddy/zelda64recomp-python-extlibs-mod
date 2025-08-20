@@ -64,10 +64,7 @@ jobs:
         name: Release ${{ steps.read_thunderstore_manifest.outputs.version }}
         body_path: ./thunderstore_package/CHANGELOG.md
         files: |
-          ./thunderstore_package/*.nrm
-          ./thunderstore_package/*.dll
-          ./thunderstore_package/*.dylib
-          ./thunderstore_package/*.so
+          ./include_in_dependents/*
           ./*thunderstore.zip
         make_latest: true
 
@@ -83,7 +80,7 @@ jobs:
         description: ${{ steps.read_thunderstore_manifest.outputs.description }}
         version: ${{ steps.read_thunderstore_manifest.outputs.version }}
         categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
-          mods
+          libraries
         file: ./${{ steps.read_thunderstore_manifest.outputs.name }}.thunderstore.zip
 
     
