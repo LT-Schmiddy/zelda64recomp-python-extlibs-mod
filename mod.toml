@@ -5,10 +5,10 @@
 
 # Unique ID of this mod. Pick something long enough that it'll never be the same as any other mod.
 # The name displayed in the mod management menu is separate from this so this doesn't need to be human readable.
-id = "MM_Recomp_External_Python_API"
+id = "MM_RecompExternalPython_API"
 
 # Version of this mod.
-version = "0.1.5"
+version = "1.0.0"
 
 # The name that will show up for this mod in the mod menu. This should be human readable.
 display_name = "Python for Zelda64Recompiled"
@@ -29,7 +29,7 @@ authors = [ "LT_Schmiddy" ]
 game_id = "mm"
 
 # Minimum version of the target recomp (e.g. Zelda 64: Recompiled) that this mod can run on.
-minimum_recomp_version = "1.2.0"
+minimum_recomp_version = "1.2.1"
 
 # Dependency mods. Each entry is the mod's ID and then an optional minimum version of the dependency mod.
 dependencies = [
@@ -170,7 +170,7 @@ native_libraries = [
 elf_path = "build/mod/mod.elf"
 
 # Output mod filename.
-mod_filename = "MM_Recomp_External_Python_API"
+mod_filename = "MM_RecompExternalPython_API"
 
 # Reference symbol files.
 func_reference_syms_file = "Zelda64RecompSyms/mm.us.rev1.syms.toml"
@@ -179,7 +179,7 @@ data_reference_syms_files = [ "Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "Zel
 # Additional files to include in the mod.
 additional_files = [ 
     "thumb.dds",
-    "./src/repy_api"
+    "./src/repy_api" # The repy_api module
 ]
 
 # Info for building the extlib. If this mod will have no extlib, remove this section and
@@ -233,7 +233,9 @@ linux_release_build_preset = "zig-linux-x64-Release"
 [[manifest.config_options]]
 id = "log_level"
 name = "Log Level"
-description = "Log additional information to the console for debugging. (Only applies to debug builds of Zelda64Recomp)."
+description = """Log information about RecompExternalPython to console, and to REPY.log. 
+
+Only applied on game startup. Relaunch the game to change the value."""
 type = "Enum"
 options = [ "NONE", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG", "VERBOSE"]
 default = "ERROR"

@@ -7,7 +7,7 @@
 #include "recompconfig.h"
 
 /*! \file repy_api.h
-    \version 0.1.4
+    \version 1.0.0
     \brief The main header for Recomp External Python. Header version 1.
     \
  */
@@ -18,7 +18,7 @@
  * The `recomp_py.h` imports all the functions and events needed for REPY, 
  * so you probably won't need to use this directly.
  */
-#define REPY_MOD_ID_STR "MM_Recomp_External_Python_API"
+#define REPY_MOD_ID_STR "MM_RecompExternalPython_API"
 
 #ifdef DOXYGEN
 #define REPY_IMPORT(func) func
