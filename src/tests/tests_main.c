@@ -6,7 +6,7 @@
 #include "test_utils.h"
 
 REPY_INCBIN_MODULE(test_module, "test_module.py");
-
+PRE_INIT_ADD_NRM_TO_MODULE_PATH;
 
 int _test_cases = 0;
 int _test_cases_passed = 0; 
@@ -565,7 +565,6 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateStr((const char*)&string_str)));
     validate("repy_api.mem.read_str works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_str(test_ptr) == test_value", py_globals, py_locals))));
     validate("repy_api.mem.read_str_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_str_n(test_ptr, 50) == test_value", py_globals, py_locals))));
-    REPY_ExecCStr("print(f'{mem.read_str_n(test_ptr, 50)=}')", py_globals, py_locals);
     REPY_ExecCStr("mem.write_str_n(test_ptr, 'hello recomp', 50)", py_globals, py_locals);
     validate("repy_api.mem.write_str_n writes the correct length", strnlen((const char*)string_str, 50) == 12);
     validate("repy_api.mem.write_str_n matches target", strncmp((const char*)string_str, "hello recomp", 50) == 0);
@@ -580,19 +579,17 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("repy_api.mem.write_byte_str_n writes the correct length", strnlen((const char*)string_byte_str, 50) == 12);
     validate("repy_api.mem.write_byte_str_n matches target", strncmp((const char*)string_byte_str, "hello recomp", 50) == 0);
 
-
+    // testing memcpy stuff.
     char mem_bytes[20] = "hello world";
     REPY_DictSetCStr(py_locals, "mem_bytes_ptr", REPY_CreatePtr_SUH((void*)&mem_bytes));
     REPY_DictSetCStr(py_locals, "mem_bytes_value", REPY_MakeSUH(REPY_MemcpyToBytes(mem_bytes, 20, false)));
     validate("repy_api.mem.read_bytes_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytes_n(mem_bytes_ptr, 20) == mem_bytes_value", py_globals, py_locals))));
-    // REPY_ExecCStr("print(f'{mem.read_bytes_n(mem_bytes_ptr, 20)=}, {mem_bytes_value=}')", py_globals, py_locals);
     REPY_ExecCStr("mem.write_bytes_n(mem_bytes_ptr, b'hello recomp', 20)", py_globals, py_locals);
     validate("repy_api.mem.write_bytes_n matches target", strncmp((const char*)mem_bytes, "hello recomp", 20) == 0);
     
 
     REPY_DictSetCStr(py_locals, "mem_bytearray_value", REPY_MakeSUH(REPY_MemcpyToByteArray(mem_bytes, 20, false)));
     validate("repy_api.mem.read_bytearray_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytearray_n(mem_bytes_ptr, 20) == mem_bytearray_value", py_globals, py_locals))));
-    // REPY_ExecCStr("print(f'{mem.read_bytes_n(mem_bytes_ptr, 20)=}, {mem_bytearray_value=}')", py_globals, py_locals);
     REPY_ExecCStr("mem.write_bytearray_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
     validate("repy_api.mem.write_bytearray_n matches target", strncmp((const char*)string_byte_str, "hello recomp", 20) == 0);
 

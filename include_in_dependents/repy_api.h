@@ -4,6 +4,7 @@
 #include "modding.h"
 #include "global.h"
 #include "recomputils.h"
+#include "recompconfig.h"
 
 /*! \file repy_api.h
     \version 0.1.4
@@ -68,12 +69,21 @@ typedef struct REPY_IfStmtHelper {
 
 // ========== API: ==========
 // Events:
+#define REPY_ON_PRE_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnPreInit)
 #define REPY_ON_LOAD_MODULES RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnLoadModules)
 #define REPY_ON_MAKE_GLOBAL_CACHES RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnMakeGlobalCaches)
 #define REPY_ON_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInit)
 
 
 // ========== Macros: ==========
+// Register NRM Modules:
+#define PRE_INIT_ADD_NRM_TO_MODULE_PATH \
+REPY_ON_PRE_INIT void _repy_register_nrm () { \
+    const unsigned char* nrm_file_path = recomp_get_mod_file_path(); \
+    REPY_PreInitAddToModuleSearchPath(nrm_file_path); \
+    recomp_free((void*)nrm_file_path); \
+};
+
 // Startup Code Caching.
 
 #ifdef REPY_SILENCE_INCBIN_SQUIGGLES
@@ -450,6 +460,9 @@ for ( \
     REPY_FN_EXEC(bytecode_identifier ## _after_statement) \
 ) 
 
+
+// Preinit:
+REPY_IMPORT(void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file_path));
 
 // General:
 REPY_IMPORT(void REPY_Release(REPY_Handle py_object));
