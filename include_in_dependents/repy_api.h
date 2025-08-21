@@ -34,38 +34,109 @@
 #endif
 
 #endif
+/** \addtogroup repy_types Types
+ *  @{
+ */
 
+/**
+ * @brief Represents a Python object in REPY API functions. 
+ * 
+ * Technically, the handle is a unsigned integer value between 0x00000001 and 0xFFFFFFFF, inclusive. The REPY external library
+ * will look up the corresponding Python object from an internally managed slot map. A handle is considered 'valid'
+ * if the value is assigned to a Python object. 
+ * 
+ * In terms of Python's reference-count-based garbage collection, each valid handle counts as a single reference 
+ * to an object, and multiple handles can be mapped to a single Python object. Once created, a handle must be released
+ * to remove that reference, either by using `REPY_Release` or flagging the handle as Single-Use (more on that below). 
+ * If you need multiple references to a Python object, you can get a new handle to the same object using `REPY_CopyHandle`.
+ * With the exception of `REPY_MakeSUH`, any REPY API function that returns a REPY_Handle will be creating a new handle. 
+ * Failure to release handles will result in resource/memory leaks. 
+ * 
+ * The handle value of 0 is a special case, and represents the absense of any Python object. Not that this is 
+ * different from Python's `None`,  * which is itself a Python object. If an API function with `REPY_Handle`
+ * as the return type returns 0, that will generally mean a Python error has occured.
+ * 
+ * There are a few cases where a REPY_Handle of 0 is acceptable as a function argument, indicating that the argument
+ * is not used. These arguments are named with the `_nullable` suffix.
+ * 
+ * Handles can be flagged as Single-Use, which means that the handle will be immediately released after it's next use in a REPY
+ * API function. This is primarily to allow nesting calls to REPY API functions without incurring resource/memory leaks. Any handle
+ * can be flagged as Single-Use using `REPY_MakeSUH` or `REPY_SetSUH`, and the Single-Use status can be checked with `REPY_GetSUH`.
+ * Several common REPY API functions have alternative versions that automatically return a Single Use handle. These functions will
+ * have the suffix `_SUH` in their names.
+ * 
+ * Not that the only functions that won't release a Single-Use handle are ones meant to manipulate the handles themselves:
+ * `REPY_MakeSUH`, `REPY_IsValidHandle`, `REPY_GetSUH`, and `REPY_SetSUH`. Their REPY_Handle argument names have the suffix `_no_release`
+ * to reflect this.
+ * 
+ */
 typedef unsigned int REPY_Handle;
 
+/**
+ * @brief Represents the absence of a Python object in REPY API functions.
+ * 
+ * A more readable alternative to simply entering 0.
+ */
+#define REPY_NO_OBJECT 0
+
+/**
+ * @brief Used to set the type of code-string being compiled, in line with how Python's
+ * built-in `compile` function operates.
+ * 
+ * Used with `REPY_CompileCStr` and `REPY_CompileCStr`. `REPY_Compile` accepts a REPY_Handle string argument instead.
+ * 
+ */
 typedef enum REPY_CodeMode {
     REPY_CODE_EXEC = 0,
     REPY_CODE_EVAL = 1,
     REPY_CODE_SINGLE = 2
 } REPY_CodeMode;
 
+/**
+ * @brief Helper object used to when iterating through Python objects in loops in C code.
+ * 
+ * These objects are primarily used as part of the the `REPY_FOREACH` and `REPY_FN_FOREACH_CACHE` macros,
+ * which simulate the behavior of Python's own `for` loops. You can use them manually as well.
+ * 
+ * The lifetime of each REPY_Handle member is managed by IteratorHelper. Do not release them manually.
+ * 
+ */
 typedef struct REPY_IteratorHelper {
-    REPY_Handle iter;
-    u32 index;
-    REPY_Handle curr;
-    REPY_Handle py_scope;
-    REPY_Handle var_name;
-    bool _first_update;
+    REPY_Handle iter; ///< Handle for the Python iterator object. 
+    u32 index; ///< The index of the current object from the iterator.
+    REPY_Handle curr; ///< Handle of the current object from the iterator. If you need to access this object outside of the current iteration, use `REPY_CopyHandle` to get a new handle.
+    REPY_Handle py_scope; ///< If this handle != 0, then the `curr` object will be added to this scope with a variable name set by `var_name`.
+    REPY_Handle var_name; ///< The variable name that will be used for `curr` when added to `py_scope`, if `py_scope` is not 0.
+    bool _first_update; ///< Internal flag used to determine if the iterator has been updated for the first time.
 } REPY_IteratorHelper;
 
+/**
+ * @brief Helper object used to cache Python expressions as bytecode, so that they don't need to be re-parsed and compiled every time they're run.
+ * 
+ * Used as part of the macro `REPY_FN_IF_CACHE_INIT_BLOCK`, and is used with `REPY_FN_IF_STMT_CACHE`, `REPY_FN_IF_CACHE` and `REPY_FN_ELIF_CACHE`.
+ * Generally initialized as a `static` variable, so that that the compiled bytecode is is preserverd between uses.
+ * 
+ * The chain is a singly-linked list with the bytecode for each Python expression from a `REPY_IfStmtHelper_Step` call. Each link is constructed the 
+ * that step is called.
+ * 
+ */
 typedef struct REPY_IfStmtChain {
-    REPY_Handle eval_expression_bytecode;
-    struct REPY_IfStmtChain* next;
+    REPY_Handle eval_expression_bytecode; ///< The bytecode for the Python expression to evaluate.
+    struct REPY_IfStmtChain* next; ///< Pointer to the next link in the chain.
 } REPY_IfStmtChain;
 
+/**
+ * @brief Helper used to step through a `REPY_IfStmtChain` while it's being evaluated.
+ * 
+ */
 typedef struct REPY_IfStmtHelper {
-    u32 index;
-    REPY_IfStmtChain** root;
-    REPY_IfStmtChain* curr;
-    bool _first_step;
+    u32 index; ///< The number of links down the chain we've gone.
+    REPY_IfStmtChain** root; ///< The start of the chain. A double pointer is used so that, the the chain doesn't exist yet, it can be initialized on the first call of `REPY_IfStmtHelper_Step`.
+    REPY_IfStmtChain* curr; ///< The most recently evaluated link in the chain.
+    bool _first_step; ///< ///< Internal flag used to determine if the helper has been stepped for the first time.
 } REPY_IfStmtHelper;
 
-
-#define REPY_NO_OBJECT 0
+/** @}*/
 
 // ========== API: ==========
 // Events:
@@ -466,10 +537,10 @@ REPY_IMPORT(void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file
 
 // General:
 REPY_IMPORT(void REPY_Release(REPY_Handle py_object));
-REPY_IMPORT(REPY_Handle REPY_MakeSUH(REPY_Handle py_object));
-REPY_IMPORT(bool REPY_IsValidHandle(REPY_Handle py_object));
-REPY_IMPORT(bool REPY_GetSUH(REPY_Handle py_object));
-REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_object, bool value));
+REPY_IMPORT(REPY_Handle REPY_MakeSUH(REPY_Handle py_handle_no_release));
+REPY_IMPORT(bool REPY_IsValidHandle(REPY_Handle py_handle_no_release));
+REPY_IMPORT(bool REPY_GetSUH(REPY_Handle py_handle_no_release));
+REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_handle_no_release, bool value));
 REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_object));
 
 // Modules:
