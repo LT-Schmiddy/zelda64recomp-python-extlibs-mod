@@ -261,6 +261,10 @@ REPY_Handle _py_locals = _py_globals \
 REPY_Handle _py_globals = globals; \
 REPY_Handle _py_locals = REPY_CreateEmptyDict() \
 
+#define REPY_FN_SETUP_GLOBALS_ONLY(globals) \
+REPY_Handle _py_globals = globals; \
+REPY_Handle _py_locals = _py_globals; \
+
 #define REPY_FN_CLEANUP \
 REPY_Release(_py_locals)
 
