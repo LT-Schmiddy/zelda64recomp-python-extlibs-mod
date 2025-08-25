@@ -755,7 +755,7 @@ REPY_CastF64(REPY_MakeSUH(REPY_Eval(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_L
  * 
  * Intended to be used when the result of the evaluation is a Python `str`. 
  * 
- * The C string returned by this function will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
  * 
  * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
  * @return The resultant Python object, cast to `char*`.
@@ -772,7 +772,7 @@ REPY_CastStr(REPY_MakeSUH(REPY_Eval(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_L
  * 
  * Intended to be used when the result of the evaluation is a Python `bytes` object. 
  * 
- * The C string returned by this function will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
  * 
  * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
  * @return The resultant Python object, cast to `char*`.
@@ -945,7 +945,7 @@ REPY_CastF64(REPY_MakeSUH(REPY_EvalCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_
  * 
  * Intended to be used when the result of the evaluation is a Python `str`. 
  * 
- * The C string returned by this function will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
  * 
  * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
  * @return The resultant Python object, cast to `bool`.
@@ -962,7 +962,7 @@ REPY_CastStr(REPY_MakeSUH(REPY_EvalCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_
  * 
  * Intended to be used when the result of the evaluation is a Python `bytes` object. 
  * 
- * The C string returned by this function will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
  * 
  * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
  * @return The resultant Python object, cast to `char*`.
@@ -1242,104 +1242,351 @@ char* out_var = REPY_FN_EVAL_STR(identifier)
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_CACHE_BYTESTR", identifier, REPY_CODE_EVAL, code_str) \
 char* out_var = REPY_FN_EVAL_BYTESTR(identifier)
 
-// Scope Management - Modules:
+/**
+ * @brief Inserts a Python module into the local scope. 
+ * 
+ * The variable name for the module will be the same as the module name.
+ * 
+ * @param module_name The name of the Python module as a C string.
+ */
 #define REPY_FN_IMPORT(module_name) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, module_name, REPY_MakeSUH(REPY_ImportModule(module_name)))
 
-// Scope Management - Primatives:
+/**
+ * @brief Gets a variable from the local scope.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `REPY_Handle`.
+ */
 #define REPY_FN_GET(var_name) \
 REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name);
 
+/**
+ * @brief Sets a variable in the the local scope, using a `REPY_Handle` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param py_object The python object to insert. Should be a `REPY_Handle`.
+ */
 #define REPY_FN_SET(var_name, py_object) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, py_object)
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `bool`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `bool`.
+ */
 #define REPY_FN_GET_BOOL(var_name) \
 REPY_CastBool(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `bool` in the the local scope, using a `bool` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The python object to insert. Should be a `bool`.
+ */
 #define REPY_FN_SET_BOOL(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBool(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `u8`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `u8`.
+ */
 #define REPY_FN_GET_U8(var_name) \
 REPY_CastU8(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `u8` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `u8`.
+ */
 #define REPY_FN_SET_U8(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateU8(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `s8`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `s8`.
+ */
 #define REPY_FN_GET_S8(var_name) \
 REPY_CastS8(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `s8` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `s8`.
+ */
 #define REPY_FN_SET_S8(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateS8(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `u16`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `u16`.
+ */
 #define REPY_FN_GET_U16(var_name) \
 REPY_CastU16(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `u16` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `u16`.
+ */
 #define REPY_FN_SET_U16(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateU16(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `s16`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `s16`.
+ */
 #define REPY_FN_GET_S16(var_name) \
 REPY_CastS16(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `s16` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `s16`.
+ */
 #define REPY_FN_SET_S16(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateS16(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `u32`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `u32`.
+ */
 #define REPY_FN_GET_U32(var_name) \
 REPY_CastU32(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `u32` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `u32`.
+ */
 #define REPY_FN_SET_U32(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateU32(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `s32`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `s32`.
+ */
 #define REPY_FN_GET_S32(var_name) \
 REPY_CastS32(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `s32` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `s32`.
+ */
 #define REPY_FN_SET_S32(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateS32(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `f32`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `f32`.
+ */
 #define REPY_FN_GET_F32(var_name) \
 REPY_CastF32(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `float` in the the local scope, using a `f32` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `float`. Should be a `f32`.
+ */
 #define REPY_FN_SET_F32(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateF32(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `u64`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `u64`.
+ */
 #define REPY_FN_GET_U64(var_name) \
 REPY_CastU64(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `u64` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `u64`.
+ */
 #define REPY_FN_SET_U64(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateU64(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `s64`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `s64`.
+ */
 #define REPY_FN_GET_S64(var_name) \
 REPY_CastS64(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `int` in the the local scope, using a `s64` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `int`. Should be a `s64`.
+ */
 #define REPY_FN_SET_S64(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateS64(value)))
 
+/**
+ * @brief Gets a variable from the local scope and casts it to a `f64`.
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `f64`.
+ */
 #define REPY_FN_GET_F64(var_name) \
 REPY_CastF64(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `float` in the the local scope, using a `f64` for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `float`. Should be a `f64`.
+ */
 #define REPY_FN_SET_F64(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateF64(value)))
 
-// Scope Management - Strings
+/**
+ * @brief Gets a variable from the local scope and casts it to a `char*`. Intended to be used when the variable object is a Python `str`. 
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `char*`.
+ */
 #define REPY_FN_GET_STR(var_name) \
 REPY_CastStr(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
+/**
+ * @brief Sets a variable of the Python type `str` in the the local scope, using a  NULL-terminated C string.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `str`. Should be a NULL-terminated C string.
+ */
 #define REPY_FN_SET_STR(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateStr(value)))
 
+/**
+ * @brief Sets a variable of the Python type `str` in the the local scope, using `char` array of `N` length for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The content of the Python `str`. Should be a `char*`.
+ * @param len The length of `value` in bytes.
+ */
 #define REPY_FN_SET_STR_N(var_name, value, len) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateStr(value, len)))
 
-
-// Scope Management - Byte Strings
+/**
+ * @brief Gets a variable from the local scope and casts it to a `char*`. Intended to be used when the variable object is a Python `bytes`. 
+ * 
+ * Note that this macro will not retrieve global variables.
+ * 
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @return The value of the variable as a `char*`.
+ */
 #define REPY_FN_GET_BYTESTR(var_name) \
 REPY_CastBytes(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, REPY_MakeSUH(REPY_CreateBytes(var_name)))))
 
+/**
+ * @brief Sets a variable of the Python type `str` in the the local scope, using a  NULL-terminated C string.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The value of the Python `str`. Should be a NULL-terminated C string.
+ */
 #define REPY_FN_SET_BYTESTR(var_name, value) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBytes(value)))
 
+/**
+ * @brief Sets a variable of the Python type `bytes` in the the local scope, using `char` array of `N` length for the value.
+ * 
+ * Note that the global scope will be unaffected.
+ * 
+ * @param module_name The name of the variable. Should be a NULL-terminated C string.
+ * @param value The content of the Python `bytes`. Should be a `char*`.
+ * @param len The length of `value` in bytes.
+ */
 #define REPY_FN_SET_BYTESTR_N(var_name, value, len) \
 REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBytes(value, len)))
-// Flow Control - If:
 
 #define REPY_FN_IF_CACHE_INIT_BLOCK(helper_identifier) \
 static REPY_IfStmtChain* helper_identifier ## _chain_root = NULL; \
@@ -1379,6 +1626,24 @@ REPY_FOREACH_BLOCK(bytecode_identifier ## _iter, REPY_MakeSUH(REPY_FN_EVAL(bytec
 
 #define REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier) \
 REPY_IteratorHelper_Destroy(bytecode_identifier ## _iter)
+
+/**
+ * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FOREACH` loop, and immediately break.
+ * 
+ * @param iter_identifier the `REPY_IteratorHelper` pointer.
+ */
+#define REPY_FN_FOREACH_CACHE_BREAK(bytecode_identifier) \
+REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier); break
+
+/**
+ * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FOREACH` loop, and immediately return.
+ * 
+ * Supports returning a value.
+ * 
+ * @param iter_identifier the `REPY_IteratorHelper` pointer.
+ */
+#define REPY_FN_FOREACH_CACHE_RETURN(bytecode_identifier) \
+REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier); return
 
 #define REPY_FN_FOR_CACHE(bytecode_identifier, py_init_statement, py_eval_expression, py_after_statement) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_FOR_CACHE", bytecode_identifier ## _init_statement, REPY_CODE_EXEC, py_init_statement); \
