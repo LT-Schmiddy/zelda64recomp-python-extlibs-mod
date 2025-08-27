@@ -1714,7 +1714,7 @@ REPY_IteratorHelper_Destroy(bytecode_identifier ## _iter)
 /**
  * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FN_FOREACH_CACHE` loop, and immediately break.
  * 
- * 
+ * Looks cleaner than calling both.
  * 
  * @param bytecode_identifier The name for a static Python bytecode variable. Used to get the the `REPY_IteratorHelper` variable name.
  */
@@ -1754,10 +1754,22 @@ for ( \
     REPY_FN_EXEC(bytecode_identifier ## _update_statement) \
 ) 
 
-// Preinit:
+/** @}*/
+
+/** \defgroup repy_preinit_funcs PreInit Functions
+ * \brief Functions that affect Python Initialization.
+ *  @{
+ */
+
 REPY_IMPORT(void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file_path));
 
-// General:
+
+/** \defgroup repy_handle_funcs Handle Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
+
+ 
 REPY_IMPORT(void REPY_Release(REPY_Handle py_object));
 REPY_IMPORT(REPY_Handle REPY_MakeSUH(REPY_Handle py_handle_no_release));
 REPY_IMPORT(bool REPY_IsValidHandle(REPY_Handle py_handle_no_release));
@@ -1765,12 +1777,21 @@ REPY_IMPORT(bool REPY_GetSUH(REPY_Handle py_handle_no_release));
 REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_handle_no_release, bool value));
 REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_object));
 
-// Modules:
+
+/** \defgroup repy_handle_funcs Module Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
+
 REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
 REPY_IMPORT(void REPY_LoadModuleN(const char* identifier, const char* code, u32 len));
 REPY_IMPORT(REPY_Handle REPY_ImportModule(const char* identifier));
+/** @}*/
 
-// Primatives
+/** \defgroup repy_primative_funcs Primative Operations
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateBool(bool value));
 REPY_IMPORT(REPY_Handle REPY_CreateBool_SUH(bool value));
 REPY_IMPORT(bool REPY_CastBool(REPY_Handle object));
@@ -1795,13 +1816,9 @@ REPY_IMPORT(s32 REPY_CastS32(REPY_Handle object));
 REPY_IMPORT(REPY_Handle REPY_CreateF32(f32 value));
 REPY_IMPORT(REPY_Handle REPY_CreateF32_SUH(f32 value));
 REPY_IMPORT(f32 REPY_CastF32(REPY_Handle object));
-
-// Pointers:
 REPY_IMPORT(REPY_Handle REPY_CreatePtr(void* value));
 REPY_IMPORT(REPY_Handle REPY_CreatePtr_SUH(void* value));
 REPY_IMPORT(void* REPY_CastPtr(REPY_Handle object));
-
-// 64-bit Primatives
 REPY_IMPORT(REPY_Handle REPY_CreateU64(u64 value));
 REPY_IMPORT(REPY_Handle REPY_CreateU64_SUH(u64 value));
 REPY_IMPORT(u64 REPY_CastU64(REPY_Handle object));
@@ -1811,8 +1828,6 @@ REPY_IMPORT(s64 REPY_CastS64(REPY_Handle object));
 REPY_IMPORT(REPY_Handle REPY_CreateF64(f64 value));
 REPY_IMPORT(REPY_Handle REPY_CreateF64_SUH(f64 value));
 REPY_IMPORT(f64 REPY_CastF64(REPY_Handle object));
-
-// Strings:
 REPY_IMPORT(REPY_Handle REPY_CreateStr(const char* string));
 REPY_IMPORT(REPY_Handle REPY_CreateStr_SUH(const char* string));
 REPY_IMPORT(REPY_Handle REPY_CreateStrN(const char* string, u32 len) );
@@ -1824,7 +1839,12 @@ REPY_IMPORT(REPY_Handle REPY_CreateByteStrN(const char* string, u32 len));
 REPY_IMPORT(REPY_Handle REPY_CreateByteStrN_SUH(const char* string, u32 len));
 REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
 
-// Memcpy:
+/** @}*/
+
+/** \defgroup repy_memcpy_funcs Memcpy Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, u32 reverse));
 REPY_IMPORT(u32 REPY_MemcpyFromBytes(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
 REPY_IMPORT(void* REPY_AllocAndCopyBytes(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
@@ -1832,20 +1852,49 @@ REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, u32 reverse))
 REPY_IMPORT(u32 REPY_MemcpyFromByteArray(void* src, u32 len, u32 reverse, REPY_Handle bytes_obj));
 REPY_IMPORT(void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj, u32* write_size));
 
-// Indexing and Slicing:
-REPY_IMPORT(u32 REPY_Len(REPY_Handle object));
+/** @}*/
 
-// Iteration
+/** \defgroup repy_general_funcs General Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
+REPY_IMPORT(u32 REPY_Len(REPY_Handle object));
+REPY_IMPORT(REPY_Handle REPY_GetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle default_value_nullable));
+REPY_IMPORT(REPY_Handle REPY_GetAttrCStr(REPY_Handle obj, char* key, REPY_Handle default_value_nullable));
+REPY_IMPORT(void REPY_SetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle value));
+REPY_IMPORT(void REPY_SetAttrCStr(REPY_Handle obj, char* key, REPY_Handle value));
+REPY_IMPORT(bool REPY_HasAttr(REPY_Handle obj, REPY_Handle key));
+REPY_IMPORT(bool REPY_HasAttrCStr(REPY_Handle obj, char* key));
+REPY_IMPORT(void REPY_DelAttr(REPY_Handle obj, REPY_Handle key));
+REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle obj, char* key));
+/** @}*/
+
+/** \defgroup repy_iteration_funcs Module Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));
 REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_nullable, u32 process_stop_iteration));
 
-// Tuple:
+/** @}*/
+
+/** \defgroup repy_tuple_funcs Module Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
+
 REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_TupleGetIndexS32(REPY_Handle tuple, int index));
-// Dicts:
+
+/** @}*/
+
+/** \defgroup repy_dict_funcs Module Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict());
 REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict_SUH());
 REPY_IMPORT(REPY_Handle REPY_CreateDict(u32 size, ...));
@@ -1858,18 +1907,12 @@ REPY_IMPORT(bool REPY_DictHas(REPY_Handle dict, REPY_Handle key));
 REPY_IMPORT(bool REPY_DictHasCStr(REPY_Handle dict, char* key));
 REPY_IMPORT(void REPY_DictDel(REPY_Handle dict, REPY_Handle key));
 REPY_IMPORT(void REPY_DictDelCStr(REPY_Handle dict, char* key));
+/** @}*/
 
-// Object Attributes:
-REPY_IMPORT(REPY_Handle REPY_GetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle default_value_nullable));
-REPY_IMPORT(REPY_Handle REPY_GetAttrCStr(REPY_Handle obj, char* key, REPY_Handle default_value_nullable));
-REPY_IMPORT(void REPY_SetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle value));
-REPY_IMPORT(void REPY_SetAttrCStr(REPY_Handle obj, char* key, REPY_Handle value));
-REPY_IMPORT(bool REPY_HasAttr(REPY_Handle obj, REPY_Handle key));
-REPY_IMPORT(bool REPY_HasAttrCStr(REPY_Handle obj, char* key));
-REPY_IMPORT(void REPY_DelAttr(REPY_Handle obj, REPY_Handle key));
-REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle obj, char* key));
-
-// Execution:
+/** \defgroup repy_code_exec_funcs Code Compilation and Execution Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(REPY_Handle REPY_Compile(REPY_Handle code, REPY_Handle identifier, REPY_Handle mode));
 REPY_IMPORT(REPY_Handle REPY_CompileCStr(const char* code, const char* identifier, REPY_CodeMode mode));
 REPY_IMPORT(REPY_Handle REPY_CompileCStrN(const char* code, u32 len, const char* identifier, REPY_CodeMode mode));
@@ -1880,7 +1923,12 @@ REPY_IMPORT(REPY_Handle REPY_Eval(REPY_Handle code, REPY_Handle global_scope_nul
 REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
 REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
 
-// Python Function Calls
+/** @}*/
+
+/** \defgroup repy_fn_call_funcs Python Function Calling
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(bool REPY_Call(REPY_Handle func, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
 REPY_IMPORT(REPY_Handle REPY_CallReturn(REPY_Handle func, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
 REPY_IMPORT(bool REPY_CallAttr(REPY_Handle func, REPY_Handle name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
@@ -1888,14 +1936,24 @@ REPY_IMPORT(bool REPY_CallAttrCStr(REPY_Handle func, char* name, REPY_Handle arg
 REPY_IMPORT(REPY_Handle REPY_CallAttrReturn(REPY_Handle func, REPY_Handle name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
 REPY_IMPORT(REPY_Handle REPY_CallAttrCStrReturn(REPY_Handle func, char* name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
 
-// Error Handling
+/** @}*/
+
+/** \defgroup repy_error_funcs Error Handling
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(bool REPY_IsErrorSet());
 REPY_IMPORT(REPY_Handle REPY_GetErrorType());
 REPY_IMPORT(REPY_Handle REPY_GetErrorTrace());
 REPY_IMPORT(REPY_Handle REPY_GetErrorValue());
 REPY_IMPORT(void REPY_ClearError());
 
-// Helpers:
+/** @}*/
+
+/** \defgroup repy_helper_funcs Helper Functions
+ * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ *  @{
+ */
 REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, u32 line_number, char* identifier));
 
 REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name));
@@ -1906,5 +1964,5 @@ REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* f
 REPY_IMPORT(void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain));
 REPY_IMPORT(void REPY_IfStmtHelper_InitInPlace(REPY_IfStmtHelper* helper, REPY_IfStmtChain** root));
 REPY_IMPORT(bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier));
-
+/** @}*/
 #endif
