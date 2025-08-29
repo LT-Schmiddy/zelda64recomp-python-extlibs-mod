@@ -55,7 +55,8 @@
  * 
  * The handle value of `REPY_NO_OBJECT` (the numerical value 0) is a special case, and represents the absense of any Python object. 
  * Not that this is different from Python's `None`, which is itself a Python object. If an API function with `REPY_Handle`
- * as the return type returns `REPY_NO_OBJECT`, that will generally mean a Python error has occured.
+ * as the return type returns `REPY_NO_OBJECT`, that will mean a Python error has occured (unless otherwise specified in the function's 
+ * documentation).
  * 
  * There are a few cases where a REPY_Handle of `REPY_NO_OBJECT` is acceptable as a function argument, indicating that the argument
  * is not used. These arguments are named with the `_nullable` suffix.
@@ -2489,19 +2490,111 @@ REPY_IMPORT(void* REPY_AllocAndCopyByteArray(u32 reverse, REPY_Handle bytes_obj,
 
 /** @}*/
 
-/** \defgroup repy_general_funcs General Functions
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+/** \defgroup repy_general_funcs General Object Functions
+ * \brief Functions related to accessing the members and propertied of objects.
  *  @{
  */
+
+/**
+ * @brief Gets the length of an appropriate Python object as a `u32`.
+ * 
+ * This function is analogous to Python's own `len` function, and should work in all the same circumstances.
+ * 
+ * @param object The Python object to get the length of.
+ */
 REPY_IMPORT(u32 REPY_Len(REPY_Handle object));
-REPY_IMPORT(REPY_Handle REPY_GetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle default_value_nullable));
-REPY_IMPORT(REPY_Handle REPY_GetAttrCStr(REPY_Handle obj, char* key, REPY_Handle default_value_nullable));
-REPY_IMPORT(void REPY_SetAttr(REPY_Handle obj, REPY_Handle key, REPY_Handle value));
-REPY_IMPORT(void REPY_SetAttrCStr(REPY_Handle obj, char* key, REPY_Handle value));
-REPY_IMPORT(bool REPY_HasAttr(REPY_Handle obj, REPY_Handle key));
-REPY_IMPORT(bool REPY_HasAttrCStr(REPY_Handle obj, char* key));
-REPY_IMPORT(void REPY_DelAttr(REPY_Handle obj, REPY_Handle key));
-REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle obj, char* key));
+
+/**
+ * @brief Returns a `REPY_Handle` for a named attribute of a Python object, using a `REPY_Handle` for the attribute name.
+ * 
+ * This function is analogous to Python's own `getattr` function, and should work in all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute you're trying to access. The Python object referenced should generally be a `str`, as is standard with `getattr`.
+ * @param default_value_nullable A default Python object to return if the attribute isn't found. Use `REPY_NO_OBJECT` to ignore this argument.
+ * Note that if this default object is returned, the return value will be a new handle to the same object.
+ * @return A handle to the desired attribute. Not that `REPY_NO_OBJECT` being returned doesn't necessarily mean that the object doesn't exist, 
+ * only that an error has occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_GetAttr(REPY_Handle object, REPY_Handle key, REPY_Handle default_value_nullable));
+
+/**
+ * @brief Returns a `REPY_Handle` for a named attribute of a Python object, using a NULL-terminated C string for the name.
+ * 
+ * This function is analogous to Python's own `getattr` function, and should work in all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute you're trying to access. Should be a NULL-terminated C string.
+ * @param default_value_nullable A default Python object to return if the attribute isn't found. Use `REPY_NO_OBJECT` to ignore this argument.
+ * Note that if this default object is returned, the return value will be a new handle to the same object.
+ * @return A handle to the desired attribute. Not that `REPY_NO_OBJECT` being returned doesn't necessarily mean that the object doesn't exist, 
+ * only that an error has occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_GetAttrCStr(REPY_Handle object, char* key, REPY_Handle default_value_nullable));
+
+/**
+ * @brief Assigned a named attribute of a Python object, using a `REPY_Handle` for the attribute name.
+ * 
+ * This function is analogous to Python's own `setattr` function, and should work in all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute you're trying to assign to. The Python object referenced should generally be a `str`, as is standard with `setattr`.
+ * @param value The Python object to assign to the attribute.
+ */
+REPY_IMPORT(void REPY_SetAttr(REPY_Handle object, REPY_Handle key, REPY_Handle value));
+
+/**
+ * @brief Assigned a named attribute of a Python object, using a NULL-terminated C string for the name.
+ * 
+ * This function is analogous to Python's own `setattr` function, and should work in all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute you're trying to assign to. The Python object referenced should generally be a `str`, as is standard with `setattr`.
+ * @param value The Python object to assign to the attribute.
+ */
+REPY_IMPORT(void REPY_SetAttrCStr(REPY_Handle object, char* key, REPY_Handle value));
+
+/**
+ * @brief Checks if a Python object has an attribute with a specific name, using a `REPY_Handle` for the attribute name.
+ * 
+ * This function is analogous to Python's own `hasattr` function, and should work in all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute to check. The Python object referenced should generally be a `str`, as is standard with `hasattr`.
+ * @return `true` if the attribute exists, `false` otherwise.
+ */
+REPY_IMPORT(bool REPY_HasAttr(REPY_Handle object, REPY_Handle key));
+
+/**
+ * @brief Checks if a Python object has an attribute with a specific name, using a NULL-terminated C string for the name.
+ * 
+ * This function is analogous to Python's own `hasattr` function, and should work in all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute to check. Should be a NULL-terminated C string.
+ * @return `true` if the attribute exists, `false` otherwise.
+ */
+REPY_IMPORT(bool REPY_HasAttrCStr(REPY_Handle object, char* key));
+
+/**
+ * @brief Deletes an attribute from a Python object by name, using a `REPY_Handle` for the attribute name.
+ * 
+ * This function is analogous to Python's own `delattr`, and should work all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute to delete. The Python object referenced should generally be a `str`, as is standard with `hasattr`.
+ */
+REPY_IMPORT(void REPY_DelAttr(REPY_Handle object, REPY_Handle key));
+
+/**
+ * @brief Deletes an attribute from a Python object by name, using a NULL-terminated C string for the name.
+ * 
+ * This function is analogous to Python's own `delattr`, and should work all the same circumstances.
+ * 
+ * @param object The parent Python object.
+ * @param key The name of attribute to delete. Should be a NULL-terminated C string.
+ */
+REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle object, char* key));
 /** @}*/
 
 /** \defgroup repy_iteration_funcs Module Functions
