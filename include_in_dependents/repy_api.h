@@ -71,6 +71,9 @@
  * `REPY_MakeSUH`, `REPY_IsValidHandle`, `REPY_GetSUH`, and `REPY_SetSUH`. Their REPY_Handle argument names have the suffix `_no_release`
  * to reflect this.
  * 
+ * If at any point this documentation refers to a `REPY_Handle` as a Python object, understand that it is referring to the Python object that
+ * the handle represents. The mechanism for mapping `REPY_Handle` values to Python objects is written entirely in C++, and the Python interpreter 
+ * does not have access to it.
  */
 typedef unsigned int REPY_Handle;
 
@@ -509,7 +512,7 @@ REPY_FOREACH_CLEANUP_NOW(iter_identifier); return
  * whenever Python code is first executed.
  */
 #define REPY_FN_SETUP \
-REPY_Handle REPY_FN_GLOBAL_SCOPE = REPY_CreateEmptyDict(); \
+REPY_Handle REPY_FN_GLOBAL_SCOPE = REPY_CreateDict(0); \
 REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE \
 
 /**
@@ -524,7 +527,7 @@ REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE \
  */
 #define REPY_FN_SETUP_WITH_GLOBALS(globals) \
 REPY_Handle REPY_FN_GLOBAL_SCOPE = globals; \
-REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_CreateEmptyDict() \
+REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_CreateDict(0) \
 
 /**
  * @brief Create an inline execution scope for your function, using a pre-defined Python
@@ -533,8 +536,8 @@ REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_CreateEmptyDict() \
  * If the global scope `dict` doesn't have Python's built-ins predefined, they will be added to the `dict` whenever
  * Python code is first executed.
  * 
- * You should forgo cleaning up if you intend to use this global scope dict elsewhere, since the clean up macros will 
- * release the scope `dict`.
+ * You should copy the `globals` handle with `REPY_CopyHandle` (or forgo cleaning up entirely) if you intend to use this
+ * global scope dict elsewhere, since the clean up macros will release the scope `dict`.
  * 
  * @param globals The Python `dict` to use as a global and local scope.
  */
@@ -1874,7 +1877,7 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_handle));
  * @param identifier The name of the new module. Should be NULL-terminated.
  * @param code The Python code for the module. Should be NULL-terminated.
  */
-REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
+// REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
 
 /**
  * @brief Construct a new Python module from a `char` array, importable by name.
@@ -1888,7 +1891,7 @@ REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
  * @param code The Python code for the module. Does not need to be null terminated.
  * @param len The length of the Python code, in bytes.
  */
-REPY_IMPORT(void REPY_LoadModuleN(const char* identifier, const char* code, u32 len));
+// REPY_IMPORT(void REPY_LoadModuleN(const char* identifier, const char* code, u32 len));
 
 /**
  * @brief Imports a Python module by name and returns a handle to it.
@@ -2599,9 +2602,36 @@ REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle object, char* key));
 
 /** \defgroup repy_iteration_funcs Module Functions
  * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * 
+ * The same DLL mechanisms used by these functions are used internally by `REPY_IteratorHelper`.
  *  @{
  */
+
+/**
+ * @brief Gets an iterator for a given Python object.
+ * 
+ * This function is analogous to Python's own `iter` function, and should work in all the same circumstances.
+ * 
+ * @param object The Python object to get an iterator for.
+ */
 REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));
+
+/**
+ * @brief Gets the next Python object from a Python iterator.
+ * 
+ * This function is mostly analogous to Python's own `next` function, and should work in all the same circumstances.
+ * 
+ * Generally, this function returning `REPY_NO_OBJECT` indicates that an error has occured, but there is a special case. 
+ * In Python, the end of iteraton is indicated by the raising of a `StopIteration` exception. Instead of requiring the user
+ * to handle this exception manually handle this exception, the argument `process_stop_iteration` enables this functin 
+ * silently and automatically handle the `StopIteration` exception while still returning `REPY_NO_OBJECT`. This way,
+ * you can easily check whether iteration ended successfully by simply calling `REPY_IsErrorSet`, instead of having to
+ * write more elaborate exception handling code.
+ * 
+ * @param iterator The Python iterator being used.
+ * @param default_obj_nullable A default object to return if iteration is complete. Use `REPY_NO_OBJECT` to ignore this argument.
+ * @param process_stop_iteration Set to `true` to enable automatic handling of the `StopIteration` exception. Set to `false` otherwise.
+ */
 REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_nullable, u32 process_stop_iteration));
 
 /** @}*/
@@ -2611,20 +2641,24 @@ REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_
  *  @{
  */
 
+ /**
+  * @brief Construct a new repy import object
+  * 
+  * @param REPY_CreateTuple 
+  */
 REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_TupleGetIndexS32(REPY_Handle tuple, int index));
-
 /** @}*/
 
 /** \defgroup repy_dict_funcs Module Functions
  * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
  *  @{
  */
-REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict());
-REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict_SUH());
+// REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict());
+// REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict_SUH());
 REPY_IMPORT(REPY_Handle REPY_CreateDict(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_CreateDict_SUH(u32 size, ...));
 REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));

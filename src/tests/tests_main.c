@@ -5,7 +5,7 @@
 #include "repy_api.h"
 #include "test_utils.h"
 
-REPY_INCBIN_MODULE(test_module, "test_module.py");
+// REPY_INCBIN_MODULE(test_module, "test_module.py");
 PRE_INIT_ADD_NRM_TO_MODULE_PATH;
 
 int _test_cases = 0;
@@ -148,12 +148,13 @@ REPY_ON_INIT void REPY_API_Tests() {
     // From here, we assume that Create/Cast operations work.
 
     // Dicts are needed for execution contexts. Test those next.
-    REPY_Handle test_dict = REPY_CreateEmptyDict_SUH();
+    REPY_Handle test_dict = REPY_CreateDict_SUH(0);
     validate("REPY_CreateEmptyDict_SUH -> test_dict created and is empty", REPY_Len(test_dict) == 0);
     validate("REPY_CreateEmptyDict_SUH -> test_dict is just invalidated", REPY_IsValidHandle(test_dict) == false);
 
     // Testing Dict Get/Set/Has/Del
-    test_dict = REPY_CreateEmptyDict();
+    // test_dict = REPY_CreateEmptyDict();
+    test_dict = REPY_CreateDict(0);
     s32 test_value_1_val = 999;
     REPY_Handle test_key_1 = REPY_CreateStr("test_key_1");
     validate("REPY_CreateEmptyDict: test_dict re-created and is empty", REPY_Len(test_dict) == 0);
@@ -186,8 +187,8 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     // The following tests of executing Python code rely on the assumption that Python itself is working correctly.
     // Testing code execution via CStrings. 
-    REPY_Handle py_globals = REPY_CreateEmptyDict();
-    REPY_Handle py_locals = REPY_CreateEmptyDict();
+    REPY_Handle py_globals = REPY_CreateDict(0);
+    REPY_Handle py_locals = REPY_CreateDict(0);
     REPY_Handle test_var_x_name = REPY_CreateStr("x");
     validate("REPY_ExecCStr -> 'x = 5' ran without error", REPY_ExecCStr("x = 5", py_globals, py_locals));
     validate("REPY_ExecCStr -> 'x' is in local scope", REPY_DictHas(py_locals, test_var_x_name));
@@ -367,16 +368,16 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("repy_api has member 'version_str'", REPY_HasAttrCStr(py_repy_api, "version_str"));
 
     // What about incbinned modules:
-    REPY_Handle py_test_module = REPY_ImportModule("test_module");
-    validate("INCBIN Python module 'test_module' imported without error", py_test_module);
-    validate("repy_api has member 'test_string'", REPY_HasAttrCStr(py_test_module, "test_string"));
+    // REPY_Handle py_test_module = REPY_ImportModule("test_module");
+    // validate("INCBIN Python module 'test_module' imported without error", py_test_module);
+    // validate("repy_api has member 'test_string'", REPY_HasAttrCStr(py_test_module, "test_string"));
     // From here on, we'll assume that all module functionality works.
 
     REPY_Release(py_repy_api);
-    REPY_Release(py_test_module);
+    // REPY_Release(py_test_module);
 
     REPY_Handle iter_test_tuple = REPY_EvalCStr("(0, 1, 2, 3, 4, 5, 6)", 0, 0);
-    REPY_Handle iter_test_dict = REPY_CreateEmptyDict();
+    REPY_Handle iter_test_dict = REPY_CreateDict(0);
 
     u32 iter_array[7] = {0, 1, 2, 3, 4, 5, 6};
     bool iter_index_works = true;
