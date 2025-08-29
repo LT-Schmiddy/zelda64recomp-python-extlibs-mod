@@ -1761,6 +1761,16 @@ for ( \
  *  @{
  */
 
+ /**
+  * @brief Instruct REPY to add a path to Python's module search path during initialization.
+  * 
+  * If you pass the path of an NRM (such as the path to the NRM for this mod obtained via `recomp_get_mod_file_path`),
+  * REPY treat the NRM as a .zip file and will be able to search it for Python modules. 
+  * 
+  * Python module files and folders can be added to the NRM by including them under the `additional_files` section of the `mod.toml`
+  * 
+  * @param REPY_PreInitAddToModuleSearchPath 
+  */
 REPY_IMPORT(void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file_path));
 
 
@@ -1769,74 +1779,598 @@ REPY_IMPORT(void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file
  *  @{
  */
 
- 
-REPY_IMPORT(void REPY_Release(REPY_Handle py_object));
+/**
+ * @brief Releases a `REPY_Handle`, removing the reference to the Python object and rendering this handle invalid.
+ * 
+ * It is safe to use this function with a Single-Use handle, since it will not try to release the handle twice.
+ * 
+ * @param REPY_Release The handle to release.
+ */
+REPY_IMPORT(void REPY_Release(REPY_Handle py_handle));
+
+/**
+ * @brief Convienience function that marks a `REPY_Handle` as Single-Use and then returns the value of the provided handle.
+ * 
+ * This function primarily exists to allow you to nest calls to API functions without causing memory/resource leaks.
+ * Consider the following code:
+ * 
+ * ```C
+ * REPY_CastBool(REPY_CreateBool(true));
+ * ```
+ * 
+ * This is will result in the `REPY_Handle` created by `REPY_CreateBool` not getting released. and since the handle was never 
+ * captured in a variable, We can't make a call to release it. In effect, this is a memory leak.
+ * 
+ *  ```C
+ * REPY_CastBool(REPY_MakeSUH(REPY_CreateBool(true)));
+ * ```
+ * 
+ * By marking the `REPY_Handle` from `REPY_CreateBool` as Single-Use, it will be released as soon as REPY_CastBool is done with it.
+ * Thus, no memory leak.
+ * 
+ * @param py_handle_no_release The handle to make Single-Use.
+ * @return The same handle as was passed in via `py_handle_no_release`..
+ */
 REPY_IMPORT(REPY_Handle REPY_MakeSUH(REPY_Handle py_handle_no_release));
+
+/**
+ * @brief Returns whether the a handle value is mapped to a Python object.
+ * 
+ * A handle of 0 (`REPY_NO_OBJECT`) will always return false.
+ * 
+ * This function is special in that it will not release a Single-Use `REPY_Handle` handle.
+ * 
+ * @param py_handle_no_release The handle in question.
+ * @return True if the handle is valid. False otherwise.
+ */
 REPY_IMPORT(bool REPY_IsValidHandle(REPY_Handle py_handle_no_release));
+
+/**
+ * @brief Gets whether or not a `REPY_Handle` is Single-Use.
+ * 
+ * This function is special in that it will not release a Single-Use `REPY_Handle` handle.
+ * 
+ * @param py_handle_no_release The handle in question.
+ * @return True if the handle is Single-Use. False otherwise.
+ */
 REPY_IMPORT(bool REPY_GetSUH(REPY_Handle py_handle_no_release));
+
+/**
+ * @brief Sets whether or not a `REPY_Handle` is Single-Use.
+ * 
+ * This function is special in that it will not release a Single-Use `REPY_Handle` handle.
+ * 
+ * @param py_handle_no_release The handle in question.
+ * @param value True will make the handle Single-Use. False will make it not Single-Use.
+ */
 REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_handle_no_release, bool value));
-REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_object));
+
+/**
+ * @brief Creates a new handle to the same Python object as another handle.
+ * 
+ * Note that, unlike the other functions in this category, this function WILL release Single-Use handles.
+ * In the future, a `_no_release` version of this function may be added.
+ * 
+ * @param py_handle_no_release A handle for an object you need another handle to.
+ * @return A new handle to the same object.
+ */
+REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_handle));
 
 
 /** \defgroup repy_handle_funcs Module Functions
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Functions Used for Python module operations.
  *  @{
  */
 
+/**
+ * @brief Construct a new Python module from a NULL-terminated code string, importable by name.
+ * 
+ * @deprecated This is an artifact of the old pre-releases, and will be removed in the next update. 
+ * To include custom modules, include them as additional files in your NRM.
+ * 
+ * The Python code of the module is run immediately, rather than on first import.
+ * 
+ * @param identifier The name of the new module. Should be NULL-terminated.
+ * @param code The Python code for the module. Should be NULL-terminated.
+ */
 REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
+
+/**
+ * @brief Construct a new Python module from a `char` array, importable by name.
+ * 
+ * @deprecated This is an artifact of the old pre-releases, and will be removed in the next update. 
+ * To include custom modules, include them as additional files in your NRM.
+ * 
+ * The Python code of the module is run immediately, rather than on first import.
+ * 
+ * @param identifier The name of the new module. Should be NULL-terminated.
+ * @param code The Python code for the module. Does not need to be null terminated.
+ * @param len The length of the Python code, in bytes.
+ */
 REPY_IMPORT(void REPY_LoadModuleN(const char* identifier, const char* code, u32 len));
+
+/**
+ * @brief Imports a Python module by name and returns a handle to it.
+ * 
+ * Members of the module can be accessed with the various attribute access functions.
+ * 
+ * @param identifier The name of the Python module. Should be NULL-terminated.
+ */
 REPY_IMPORT(REPY_Handle REPY_ImportModule(const char* identifier));
 /** @}*/
 
 /** \defgroup repy_primative_funcs Primative Operations
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Functions that deal with converting between C and Python primatives.
  *  @{
  */
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `bool` object, based on a C `bool`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Even though both Python's `True` and `False` objects are immortal objects, will still take up space in the handle management system.
+ * Ergo, failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `bool`.
+ * @return A new handle for your Python `bool`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateBool(bool value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `bool` object, based on a C `bool`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateBool(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `bool`.
+ * @return A new Single-Use handle for your Python `bool`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateBool_SUH(bool value));
+
+/** @brief Casts a Python object to a C `bool`. 
+ * 
+ * Intended to be used with a Python `bool`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(bool REPY_CastBool(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `u8`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU8(u8 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `u8`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateU8(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU8_SUH(u8 value));
+
+/** @brief Casts a Python object to a C `u8`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(u8 REPY_CastU8(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `s8`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateS8(s8 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `s8`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateS8(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateS8_SUH(s8 value));
+
+/** @brief Casts a Python object to a C `s8`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(s8 REPY_CastS8(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `u16`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU16(u16 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `u16` object, based on a C `int`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateU16(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU16_SUH(u16 value));
+
+/** @brief Casts a Python object to a C `u16`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(u16 REPY_CastU16(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `s16`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateS16(s16 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `s16`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateS16(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateS16_SUH(s16 value));
+
+/** @brief Casts a Python object to a C `s16`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(s16 REPY_CastS16(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `u32`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU32(u32 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `u32`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateU32(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU32_SUH(u32 value));
+
+/** @brief Casts a Python object to a C `u32`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(u32 REPY_CastU32(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `s32`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateS32(s32 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `s32`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateS32(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateS32_SUH(s32 value));
+
+/** @brief Casts a Python object to a C `s32`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(s32 REPY_CastS32(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `float` object, based on a C `f32`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `float`.
+ * @return A new handle for your Python `float`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateF32(f32 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `float` object, based on a C `f32`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateBool(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `float`.
+ * @return A new Single-Use handle for your Python `float`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateF32_SUH(f32 value));
+
+/** @brief Casts a Python object to a C `f32`. 
+ * 
+ * Intended to be used with a Python `float`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(f32 REPY_CastF32(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `void*`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreatePtr(void* value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `void*`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreatePtr(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreatePtr_SUH(void* value));
+
+/** @brief Casts a Python object to a C `void*`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(void* REPY_CastPtr(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `u64`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU64(u64 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `u64`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateU64(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateU64_SUH(u64 value));
+
+/** @brief Casts a Python object to a C `u64`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(u64 REPY_CastU64(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `s64`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateS64(s64 value));
-REPY_IMPORT(REPY_Handle REPY_CreateS64_SUH(s64 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `s64`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateS64(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
+REPY_IMPORT(REPY_Handle REPY_CreateS64_SUH(s64 value)); 
+
+/** @brief Casts a Python object to a C `s64`. 
+ * 
+ * Intended to be used with a Python `int`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(s64 REPY_CastS64(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `int` object, based on a C `u8`. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateF64(f64 value));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `int` object, based on a C `bool`. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateBool(value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `int`.
+ * @return A new Single-Use handle for your Python `int`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateF64_SUH(f64 value));
+
+/** @brief Casts a Python object to a C `u8`. 
+ * 
+ * Intended to be used with a Python `float`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(f64 REPY_CastF64(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `str` object, based on a NULL-terminated C string. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `str`.
+ * @return A new handle for your Python `str`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateStr(const char* string));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `str` object, based on a NULL-terminated C string. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateStr(string))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param string The value for the Python `str`.
+ * @return A new Single-Use handle for your Python `str`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateStr_SUH(const char* string));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `str` object, based on `char` array.
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param string The beginning of the `char` array to create a Python `str` from.
+ * @param len The length of the `string` array.
+ * @return A new Single-Use handle for your Python `str`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateStrN(const char* string, u32 len) );
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `str` object, based on `char` array. 
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateStrN_SUH(string, len))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param string The beginning of the `char` array to create a Python `str` from.
+ * @param len The length of the `string` array.
+ * @return A new Single-Use handle for your Python `str`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateStrN_SUH(const char* string, u32 len) );
+
+/** @brief Casts a Python object to NULL-terminated C string. 
+ * 
+ * Intended to be used with a Python `str`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(char* REPY_CastStr(REPY_Handle object));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `bytes` object, based on a NULL-terminated C string. 
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param value The value for the Python `bytes`.
+ * @return A new handle for your Python `bytes`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateByteStr(const char* string));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `bytes` object, based on a NULL-terminated C string.
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateByteStr(string))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param value The value for the Python `bytes`.
+ * @return A new Single-Use handle for your Python `bytes`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateByteStr_SUH(const char* string));
+
+/**
+ * @brief Returns a `REPY_Handle` for a Python `bytes` object, based on a `char` array.
+ * 
+ * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
+ * Failure to release this handle will result in a memory leak. 
+ * 
+ * @param string The beginning of the `char` array to create a Python `bytes` from.
+ * @param len The length of the `string` array.
+ * @return A new Single-Use handle for your Python `bytes`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateByteStrN(const char* string, u32 len));
+
+/**
+ * @brief Returns a Single-Use `REPY_Handle` for a Python `bytes` object, based on a `char` array.
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateByteStrN(string))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param string The beginning of the `char` array to create a Python `bytes` from.
+ * @param len The length of the `string` array.
+ * @return A new Single-Use handle for your Python `bytes`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateByteStrN_SUH(const char* string, u32 len));
+
+/** @brief Casts a Python object to a C `u8`. 
+ * 
+ * Intended to be used with a Python `str`. Behavior with other Python types may change between versions.
+ * 
+ * @param object The handle for the Python object in question.
+ */
 REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
 
 /** @}*/
