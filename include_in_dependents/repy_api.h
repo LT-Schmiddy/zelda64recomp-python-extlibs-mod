@@ -54,7 +54,7 @@
  * Failure to release handles will result in resource/memory leaks. 
  * 
  * The handle value of `REPY_NO_OBJECT` (the numerical value 0) is a special case, and represents the absense of any Python object. 
- * Not that this is different from Python's `None`, which is itself a Python object. If an API function with `REPY_Handle`
+ * Note that this is different from Python's `None`, which is itself a Python object. If an API function with `REPY_Handle`
  * as the return type returns `REPY_NO_OBJECT`, that will mean a Python error has occured (unless otherwise specified in the function's 
  * documentation).
  * 
