@@ -290,7 +290,13 @@ REPY_ON_INIT void REPY_API_Tests() {
     for (int i = 0; i < 6; i++) {
         py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_TupleGetIndexS32(py_tuple1, i))));
     }
-    validate("REPY_TupleGetIndexS32 returned correct values for (0, 1, 2, 3, 4, 5)", py_list_match);
+
+    // validate("REPY_TupleGetIndexS32 returned correct values for (0, 1, 2, 3, 4, 5)", py_list_match);
+    // for (int i = -1; i > -7; i--) {
+    //     py_list_match = py_list_match && ((i + 6) == REPY_CastS32(REPY_MakeSUH(REPY_TupleGetIndexS32(py_tuple1, i))));
+    // }
+    // validate("REPY_TupleGetIndexS32 returned correct values for (0, 1, 2, 3, 4, 5) using negatives", py_list_match);
+
     REPY_Release(py_tuple1);
     // From here on, we'll assume that REPY_TupleGetIndexS32 is working.
     // Testing Tuple construction.

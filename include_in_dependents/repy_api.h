@@ -2637,37 +2637,206 @@ REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_
 /** @}*/
 
 /** \defgroup repy_tuple_funcs Module Functions
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Functions that operate on Python `tuple` objects.
  *  @{
  */
 
- /**
-  * @brief Construct a new repy import object
-  * 
-  * @param REPY_CreateTuple 
-  */
+/**
+ * @brief Create a Python `tuple` and return a `REPY_Handle` for it.
+ * 
+ * Because the `REPY_Handle` created by this function requires manual release, it's not recommended to use this function nested
+ * inside `REPY_Call` (or any of it's sister functions) to pass positional arguments. Use `REPY_CreateTuple_SUH` instead.
+ * 
+ * @param size The number of entries in the tuple. Use 0 for an empty tuple.
+ * @param ... `REPY_Handle` arguments for each entry in the tuple. Leave out if `size` is 0.
+ * @return A `REPY_Handle` for the new tuple.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
+
+/**
+ * @brief Create a Python `tuple` and return a Single-Use `REPY_Handle` for it.
+ * 
+ * This is the recommended function for constructing a positional arguments `tuple` nested inside a call 
+ * to `REPY_Call` (or any of it's sister functions).
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateTuple(size, ...))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param size The number of entries in the tuple. Use 0 for an empty tuple.
+ * @param ... `REPY_Handle` arguments for each entry in the tuple. Leave out if `size` is 0.
+ * @return A Single-Use `REPY_Handle` for the new tuple.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
+
+/**
+ * @brief Create a Python `tuple` with exactly 2 entries and return a `REPY_Handle` for it.
+ * 
+ * Used primarily for constucting key/value pairs when calling `REPY_CreateDict`. However, because the `REPY_Handle` 
+ * created by this function requires manual release, it's not recommended to use this nest a call to this function 
+ * inside another.
+ * 
+ * @param key `REPY_Handle` argument for the first entry in the tuple.
+ * @param value `REPY_Handle` argument for the second entry in the tuple.
+ * @return A `REPY_Handle` for the new tuple.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
+
+/**
+ * @brief Create a Python `tuple` with exactly 2 entries and return a Single-Use `REPY_Handle` for it.
+ * 
+ * Used primarily for constucting key/value pairs when calling `REPY_CreateDict`. Because the returned handle is 
+ * Single-Use, this is the recommended function for nesting inside `REPY_CreateDict` calls.
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreatePair(key, value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param key `REPY_Handle` argument for the first entry in the `tuple`.
+ * @param value `REPY_Handle` argument for the second entry in the `tuple`.
+ * @return A `REPY_Handle` for the new tuple.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
+
+/**
+ * @brief Returns the Python object at a specific index from a `tuple`
+ * 
+ * Currently, is a known issue with this interface: Negative index values (which represent the position from the end of 
+ * the `tuple` in Python code) do not currently work. This will be fixed in a future update.
+ * 
+ * Only works with Python `tuple` objects.
+ * 
+ * @param tuple The `tuple` to get an object from.
+ * @param index The index of the desired object.
+ * @return The Python object at `index` in `tuple`.
+ */
 REPY_IMPORT(REPY_Handle REPY_TupleGetIndexS32(REPY_Handle tuple, int index));
 /** @}*/
 
 /** \defgroup repy_dict_funcs Module Functions
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Functions that operate on Python `dict` objects.
  *  @{
  */
+
 // REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict());
 // REPY_IMPORT(REPY_Handle REPY_CreateEmptyDict_SUH());
+
+/**
+ * @brief Create a Python `dict` and return a `REPY_Handle` for it.
+ * 
+ * Because the `REPY_Handle` created by this function requires manual release, it's not recommended to use this function nested
+ * inside `REPY_Call` (or any of it's sister functions) to pass keyword arguments. Use `REPY_CreateDict_SUH` instead.
+ * 
+ * @param size The number of entries in the `dict`. Use 0 for an empty `dict`.
+ * @param ... `REPY_Handle` arguments for each entry in the `dict`. Each argument should be a two-entry tuple representing a 
+ * key/value pair (using `REPY_CreatePair` or `REPY_CreatePair_SUH` makes this easy). Leave out if `size` is 0. 
+ * @return A `REPY_Handle` for the new `dict`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateDict(u32 size, ...));
+
+/**
+ * @brief Create a Python `dict` and return a `REPY_Handle` for it.
+ * 
+ * This is the recommended function for constructing a keyword arguments `tuple` nested inside a call  to `REPY_Call` 
+ * (or any of it's sister functions).
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreateDict(size, ...))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param size The number of entries in the `dict`. Use 0 for an empty `dict`.
+ * @param ... `REPY_Handle` arguments for each entry in the `dict`. Each argument should be a two-entry tuple representing a 
+ * key/value pair (using `REPY_CreatePair` or `REPY_CreatePair_SUH` makes this easy). Leave out if `size` is 0. 
+ * @return A `REPY_Handle` for the new `dict`.
+ */
 REPY_IMPORT(REPY_Handle REPY_CreateDict_SUH(u32 size, ...));
+
+/**
+ * @brief Get an entry from a Python `dict`, using a REPY handle for the key.
+ * 
+ * Note that any hashable Python type can be used as a dict key, not just `str` objects.
+ * 
+ * @param dict The `dict` to get an entry from.
+ * @param dict The key for the entry. Should be a hashable Python type.
+ * @return The retrieved object.
+ */
 REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));
+
+/**
+ * @brief Get an entry from a Python `dict`, using a NULL-terminated C string for the key.
+ * 
+ * The `key` variable will treated as a `str` object, as that is the most common use-case, as well as the use-case for
+ * code execution scopes.
+ * 
+ * @param dict The `dict` to get an entry from.
+ * @param dict The key for the entry. Should be a NULL-terminated C string.
+ * @return The retrieved object.
+ */
 REPY_IMPORT(REPY_Handle REPY_DictGetCStr(REPY_Handle dict, char* key));
+
+/**
+ * @brief Sets/adds a Python object to a Python `dict`, using a REPY handle for the key.
+ * 
+ * Note that any hashable Python type can be used as a dict key, not just `str` objects.
+ * 
+ * @param dict The `dict` to insert into.
+ * @param dict The key for the entry. Should be a hashable Python type.
+ * @param value The object to add.
+ */
 REPY_IMPORT(void REPY_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle value));
+
+
+/**
+ * @brief Sets/adds a Python object to a Python `dict`, using a NULL-terminated C string for the key.
+ * 
+ * The `key` variable will treated as a `str` object, as that is the most common use-case, as well as the use-case for
+ * code execution scopes.
+ * 
+ * @param dict The `dict` to insert into.
+ * @param dict The key for the entry. Should be a NULL-terminated C string.
+ * @param value The object to add.
+ */
 REPY_IMPORT(void REPY_DictSetCStr(REPY_Handle dict, char* key, REPY_Handle value));
+
+/**
+ * @brief Checks if a Python `dict` has an entry with a specific key, using a REPY handle for the key.
+ * 
+ * Note that any hashable Python type can be used as a dict key, not just `str` objects.
+ * 
+ * @param dict The `dict` to check for a key in.
+ * @param dict The key for the entry. Should be a hashable Python type.
+ * @return `true` if the entry exists, `false` otherwise.
+ */
 REPY_IMPORT(bool REPY_DictHas(REPY_Handle dict, REPY_Handle key));
+
+/**
+ * @brief Checks if a Python `dict` has an entry with a specific key, using a NULL-terminated C string for the key.
+ * 
+ * The `key` variable will treated as a `str` object, as that is the most common use-case, as well as the use-case for
+ * code execution scopes.
+ * 
+ * @param dict The `dict` to check for a key in.
+ * @param dict The key for the entry. Should be a NULL-terminated C string.
+ * @return `true` if the entry exists, `false` otherwise.
+ */
 REPY_IMPORT(bool REPY_DictHasCStr(REPY_Handle dict, char* key));
+
+/**
+ * @brief Remove an entry from a `dict` via it's key, using a REPY handle for the key.
+ * 
+ * Note that any hashable Python type can be used as a dict key, not just `str` objects.
+ * 
+ * @param dict The `dict` to remove an entry from.
+ * @param dict The key for the entry. Should be a hashable Python type.
+ */
 REPY_IMPORT(void REPY_DictDel(REPY_Handle dict, REPY_Handle key));
+
+/**
+ * @brief Remove an entry from a `dict` via it's key, using a NULL-terminated C string for the key.
+ * 
+ * The `key` variable will treated as a `str` object, as that is the most common use-case, as well as the use-case for
+ * code execution scopes.
+ * 
+ * @param dict The `dict` to remove an entry from.
+ * @param dict The key for the entry. Should be a NULL-terminated C string.
+ */
 REPY_IMPORT(void REPY_DictDelCStr(REPY_Handle dict, char* key));
 /** @}*/
 
