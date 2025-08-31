@@ -2585,7 +2585,7 @@ REPY_IMPORT(bool REPY_HasAttrCStr(REPY_Handle object, char* key));
  * This function is analogous to Python's own `delattr`, and should work all the same circumstances.
  * 
  * @param object The parent Python object.
- * @param key The name of attribute to delete. The Python object referenced should generally be a `str`, as is standard with `hasattr`.
+ * @param key The name of attribute to delete. The Python object referenced should generally be a `str`, as is standard with `delattr`.
  */
 REPY_IMPORT(void REPY_DelAttr(REPY_Handle object, REPY_Handle key));
 
@@ -2595,7 +2595,7 @@ REPY_IMPORT(void REPY_DelAttr(REPY_Handle object, REPY_Handle key));
  * This function is analogous to Python's own `delattr`, and should work all the same circumstances.
  * 
  * @param object The parent Python object.
- * @param key The name of attribute to delete. Should be a NULL-terminated C string.
+ * @param key The name of attribute to delete. Should be a NULL-terminated C string. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle object, char* key));
 /** @}*/
@@ -2612,7 +2612,7 @@ REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle object, char* key));
  * 
  * This function is analogous to Python's own `iter` function, and should work in all the same circumstances.
  * 
- * @param object The Python object to get an iterator for.
+ * @param object The Python object to get an iterator for. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));
 
@@ -2631,6 +2631,8 @@ REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));
  * @param iterator The Python iterator being used.
  * @param default_obj_nullable A default object to return if iteration is complete. Use `REPY_NO_OBJECT` to ignore this argument.
  * @param process_stop_iteration Set to `true` to enable automatic handling of the `StopIteration` exception. Set to `false` otherwise.
+ * @return The next object from the iterator. Will be `REPY_NO_HANDLE` an error occured, or if `process_stop_iteration` is `true` and
+ * iteration has ended
  */
 REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_nullable, u32 process_stop_iteration));
 
@@ -2649,7 +2651,7 @@ REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_
  * 
  * @param size The number of entries in the tuple. Use 0 for an empty tuple.
  * @param ... `REPY_Handle` arguments for each entry in the tuple. Leave out if `size` is 0.
- * @return A `REPY_Handle` for the new tuple.
+ * @return A `REPY_Handle` for the new tuple. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
 
@@ -2664,7 +2666,7 @@ REPY_IMPORT(REPY_Handle REPY_CreateTuple(u32 size, ...));
  * 
  * @param size The number of entries in the tuple. Use 0 for an empty tuple.
  * @param ... `REPY_Handle` arguments for each entry in the tuple. Leave out if `size` is 0.
- * @return A Single-Use `REPY_Handle` for the new tuple.
+ * @return A Single-Use `REPY_Handle` for the new tuple. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
 
@@ -2677,7 +2679,7 @@ REPY_IMPORT(REPY_Handle REPY_CreateTuple_SUH(u32 size, ...));
  * 
  * @param key `REPY_Handle` argument for the first entry in the tuple.
  * @param value `REPY_Handle` argument for the second entry in the tuple.
- * @return A `REPY_Handle` for the new tuple.
+ * @return A `REPY_Handle` for the new tuple. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
 
@@ -2692,7 +2694,7 @@ REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
  * 
  * @param key `REPY_Handle` argument for the first entry in the `tuple`.
  * @param value `REPY_Handle` argument for the second entry in the `tuple`.
- * @return A `REPY_Handle` for the new tuple.
+ * @return A `REPY_Handle` for the new tuple. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
 
@@ -2706,7 +2708,7 @@ REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value))
  * 
  * @param tuple The `tuple` to get an object from.
  * @param index The index of the desired object.
- * @return The Python object at `index` in `tuple`.
+ * @return The Python object at `index` in `tuple`. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_TupleGetIndexS32(REPY_Handle tuple, int index));
 /** @}*/
@@ -2728,7 +2730,7 @@ REPY_IMPORT(REPY_Handle REPY_TupleGetIndexS32(REPY_Handle tuple, int index));
  * @param size The number of entries in the `dict`. Use 0 for an empty `dict`.
  * @param ... `REPY_Handle` arguments for each entry in the `dict`. Each argument should be a two-entry tuple representing a 
  * key/value pair (using `REPY_CreatePair` or `REPY_CreatePair_SUH` makes this easy). Leave out if `size` is 0. 
- * @return A `REPY_Handle` for the new `dict`.
+ * @return A `REPY_Handle` for the new `dict`. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_CreateDict(u32 size, ...));
 
@@ -2744,7 +2746,7 @@ REPY_IMPORT(REPY_Handle REPY_CreateDict(u32 size, ...));
  * @param size The number of entries in the `dict`. Use 0 for an empty `dict`.
  * @param ... `REPY_Handle` arguments for each entry in the `dict`. Each argument should be a two-entry tuple representing a 
  * key/value pair (using `REPY_CreatePair` or `REPY_CreatePair_SUH` makes this easy). Leave out if `size` is 0. 
- * @return A `REPY_Handle` for the new `dict`.
+ * @return A `REPY_Handle` for the new `dict`. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_CreateDict_SUH(u32 size, ...));
 
@@ -2755,7 +2757,7 @@ REPY_IMPORT(REPY_Handle REPY_CreateDict_SUH(u32 size, ...));
  * 
  * @param dict The `dict` to get an entry from.
  * @param dict The key for the entry. Should be a hashable Python type.
- * @return The retrieved object.
+ * @return The retrieved object. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));
 
@@ -2767,7 +2769,7 @@ REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));
  * 
  * @param dict The `dict` to get an entry from.
  * @param dict The key for the entry. Should be a NULL-terminated C string.
- * @return The retrieved object.
+ * @return The retrieved object. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_DictGetCStr(REPY_Handle dict, char* key));
 
@@ -2841,17 +2843,158 @@ REPY_IMPORT(void REPY_DictDelCStr(REPY_Handle dict, char* key));
 /** @}*/
 
 /** \defgroup repy_code_exec_funcs Code Compilation and Execution Functions
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Functions that deal with the compiling and executing Python code from inside mod code.
  *  @{
  */
+
+/**
+ * @brief Compile a Python code string into Python bytecode, using a `REPY_Handle` for the text.
+ * 
+ * This function is generally analogous to Python's own `compile` function, and should work in all the same circumstances.
+ * 
+ * @param code The Python text object containing the code to compile. Python's `compile` function works accepts `str`, `bytes`, and `bytearray`.
+ * @param identifier A Python text object identifying where the code came from. 
+ * @param mode A Python `str` identifying the type of code this is. Use "exec" for an executable statement or series of statements, "eval"
+ * for an expression, or "single" for a interactive REPL statement.
+ * @return A handle to the resulting Python bytecode object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
 REPY_IMPORT(REPY_Handle REPY_Compile(REPY_Handle code, REPY_Handle identifier, REPY_Handle mode));
+
+/**
+ * @brief Compile a Python code string into Python bytecode, using a NULL-terminated C string for the code.
+ * 
+ * This function is generally analogous to Python's own `compile` function, and should work in all the same circumstances.
+ * 
+ * @param code A NULL-terminated C string of Python code to compile.
+ * @param identifier A NULL-terminated C string identifying where the code came from. 
+ * @param mode The type of code this is. Use `REPY_CODE_EXEC` for an executable statement or series of statements, `REPY_CODE_EVAL`
+ * for an expression, or `REPY_CODE_SINGLE` for a interactive REPL statement.
+ * @return A handle to the resulting Python bytecode object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
 REPY_IMPORT(REPY_Handle REPY_CompileCStr(const char* code, const char* identifier, REPY_CodeMode mode));
+
+/**
+ * @brief Compile a Python code string into Python bytecode, using a C `char` array for the code.
+ * 
+ * This function is generally analogous to Python's own `compile` function, and should work in all the same circumstances.
+ * 
+ * @param code A pointer to the beginning of the `char` array to compile.
+ * @param len The length of the `char` array to compile.
+ * @param identifier A NULL-terminated C string identifying where the code came from. 
+ * @param mode The type of code this is. Use `REPY_CODE_EXEC` for an executable statement or series of statements, `REPY_CODE_EVAL`
+ * for an expression, or `REPY_CODE_SINGLE` for a interactive REPL statement.
+ * @return A handle to the resulting Python bytecode object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
 REPY_IMPORT(REPY_Handle REPY_CompileCStrN(const char* code, u32 len, const char* identifier, REPY_CodeMode mode));
+
+/**
+ * @brief Execute Python code statements from a `REPY_Handle`. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `exec` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * As this function can execute precompiled Python bytecode, this is the recommended function for executing Python statements from the API.
+ * 
+ * @param code The Python code to execute. A precompiled bytecode object is recommended for performance reasons, but a Python `str`,
+ * `bytes`, or `bytearray` object will also work.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+ * @return `true` if the code executed without error, `false` otherwise.
+ */
 REPY_IMPORT(bool REPY_Exec(REPY_Handle code, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
+
+/**
+ * @brief Execute Python code from a NULL-terminated C string. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `exec` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * This function is not recommended for most use-cases, since it must recompile the Python bytecode from the `code` string 
+ * with each run.
+ * 
+ * @param code The Python code to execute. Should be a NULL-terminated C string.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+ * @return `true` if the code executed without error, `false` otherwise.
+ */
 REPY_IMPORT(bool REPY_ExecCStr(const char* code, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
+
+/**
+ * @brief Execute Python code from a C `char` array. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `exec` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * This function is not recommended for most use-cases, since it must recompile the Python bytecode from the `code` string 
+ * with each run.
+ * 
+ * @param code A pointer to the beginning of the `char` array code to execute.
+ * @param len The length of the `char` array in bytes.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+ * @return `true` if the code executed without error, `false` otherwise.
+ */
 REPY_IMPORT(bool REPY_ExecCStrN(const char* code, u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
+
+/**
+ * @brief Evaluate a Python code expression from a `REPY_Handle`. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `eval` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * As this function can execute precompiled Python bytecode, this is the recommended function for evaluating Python expressions from the API.
+ * 
+ * @param code The Python expression to evaluate. A precompiled bytecode object is recommended for performance reasons, but a Python `str`,
+ * `bytes`, or `bytearray` object will also work.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+ * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
 REPY_IMPORT(REPY_Handle REPY_Eval(REPY_Handle code, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
+
+/**
+ * @brief Evaluate a Python code expression from a NULL-terminated C string. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `eval` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * This function is not recommended for most use-cases, since it must recompile the Python bytecode from the `code` string 
+ * with each run.
+ * 
+ * @param code The Python expression to evaluate. Should be a NULL-terminated C string.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+* @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
 REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
+
+/**
+ * @brief Evaluate a Python code expression from a C `char` array. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `eval` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * This function is not recommended for most use-cases, since it must recompile the Python bytecode from the `code` string 
+ * with each run.
+ * 
+ * @param code A pointer to the beginning of the `char` array expression to evaluate.
+ * @param len The length of the `char` array in bytes.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+* @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
 REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
 
 /** @}*/
