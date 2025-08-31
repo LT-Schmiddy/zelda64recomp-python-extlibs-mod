@@ -2993,7 +2993,7 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope
  * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
  * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
  * be the same.
-* @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
 
@@ -3003,12 +3003,98 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle gl
  * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
  *  @{
  */
+
+/**
+ * @brief Call a Python function (or another callable object) by handle, and discard the return value.
+ * 
+ * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
+ * 
+ * @param func The Python function or callable to call. Should be the actual function object itself.
+ * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
+ * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
+ * @return `true` if the call executed without error, `false` otherwise.
+ */
 REPY_IMPORT(bool REPY_Call(REPY_Handle func, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
+
+/**
+ * @brief Call a Python function (or another callable object) by handle, and get the return value as a `REPY_Handle`.
+ * 
+ * Note that technically all Python functions and callables return a value. Functions that are typically thought of not having a return
+ * will actually return Python's `None` object. This mean that, unless an error occurs, this API function will always return a `REPY_Handle`
+ * that will need to be released.
+ * 
+ * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
+ * 
+ * @param func The Python function or callable to call. Should be the actual function object itself.
+ * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
+ * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
+ * @return `true` if the call executed without error, `false` otherwise.
+ */
 REPY_IMPORT(REPY_Handle REPY_CallReturn(REPY_Handle func, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
-REPY_IMPORT(bool REPY_CallAttr(REPY_Handle func, REPY_Handle name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
-REPY_IMPORT(bool REPY_CallAttrCStr(REPY_Handle func, char* name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
-REPY_IMPORT(REPY_Handle REPY_CallAttrReturn(REPY_Handle func, REPY_Handle name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
-REPY_IMPORT(REPY_Handle REPY_CallAttrCStrReturn(REPY_Handle func, char* name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
+
+/**
+ * @brief Call a Python object member (such as a module function, object method, or another callable) by parent object and attribute
+ * name, and discard the return value. The attribute name should be a Python `str`.
+ * 
+ * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
+ * 
+ * @param object The Python object to call a member of.
+ * @param func The name of the object attribute to call. Should be a Python `str`.
+ * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
+ * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
+ * @return `true` if the call executed without error, `false` otherwise.
+ */
+REPY_IMPORT(bool REPY_CallAttr(REPY_Handle object, REPY_Handle name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
+
+/**
+ * @brief Call a Python object member (such as a module function, object method, or another callable) by parent object and attribute
+ * name, and discard the return value. The attribute name should be a NULL-terminated C string.
+ * 
+ * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
+ * 
+ * @param object The Python object to call a member of.
+ * @param func The name of the object attribute to call. Should be a NULL-terminated C string.
+ * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
+ * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
+ * @return `true` if the call executed without error, `false` otherwise.
+ */
+REPY_IMPORT(bool REPY_CallAttrCStr(REPY_Handle object, char* name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
+
+/**
+ * @brief Call a Python object member (such as a module function, object method, or another callable) by parent object and attribute
+ * name, and discard the return value. The attribute name should be a NULL-terminated C string.
+ * 
+ * Note that technically all Python functions and callables return a value. Functions that are typically thought of not having a return
+ * will actually return Python's `None` object. This mean that, unless an error occurs, this API function will always return a `REPY_Handle`
+ * that will need to be released.
+ * 
+ * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
+ * 
+ * @param object The Python object to call a member of.
+ * @param func The name of the object attribute to call. Should be a NULL-terminated C string.
+ * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
+ * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
+ * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_CallAttrReturn(REPY_Handle object, REPY_Handle name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
+
+/**
+ * @brief Call a Python object member (such as a module function, object method, or another callable) by parent object and attribute
+ * name, and discard the return value. The attribute name should be a NULL-terminated C string.
+ * 
+ * Note that technically all Python functions and callables return a value. Functions that are typically thought of not having a return
+ * will actually return Python's `None` object. This mean that, unless an error occurs, this API function will always return a `REPY_Handle`
+ * that will need to be released.
+ * 
+ * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
+ * 
+ * @param object The Python object to call a member of.
+ * @param func The name of the object attribute to call. Should be a NULL-terminated C string.
+ * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
+ * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
+ * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_CallAttrCStrReturn(REPY_Handle object, char* name, REPY_Handle args_nullable, REPY_Handle kwargs_nullable));
 
 /** @}*/
 
