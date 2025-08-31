@@ -3261,7 +3261,7 @@ REPY_IMPORT(void REPY_IfStmtHelper_InitInPlace(REPY_IfStmtHelper* helper, REPY_I
  * @param line_number A line number in a C file to associate with the Python expression. Usually `__LINE__`.
  * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
  * @param identifier An identifiying string for the Python expression. Usually the bytecode identifier from the C file.
- * 
+ * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
  */
 REPY_IMPORT(bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier));
 /** @}*/
