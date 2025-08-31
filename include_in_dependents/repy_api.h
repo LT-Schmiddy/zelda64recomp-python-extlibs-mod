@@ -3000,7 +3000,7 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle gl
 /** @}*/
 
 /** \defgroup repy_fn_call_funcs Python Function Calling
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Functions that call Python functions and other callables.
  *  @{
  */
 
@@ -3099,13 +3099,56 @@ REPY_IMPORT(REPY_Handle REPY_CallAttrCStrReturn(REPY_Handle object, char* name, 
 /** @}*/
 
 /** \defgroup repy_error_funcs Error Handling
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Functions used for Python error handling.
+ * 
+ * REPY API functions will try to catch any unhandled Python errors they raise, print them to the console, and make the exception objects available
+ * through this interface. Note that passing bad/invalid handles (or using `REPY_NO_OBJECT` when not allowed) will not result in Python 
+ * errors to be raised, because looking up the Python object for a given handle happens before the interpreter is invoked. As a result,
+ * such issues will likely result in a crash instead.
  *  @{
  */
+
+/**
+ * @brief Checks if a Python exception was raised and caught by the REPY API.
+ * 
+ * If an exception was handled in Python code, then it will not be captured by REPY.
+ * 
+ * @return `true` if the REPY API currently has a Python exception captured, `false` otherwise.
+ */
 REPY_IMPORT(bool REPY_IsErrorSet());
+
+/**
+ * @brief Get the type of the current Python exception.
+ * 
+ * Note that each invokation of this method will result in a new handle being created to the appropriate type object.
+ * 
+ * @return The type for the currently captured Python exception. Returns `None` if no exception is currently captured.
+ */
 REPY_IMPORT(REPY_Handle REPY_GetErrorType());
+
+/**
+ * @brief Get the trace object for the Python exception.
+ * 
+ * Note that each invokation of this method will result in a new handle being created to the trace object.
+ * 
+ * @return The trace object for the currently captured Python exception. Returns `None` if no exception is currently captured.
+ */
 REPY_IMPORT(REPY_Handle REPY_GetErrorTrace());
+
+/**
+ * @brief Get the current Python exception.
+ * 
+ * Note that each invokation of this method will result in a new handle being created to the exception.
+ * 
+ * @return The currently captured Python exception. Returns `None` if no exception is currently captured.
+ */
 REPY_IMPORT(REPY_Handle REPY_GetErrorValue());
+
+/**
+ * @brief Releases the currently captured exception.
+ * 
+ * Call once you're done with your error handling, so that `REPY_IsErrorSet` doesn't return `true` for an error already dealt with.
+ */
 REPY_IMPORT(void REPY_ClearError());
 
 /** @}*/
