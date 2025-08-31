@@ -3154,18 +3154,115 @@ REPY_IMPORT(void REPY_ClearError());
 /** @}*/
 
 /** \defgroup repy_helper_funcs Helper Functions
- * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
+ * \brief Various helper functions, primarily used by API macros.
+ * 
+ * You don't usually need to invoke these directly.
  *  @{
+ */
+
+/**
+ * @brief Constructs the `filename` strings used by most macros that enable inlining Python code into C files.
+ * 
+ * The pointer returned by this function must be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * 
+ * @param category A category prefix for the filename string. Usually the name of the invoking macro.
+ * @param filename A C filename to associate with a piece of Python code. Usually `_FILE_NAME__.
+ * @param function_name The name of C function to associate with a piece of Python code. Usually `__func__`.
+ * @param line_number A line number in a C file to associate with a piece of Python code. Usually `__LINE__`.
+ * @param identifier An identifiying string for a piece of Python code. Usually the bytecode identifier from the C file.
+ * @return The constructed source name as a NULL-terminated C string.
  */
 REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, u32 line_number, char* identifier));
 
+/**
+ * @brief Create a `REPY_IteratorHelper` object on the heap.
+ * 
+ * Used by the `REPY_FOREACH` and `REPY_FN_FOREACH_CACHE` macros.
+ * 
+ * @param py_object a `REPY_Handle` for the Python object to iterate through.
+ * @param py_scope_nullable a `REPY_Handle` to a Python `dict` being used a local scope. Can be `REPY_NO_OBJECT`.
+ * @param var_name the variable name for the `REPY_IteratorHelper` pointer. If `py_scope_nullable` is set to `REPY_NO_OBJECT`,
+ * @return A pointer to the new `REPY_IteratorHelper` on the heap.
+ */
 REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name));
+
+/**
+ * @brief Destructs a `REPY_IteratorHelper` object from the heap.
+ * 
+ * Used by the various cleanup macros for `REPY_FOREACH` and `REPY_FN_FOREACH_CACHE`.
+ * 
+ * `REPY_IteratorHelper_Update` can also destroy a `REPY_IteratorHelper` when it's finished, if `auto_destroy` is set to true.
+ * 
+ * @param helper A pointer to the `REPY_IteratorHelper` to destroy.
+ */
 REPY_IMPORT(void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper));
+
+/**
+ * @brief Makes the `REPY_IteratorHelper` move on to the next object in the iteration.
+ * 
+ * Used by the `REPY_FOREACH` and `REPY_FN_FOREACH_CACHE` macros.
+ * 
+ * @param helper A pointer to the `REPY_IteratorHelper` to update.
+ * @param auto_destroy If true, the `REPY_IteratorHelper` will automatically be destroyed once the loop ends.
+ * @return `true` if the iteration/loop should continue. `false` once it's time to end.
+ */
 REPY_IMPORT(bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool auto_destroy));
 
+/**
+ * @brief Creates a new link in a `REPY_IfStmtChain` if statement chain.
+ * 
+ * Invoked as part of `REPY_IfStmtHelper` operations, but exposed for manual use here.
+ * 
+ * @param expr_string The Python expression to evaluate. Should be a NULL-terminated C string. Will be compiled into Python bytecode immediately.
+ * @param filename A C filename to associate with the Python expression. Usually `_FILE_NAME__.
+ * @param function_name The name of C function to associate with the Python expression. Usually `__func__`.
+ * @param line_number A line number in a C file to associate with the Python expression. Usually `__LINE__`.
+ * @param identifier An identifiying string for the Python expression. Usually the bytecode identifier from the C file.
+ * @return A pointer to the new `REPY_IfStmtChain` object.
+ */
 REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier));
+
+/**
+ * @brief Destructs a `REPY_IfStmtChain` object from the heap, recursively destructs and all additional links down the chain.
+ * 
+ * Exists for completeness sake. Since `REPY_IfStmtChain` pointers should usualy be `static` in their own functions, this doesn't really get much use.
+ * 
+ * @param helper A pointer to the `REPY_IfStmtChain` to recursively destroy.
+ */
 REPY_IMPORT(void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain));
+
+/**
+ * @brief Initializes a pre-allocated `REPY_IfStmtHelper` for controlling managing a Pythonic if/else block.
+ * 
+ * Used by several of the various `REPY_FN_IF_CACHE` macros.
+ * 
+ * @param helper The a pointer to the `REPY_IfStmtHelper` to initialize.
+ * @param root A pointer to the `REPY_IfStmtChain*` (ergo, a douple-pointer) variable for the first link in the if/else chain. For caching purposes, this
+ * will usually be a `static` variable. If value of the variable at `root` us NULL, that will be taken to mean that the chain has not been created yet
+ * (IE, this is the first run of this if/else block).
+ */
 REPY_IMPORT(void REPY_IfStmtHelper_InitInPlace(REPY_IfStmtHelper* helper, REPY_IfStmtChain** root));
+
+/**
+ * @brief Steps through and evaluate the next link in the `REPY_IfStmtChain` chain provided to the `REPY_IfStmtHelper`, or creates a new link if one
+ * doesn't exist.
+ * 
+ * Used by several of the various `REPY_FN_IF_CACHE` macros. Can be used within the actual C `if` statements themselves.
+ * 
+ * @param helper A pointer to the `REPY_IfStmtHelper` controlling this if/else block.
+ * @param global_scope The global scope `dict` to evaluate the expression in.
+ * @param local_scope The local scope `dict` to evaluate the expression in.
+ * @param expr_string The Python expression to evaluate. Should be a NULL-terminated C string. Will be compiled into Python bytecode immediately.
+ * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
+ * @param filename A C filename to associate with the Python expression. Usually `_FILE_NAME__.
+ * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
+ * @param function_name The name of C function to associate with the Python expression. Usually `__func__`.
+ * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
+ * @param line_number A line number in a C file to associate with the Python expression. Usually `__LINE__`.
+ * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
+ * @param identifier An identifiying string for the Python expression. Usually the bytecode identifier from the C file.
+ * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
+ */
 REPY_IMPORT(bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier));
 /** @}*/
 #endif
