@@ -45,6 +45,7 @@ MOD_TOOL_ZIG_TRIPLET ?= aarch64-macos
 NATIVE_SUBDIR := lib
 NATIVE_EXTENSION := dylib
 endif
+BUILD_MODTOOL_WITH_ZIG := ON
 
 # MOD_TOOL_ZIG_TRIPLET ?= $(MOD_TOOL_ZIG_TRIPLET)
 
@@ -182,9 +183,14 @@ $(TESTS_C_OBJS): $(TESTS_BUILD_DIR)/%.o : %.c | $(ASSETS_INCLUDE_DIR) $(TESTS_BU
 
 # Recomp Tools Recipes:
 $(RECOMP_MOD_TOOL): $(N64RECOMP_BUILD_DIR) 
+ifeq ($(BUILD_MODTOOL_WITH_ZIG),ON)
 	cmake -DCMAKE_TOOLCHAIN_FILE="../zig_toolchain.cmake" -DZIG_TARGET="$(MOD_TOOL_ZIG_TRIPLET)" -G Ninja \
 		-DCMAKE_BUILD_TYPE=Release -S $(N64RECOMP_DIR) -B $(N64RECOMP_BUILD_DIR) -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE
 	cmake --build $(N64RECOMP_BUILD_DIR)
+else
+	cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -S $(N64RECOMP_DIR) -B $(N64RECOMP_BUILD_DIR) -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE
+	cmake --build $(N64RECOMP_BUILD_DIR)
+endif
 
 # Extlib Recipes:
 extlib-all: extlib-win extlib-macos extlib-linux

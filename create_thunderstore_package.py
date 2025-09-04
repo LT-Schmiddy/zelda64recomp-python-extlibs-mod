@@ -164,7 +164,7 @@ def create_archive(package_dir: Path, dst_path: Path):
 
 def create_package():
     global extlib_name, info
-    bm.run_build(["EXTLIB_CMAKE_PRESET_GROUP=Release"])
+    bm.run_build(["EXTLIB_CMAKE_PRESET_GROUP=Release", "BUILD_MODTOOL_WITH_ZIG=OFF"])
     
     fully_collected = True
     
