@@ -382,7 +382,7 @@ REPY_ON_INIT void run_misc_tests() {
 REPY_ON_INIT void REPY_Lookup_And_Call_Speed_Test() {
     REPY_FN_SETUP;
     recomp_printf("REPY Tests Loaded\n");
-        REPY_FN_EXEC_CACHE(
+    REPY_FN_EXEC_CACHE(
         time_start1,
         "import time\n"
         "nc_start_time = time.time()\n"

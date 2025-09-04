@@ -1,4 +1,12 @@
-# LTSchmiddy's Majora's Mask: Recompiled Mod Template
+# RecompExternalPython - API for Embedding Python Code into N64Recompiled mods
+
+The RecompExternalPython API is resource for N64Recompiled for modders. Enables use of the Python Standard library within mods, and executing Python code inline inside of mod code in a performant manner.
+
+This enabled many behaviors that would otherwise require an external library to be compiled, and in manner that's MUCH easier than compiling your own external library.
+
+Requires Zelda64Recompiled 1.2.1 or above.
+
+## ORIGINAL - LTSchmiddy's Majora's Mask: Recompiled Mod Template
 
 This my custom version of the Majora's Mask: Recompiled mod template. It offers a number of features that the base template doesn't have, including:
 
@@ -8,11 +16,11 @@ This my custom version of the Majora's Mask: Recompiled mod template. It offers 
 * Automatic creation of Thunderstore packages via a script, or by running `make thunderstore`.
 * Easy integration of non-standard clang versions (such the MIPS-only `clang` package I maintain), in case your system `clang` doesn't support MIPS.
 
-## Writing mods
+### Writing mods
 
 See [this document](https://hackmd.io/fMDiGEJ9TBSjomuZZOgzNg) for an explanation of the modding framework, including how to write function patches and perform interop between different mods.
 
-## Tools
+### Tools
 
 This template has somewhat different requirements from the default mod template. In order to run it, you'll need the following:
 
@@ -37,7 +45,7 @@ You'll also need a `gcc` compatible compiler and linker with MIPS support. `clan
 
 Alternatively, if you don't want to downgrade your clang version (or want a later version than what's provided for your system), I maintain [MIPS-only builds of the latest llvm utilities](https://github.com/LT-Schmiddy/n64recomp-clang/releases/latest). They're what I use. I recommend the `N64RecompEssentials` packages, as they only have the tools that are useful for working with recomp mods.
 
-## Building
+### Building
 
 Run `git submodule update --init --recursive` to make sure you've clones all submodules. Then, run `make` (with an optional job count) to build everything.
 
@@ -51,7 +59,7 @@ On your first run, a file called `user_build_config.json` will be created at the
 you want to use for your mod code. If you want to use my MIPS-only clang builds (or any compiler not on the system path), this is an easy way to set them up.
 You can also set which CMake presets you want to use for building your external library.
 
-## Extlib Compilation, Cross-Compilation, and CMake Presets
+### Extlib Compilation, Cross-Compilation, and CMake Presets
 
 This template is set up to automatically build and cross-compile your extlib code (via CMake and Zig) alongside your mod code when you invoke `make`.
 CMake presets are used to handle any configuration differences between target platforms ([More info about CMake presets can be found
@@ -61,12 +69,12 @@ a platform when compiling on your local system, without changing the default, yo
 
 More information about extlib compiling can be found in the `mod.toml` file.
 
-## Testing
+### Testing
 
 This template includes handling of a dedicated testing environment for you mod in the form of the `./runtime` folder. First, create `./runtime` in your
 mod's root directory and copy in recomp's `assets` directory into it (You can also copy anyu config files, saves, and other mods you want to test against). After a build, your mod's `.nrm` file (and extlib file, if one is being built) will be copied to a folder called `./runtime/mods`, and a file called `./runtime/portable.txt` will be created. Then, if you use `runtime` and as your CWD, everything's ready to go for immediate testing as soon as your build finishes.
 
-## Updating the Majora's Mask Decompilation Submodule
+### Updating the Majora's Mask Decompilation Submodule
 
 Mods can also be made with newer versions of the Majora's Mask decompilation instead of the commit targeted by this repo's submodule.
 To update the commit of the decompilation that you're targeting, follow these steps:

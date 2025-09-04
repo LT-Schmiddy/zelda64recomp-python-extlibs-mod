@@ -26,7 +26,7 @@ jobs:
     - name: Get Snap Packages
       id: get_snap_packages
       run: |-
-        sudo snap install zig --classic -beta
+        sudo snap install zig --classic --beta
         sudo snap install cmake --classic
 
     - name: Run Buildscript
