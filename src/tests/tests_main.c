@@ -369,9 +369,9 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(obj_test_value_2);
 
     // I guess we can consider the stdlib modules to be working. Let's try with NRM modules.
-    // REPY_Handle py_repy_api = REPY_ImportModule("repy_api");
-    // validate("Python module from NRM 'repy_api' imported without error", py_repy_api);
-    // validate("repy_api has member 'version_str'", REPY_HasAttrCStr(py_repy_api, "version_str"));
+    REPY_Handle py_repy_api = REPY_ImportModule("repy_api");
+    validate("Python module from NRM 'repy_api' imported without error", py_repy_api);
+    validate("repy_api has member 'version_str'", REPY_HasAttrCStr(py_repy_api, "version_str"));
 
     // What about incbinned modules:
     // REPY_Handle py_test_module = REPY_ImportModule("test_module");
@@ -379,7 +379,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     // validate("repy_api has member 'test_string'", REPY_HasAttrCStr(py_test_module, "test_string"));
     // From here on, we'll assume that all module functionality works.
 
-    // REPY_Release(py_repy_api);
+    REPY_Release(py_repy_api);
     // REPY_Release(py_test_module);
 
     REPY_Handle iter_test_tuple = REPY_EvalCStr("(0, 1, 2, 3, 4, 5, 6)", 0, 0);
@@ -535,7 +535,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("Error Handling -> error_value1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_value1 is None", py_globals, py_locals))));
     // Handling thrown errors works. We'll test that every potential error thrower works correctly another time.
 
-    /*
+
     // Let's test the repy_api.mem functions.
     REPY_ExecCStr("from repy_api import mem", py_globals, py_locals);
 
@@ -601,7 +601,7 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("repy_api.mem.read_bytearray_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytearray_n(mem_bytes_ptr, 20) == mem_bytearray_value", py_globals, py_locals))));
     REPY_ExecCStr("mem.write_bytearray_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
     validate("repy_api.mem.write_bytearray_n matches target", strncmp((const char*)string_byte_str, "hello recomp", 20) == 0);
-    */
+
     REPY_Release(py_globals);
     REPY_Release(py_locals);
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
