@@ -6,6 +6,7 @@ TESTS_TOML := ./tests.toml
 EXTLIB_PREFIX := lib
 ASSETS_EXTRACTED_DIR ?= assets_extracted
 ASSETS_INCLUDE_DIR ?= assets_extracted/assets
+USER_BUILD_CONFIG_FILE := ./user_build_config.json
 
 ifeq ($(OS),Windows_NT)
 PYTHON_EXEC ?= python
@@ -14,8 +15,12 @@ PYTHON_EXEC ?= python3
 endif
 PYTHON_FUNC_MODULE := make_python_functions
 
+define call_python_func_no_user_config
+	$(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); $(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").$(1)($(2))"
+endef
+
 define get_python_func_no_build_info
-$(shell $(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); $(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").$(1)($(2))")
+$(shell $(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); $(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").load_user_config(\"$(USER_BUILD_CONFIG_FILE)\").$(1)($(2))")
 endef
 
 EXTLIB_NAME := $(call get_python_func_no_build_info,get_extlib_name,)
@@ -64,15 +69,15 @@ EXTLIB_BUILD_NATIVE := $(call native_extlib_build_file,$(NATIVE_CMAKE_CONFIGURE_
 
 # Python Build Info:
 define call_python_func
-	$(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); $(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").set_tests_info(\"$(TESTS_TOML)\", \"$(TESTS_BUILD_DIR)\").set_extlib_info(\"$(EXTLIB_BUILD_WIN)\", \"$(EXTLIB_BUILD_MACOS)\", \"$(EXTLIB_BUILD_LINUX)\", \"$(EXTLIB_BUILD_NATIVE)\").$(1)($(2))"
+	$(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); $(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").load_user_config(\"$(USER_BUILD_CONFIG_FILE)\").set_tests_info(\"$(TESTS_TOML)\", \"$(TESTS_BUILD_DIR)\").set_extlib_info(\"$(EXTLIB_BUILD_WIN)\", \"$(EXTLIB_BUILD_MACOS)\", \"$(EXTLIB_BUILD_LINUX)\", \"$(EXTLIB_BUILD_NATIVE)\").$(1)($(2))"
 endef
 
 define get_python_func
-$(shell $(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); $(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").set_tests_info(\"$(TESTS_TOML)\", \"$(TESTS_BUILD_DIR)\").set_extlib_info(\"$(EXTLIB_BUILD_WIN)\", \"$(EXTLIB_BUILD_MACOS)\", \"$(EXTLIB_BUILD_LINUX)\", \"$(EXTLIB_BUILD_NATIVE)\").$(1)($(2))")
+$(shell $(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); $(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").load_user_config(\"$(USER_BUILD_CONFIG_FILE)\").set_tests_info(\"$(TESTS_TOML)\", \"$(TESTS_BUILD_DIR)\").set_extlib_info(\"$(EXTLIB_BUILD_WIN)\", \"$(EXTLIB_BUILD_MACOS)\", \"$(EXTLIB_BUILD_LINUX)\", \"$(EXTLIB_BUILD_NATIVE)\").$(1)($(2))")
 endef
 
 define get_python_val
-$(shell $(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); print($(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").set_tests_info(\"$(TESTS_TOML)\", \"$(TESTS_BUILD_DIR)\").set_extlib_info(\"$(EXTLIB_BUILD_WIN)\", \"$(EXTLIB_BUILD_MACOS)\", \"$(EXTLIB_BUILD_LINUX)\", \"$(EXTLIB_BUILD_NATIVE)\").$(1))")
+$(shell $(PYTHON_EXEC) -c "import $(PYTHON_FUNC_MODULE); print($(PYTHON_FUNC_MODULE).ModInfo(\"$(MOD_TOML)\", \"$(MOD_BUILD_DIR)\").load_user_config("$(USER_BUILD_CONFIG_FILE)").set_tests_info(\"$(TESTS_TOML)\", \"$(TESTS_BUILD_DIR)\").set_extlib_info(\"$(EXTLIB_BUILD_WIN)\", \"$(EXTLIB_BUILD_MACOS)\", \"$(EXTLIB_BUILD_LINUX)\", \"$(EXTLIB_BUILD_NATIVE)\").$(1))")
 endef
 
 # Get the mod code compilers from a config.
@@ -129,7 +134,7 @@ all: mod_nrm tests_nrm extlib-all runtime
 endif
 
 create_user_build_config:
-	$(call call_python_func,create_user_build_config,)
+	$(call call_python_func,create_user_build_config,\"$(USER_BUILD_CONFIG_FILE)\")
 
 thunderstore:
 	$(PYTHON_EXEC) ./create_thunderstore_package.py
