@@ -16,6 +16,7 @@
 ./funcs.h
 patches.map
 assets_extracted/
+compilation/
 build/
 runtime/
 doxygen/
