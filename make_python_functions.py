@@ -1,18 +1,6 @@
-import pathlib, subprocess, os, shutil, tomllib, zipfile, sys, json, platform, urllib.request, urllib.parse
+import pathlib, subprocess, os, shutil, tomllib, zipfile, sys, json, platform
 from pathlib import Path
 
-default_compiler_artifacts = {
-    "mod": {
-        "Windows": "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/release-20.1.8/Clang_version_20.1.8-MipsOnly-Windows-AMD64-N64RecompEssentials.zip",
-        "Darwin": "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/release-20.1.8/Clang_version_20.1.8-MipsOnly-Darwin-arm64-N64RecompEssentials.tar.xz",
-        "Linux": "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/release-20.1.8/Clang_version_20.1.8-MipsOnly-Linux-x86_64-N64RecompEssentials.tar.xz" 
-    },
-    "extlib": {
-        "Windows": "https://ziglang.org/download/0.14.1/zig-x86_64-windows-0.14.1.zip",
-        "Darwin": "https://ziglang.org/download/0.14.1/zig-aarch64-macos-0.14.1.tar.xz",
-        "Linux": "https://ziglang.org/download/0.14.1/zig-x86_64-linux-0.14.1.tar.xz"
-    }
-}
 
 class ModInfo:
     project_root: Path
@@ -24,13 +12,6 @@ class ModInfo:
     
     tests_info_set: bool = False
     extlib_info_set: bool = False
-    
-    enable_tool_downloads: bool
-    
-    compilation_dir_root: Path
-    compilation_artifacts_path: Path
-    compilation_mod_extract: Path
-    compilation_extlib_extract: Path
     
     def __init__(self, mod_toml_str: str, mod_build_dir: str):
         self.project_root = Path(__file__).parent
@@ -47,25 +28,15 @@ class ModInfo:
         
         self.assets_archive_path =self.project_root.joinpath("assets_archive.zip")
         
-        self.compilation_dir_root = self.project_root.joinpath("compilation")
-        self.compilation_artifacts_path = self.compilation_dir_root.joinpath("artifacts")
-        self.mod_compilation_artifact_path = self.compilation_dir_root.joinpath("artifacts")
-        self.compilation_mod_extract = self.compilation_dir_root.joinpath("mod")
-        self.compilation_extlib_extract = self.compilation_dir_root.joinpath("extlib")
-        
         # Handle recomp compilers:
-        self.user_config_path = None
+        self.user_config_path = self.project_root.joinpath("./user_build_config.json")
         self.user_config = {}
-        # if not self.user_config_path.exists():
-        #     self.create_user_build_config()
+        if not self.user_config_path.exists():
+            self.create_user_build_config()
         
-        # else:
-        #     self.user_config = json.loads(self.user_config_path.read_text())
+        else:
+            self.user_config = json.loads(self.user_config_path.read_text())
 
-        # if self.enable_tool_downloads:
-        #     if self.user_config["mod_compiling"]["compiler_download"]["download_compiler"] and not self.compilation_mod_extract.exists():
-        #         self.download_and_setup_mips_compiler()
-        
         # Tests Info
         self.tests_toml_file: Path = None
         self.tests_data: dict = None
@@ -139,40 +110,18 @@ class ModInfo:
         self.runtime_python_so_file: Path = self.runtime_mods_dir.joinpath(self.build_python_so_file.name)
         self.runtime_python_native_file: Path = self.runtime_mods_dir.joinpath(self.build_python_native_file.name)
         
-        # if self.enable_tool_downloads:
-        #     if self.user_config["extlib_compiling"]["compiler_download"]["download_compiler"] and not self.compilation_mod_extract.exists():
-        #         self.download_and_setup_mips_compiler()
-        
         return self
     
-    def load_user_config(self, user_config_path: str):
-        # self.user_config_path = self.project_root.joinpath("./user_build_config.json")
-        self.user_config_path = self.project_root.joinpath(user_config_path)
-        self.user_config = json.loads(self.user_config_path.read_text())
-        
-        return self
-    
-    def create_user_build_config(self, user_config_path: str):
-        self.user_config_path = self.project_root.joinpath(user_config_path)
+    def create_user_build_config(self):
         self.user_config = {
             "mod_compiling": {
-                "compiler_download": {
-                    "download_compiler": True,
-                    "download_compiler_artifact": self.get_mips_compiler_artifact_url(),
-                },
-                "compiler": "clang" if self.get_mips_compiler_artifact_url() is None else str(self.project_root.joinpath("./compilation/mod/bin_essentials/clang")).replace("\\", "/"),
-                "linker": "ld.lld" if self.get_mips_compiler_artifact_url() is None else str(self.project_root.joinpath("./compilation/mod/bin_essentials/ld.lld")).replace("\\", "/")
+                "compiler": "clang",
+                "linker": "ld.lld"
             },
         }
         
         if 'extlib_compiling' in self.mod_data:
             self.user_config["extlib_compiling"] = {
-                "compiler_download": {
-                    "download_compiler": True,
-                    "download_compiler_artifact": self.get_extlib_compiler_artifact_url(),
-                },
-                "compiler": "clang" if self.get_extlib_compiler_artifact_url() is None \
-                    else str(self.project_root.joinpath(f"./compilation/extlib/{self.get_filename_from_url(self.get_extlib_compiler_artifact_url()).stem}/zig")).replace("\\", "/"),
                 "preset_groups": {
                     "Debug": {
                         "windows": {
@@ -222,68 +171,7 @@ class ModInfo:
             return f"native-macos-aarch64-{build_type}"
         else:
             return f"native-linux-x64-{build_type}"
-    
-    def get_mips_compiler_artifact_url(self):
-        if platform.system() in default_compiler_artifacts["mod"]:
-            return default_compiler_artifacts["mod"][platform.system()]
-        else:
-            return None
-
-    def download_and_setup_mips_compiler(self):
-        artifact_url = self.user_config["mod_compiling"]["compiler_download"]["download_compiler_artifact"]
-        filename = self.get_filename_from_url(artifact_url)
-        dst_path = self.compilation_artifacts_path.joinpath(filename)
         
-        if not self.compilation_artifacts_path.exists():
-            os.makedirs(self.compilation_artifacts_path)
-            
-        try:
-            urllib.request.urlretrieve(
-                artifact_url,
-                dst_path
-            )
-            print(f"File downloaded successfully to {dst_path}")
-        except Exception as e:
-            print(f"Error downloading file: {e}")
-            return
-        
-        shutil.unpack_archive(dst_path, self.compilation_mod_extract)
-        
-    def get_extlib_compiler_artifact_url(self):
-        if platform.system() in default_compiler_artifacts["extlib"]:
-            return default_compiler_artifacts["extlib"][platform.system()]
-        else:
-            return None
-    
-    def download_and_setup_extlib_compiler(self):
-        artifact_url = self.user_config["extlib_compiling"]["compiler_download"]["download_compiler_artifact"]
-        filename = self.get_filename_from_url(artifact_url)
-        dst_path = self.compilation_artifacts_path.joinpath(filename)
-        
-        if not self.compilation_artifacts_path.exists():
-            os.makedirs(self.compilation_artifacts_path)
-            
-        try:
-            urllib.request.urlretrieve(
-                artifact_url,
-                dst_path
-            )
-            print(f"File downloaded successfully to {dst_path}")
-        except Exception as e:
-            print(f"Error downloading file: {e}")
-            return
-        
-        shutil.unpack_archive(dst_path, self.compilation_extlib_extract)
-    
-    def download_compilers(self):
-        self.download_and_setup_mips_compiler()
-        if 'extlib_compiling' in self.mod_data:
-            self.download_and_setup_extlib_compiler()
-    
-    def get_filename_from_url(self, url: Path) -> Path:
-        parsed_url = urllib.parse.urlparse(url)
-        return Path(os.path.basename(parsed_url.path))
-    
     def get_mod_file(self):
         name = f"{self.mod_data['inputs']['mod_filename']}.nrm"
         return self.print_and_return(self.mod_build_dir.joinpath(name))
@@ -303,10 +191,7 @@ class ModInfo:
         
     def get_mod_linker(self):
         return self.print_and_return(self.user_config["mod_compiling"]["linker"])
-    
-    def get_zig_cmd(self):
-        return self.print_and_return(self.user_config["extlib_compiling"]["compiler"])
-    
+        
     def get_extlib_name(self):
         if 'extlib_compiling' in self.mod_data:
             return self.print_and_return(self.mod_data['extlib_compiling']['library_name'])
@@ -400,6 +285,7 @@ class ModInfo:
         if self.extlib_info_set:
             self.copy_if_exists(self.build_native_file, self.runtime_native_file)
             self.copy_if_exists(self.build_native_pdb_file, self.runtime_native_pdb_file)
+            
             self.copy_if_exists(self.build_python_native_file, self.runtime_python_native_file)
 
     def copy_if_exists(self, src: Path, dest: Path):

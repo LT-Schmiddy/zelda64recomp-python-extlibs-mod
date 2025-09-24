@@ -17,7 +17,6 @@
 patches.map
 assets_extracted/
 build/
-compilation/
 runtime/
 doxygen/
 .vscode/settings.json
