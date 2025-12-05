@@ -9,7 +9,7 @@ from modbuildcore.utils import ctx_run_subprocess
 def build(c: Context):
     print("Building!")
     ctx_run_subprocess(c, True,
-        ["busybox.exe", "echso", "hi"]
+        ["busybox.exe", "echo", "hi"]
     )
-    c.run("busybox ecsho hi")
+    c.run("busybox echo hi")
     print("Done!")

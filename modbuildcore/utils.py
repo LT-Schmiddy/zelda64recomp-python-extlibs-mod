@@ -14,14 +14,22 @@ def ctx_run_subprocess(c: Context, required: bool, *args, **kwargs) -> subproces
     echo: bool = c.config['run']['echo']
     echo_format: str = c.config['run']['echo_format']
     warn: bool = c.config['run']['warn']
+    dry: bool = c.config['run']['dry']
+    
+    
     
     sp_str = str(args[0])
+    
     if echo:
         print(echo_format.replace("{command}", f"Subprocess: {str(sp_str)}"))
     
+    if dry:
+        return None
+    
     if 'cwd' not in kwargs:
         kwargs['cwd'] = Path(cwd)
-        
+
+        return None
     result: subprocess.CompletedProcess = subprocess.run(*args, **kwargs)
     
     if result.returncode != 0:
