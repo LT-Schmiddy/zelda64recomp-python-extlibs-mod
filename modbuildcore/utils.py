@@ -1,0 +1,34 @@
+
+import sys, os, subprocess, pathlib
+from pathlib import Path
+
+from invoke import Context
+from invoke.config import Config
+
+# For a couple different reasons (primarily related to cross-platform compatability),
+# it will usually be better for us to use subprocess instead of shell commands.
+# This is a convienient helper function to make subprocess work better with the
+# invoke content:
+def ctx_run_subprocess(c: Context, required: bool, *args, **kwargs) -> subprocess.CompletedProcess:
+    cwd: str = c.cwd
+    echo: bool = c.config['run']['echo']
+    echo_format: str = c.config['run']['echo_format']
+    warn: bool = c.config['run']['warn']
+    
+    sp_str = str(args[0])
+    if echo:
+        print(echo_format.replace("{command}", f"Subprocess: {str(sp_str)}"))
+    
+    if 'cwd' not in kwargs:
+        kwargs['cwd'] = Path(cwd)
+        
+    result: subprocess.CompletedProcess = subprocess.run(*args, **kwargs)
+    
+    if result.returncode != 0:
+        if warn:
+            print(f"WARNING! Command '{sp_str}' returned non-zero exit status {result.returncode}.")
+        else:
+            print(f"FATAL! Command '{sp_str}' returned non-zero exit status {result.returncode}. Aborting...")
+            sys.exit(1)
+    
+    return result
