@@ -18,10 +18,14 @@ patches.map
 assets_extracted/
 compilation/
 build/
+invoke/
 runtime/
 doxygen/
+venv*/
+__pycache__/**
 .vscode/settings.json
 .vscode/launch.json
 .vscode/tasks.json
 user_build_config.json
 CMakeUserPresets.json
+.doit.db
