@@ -20,6 +20,7 @@ compilation/
 build/
 runtime/
 doxygen/
+OLD/
 venv*/
 __pycache__/**
 .vscode/settings.json
