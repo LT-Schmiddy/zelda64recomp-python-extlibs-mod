@@ -13,11 +13,7 @@ class Z64rModBuildConfig(Config):
     @staticmethod
     def global_defaults():
         their_defaults = Config.global_defaults()
-        my_defaults = {
-            'run': {
-                'echo': True,
-            },
-        }
+        my_defaults = {}
         return merge_dicts(their_defaults, my_defaults)
 
 import tasks
