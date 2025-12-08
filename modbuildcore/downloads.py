@@ -3,7 +3,7 @@ from pathlib import Path
 
 _proot: Path = Path(__file__).parent.parent
 
-default_artifact_download_dir = _proot.joinpath("downloads/artifacts")
+default_artifact_download_dir = _proot.joinpath("downloads")
 
 class DownloadArchiveEntry:
     url: str
@@ -17,33 +17,37 @@ class DownloadArchiveEntry:
 class DownloadArchiveHandler:
     entry: DownloadArchiveEntry
     artifact_dir: Path
+    cache_path: Path
     
     def __init__(self, entry: DownloadArchiveEntry, artifact_dir: Path=default_artifact_download_dir):
         self.entry = entry
         self.artifact_dir = artifact_dir
+        
+        filename = self.get_filename_from_url(self.entry.url)
+        self.cache_path = artifact_dir.joinpath(filename)
     
     def get_filename_from_url(self, url: Path) -> Path:
         parsed_url = urllib.parse.urlparse(url)
         return Path(os.path.basename(parsed_url.path))
     
-    def run(self):
-        print(f"Downloading '{self.entry.url}'...")
-        
-        filename = self.get_filename_from_url(self.entry.url)
-        dst_path = self.artifact_dir.joinpath(filename)
-        
+    
+    
+    def should_download(self) -> bool:
+        return not self.cache_path.exists()
+    
+    def download(self) -> Exception:
         if not self.artifact_dir.exists():
             os.makedirs(self.artifact_dir)
             
-        try:
-            urllib.request.urlretrieve(
-                self.entry.url,
-                dst_path
-            )
-        except Exception as e:
-            print(f"Error downloading file: {e}")
-            return
+        urllib.request.urlretrieve(
+            self.entry.url,
+            self.cache_path
+        )
+
+
+    def should_extract(self) -> bool:
+        return not self.entry.extract_dir
+    
+    def extract(self):
+        shutil.unpack_archive(self.cache_path, self.entry.extract_dir)
         
-        print(f"Extracting to '{self.entry.extract_dir}'...")
-        
-        shutil.unpack_archive(dst_path, self.entry.extract_dir)
