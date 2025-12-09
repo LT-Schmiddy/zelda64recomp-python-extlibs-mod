@@ -37,3 +37,11 @@ def invoke_subprocess_run(c: Context, required: bool, *args, **kwargs) -> subpro
             sys.exit(1)
     
     return result
+
+def path_check_coerse(p: Path | str, arg_name: str = "Argument") -> Path:
+    if isinstance(p, Path):
+        return p
+    elif isinstance(p, str):
+        return Path(p)
+    else:
+        raise RuntimeError(f"{arg_name} should either be pathlib.Path or str")

@@ -5,7 +5,7 @@ _proot: Path = Path(__file__).parent.parent
 
 default_artifact_download_dir = _proot.joinpath("downloads")
 
-class DownloadArchiveEntry:
+class DownloadArchiveConfig:
     url: str
     extract_dir: Path
     
@@ -15,11 +15,11 @@ class DownloadArchiveEntry:
         
         
 class DownloadArchiveHandler:
-    entry: DownloadArchiveEntry
+    entry: DownloadArchiveConfig
     artifact_dir: Path
     cache_path: Path
     
-    def __init__(self, entry: DownloadArchiveEntry, artifact_dir: Path=default_artifact_download_dir):
+    def __init__(self, entry: DownloadArchiveConfig, artifact_dir: Path=default_artifact_download_dir):
         self.entry = entry
         self.artifact_dir = artifact_dir
         
@@ -43,7 +43,6 @@ class DownloadArchiveHandler:
             self.entry.url,
             self.cache_path
         )
-
 
     def should_extract(self) -> bool:
         return not self.entry.extract_dir

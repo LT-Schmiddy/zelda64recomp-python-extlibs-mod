@@ -30,7 +30,6 @@ RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_obj
         helper->var_name = PythonNative_Object_CreateStr(var_name);
     }
 
-    
     return helper;
 }
 
@@ -130,3 +129,6 @@ RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle
 };
 
 
+int hello() {
+    return 1;
+}

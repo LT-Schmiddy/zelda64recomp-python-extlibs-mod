@@ -3,7 +3,7 @@ from pathlib import Path
 import modbuildcore as mbc
 
 root_dir = Path(__file__).parent
-compilers_dir = root_dir.joinpath("compilers")
+compilers_dir = root_dir.joinpath("binaries")
 
 
 # The `mod_project` variable is loaded by tasks.py. `project.py` must have a member named `mod_project`.
@@ -38,5 +38,36 @@ else:
     mod_project.set_mips_compiler(compilers_dir.joinpath("clangmips_linux/nrs_bin/clang"))
     mod_project.set_mips_linker(compilers_dir.joinpath("clangmips_linux/nrs_bin/ld.lld"))
     mod_project.set_mod_tool(compilers_dir.joinpath("clangmips_win/nrs_bin/RecompModTool"))
-    
-mod_project.add_mod_toml(root_dir.joinpath("mod.toml"), root_dir.joinpath("mod_elf.mk"))
+
+
+mod_project.set_make(shutil.which("make"))
+
+print(f"{str(mod_project.mips_compiler_path)=}")
+
+# Main API NRM
+mod_project.add_mod_toml(
+    root_dir.joinpath("mod.toml"),
+    root_dir.joinpath("mod_elf.mk"),
+    {
+        "_ELF_PATH": mbc.tomls.ModTomlConfig.MakeEnvSpecialVals.TOML_ELF_PATH,
+        "_BUILD_DIR": mbc.tomls.ModTomlConfig.MakeEnvSpecialVals.TOML_ELF_PARENT_PATH,
+        "_MIPS_CC": mod_project.mips_compiler_path,
+        "_MIPS_LD": mod_project.mips_linker_path,
+        "_SRC_DIR": "src/mod",
+        "_PY_BUILD_FLAGS": "-DRECOMP_PY_BUILD_MODE"
+    }
+)
+
+# Tests NRM
+mod_project.add_mod_toml(
+    root_dir.joinpath("tests.toml"),
+    root_dir.joinpath("mod_elf.mk"),
+    {
+        "_ELF_PATH": mbc.tomls.ModTomlConfig.MakeEnvSpecialVals.TOML_ELF_PATH,
+        "_BUILD_DIR": mbc.tomls.ModTomlConfig.MakeEnvSpecialVals.TOML_ELF_PARENT_PATH,
+        "_MIPS_CC": mod_project.mips_compiler_path,
+        "_MIPS_LD": mod_project.mips_linker_path,
+        "_SRC_DIR": "src/tests",
+        "_PY_BUILD_FLAGS": ""
+    }
+)

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import modbuildcore
 from modbuildcore.downloads import DownloadArchiveHandler
+from modbuildcore.tomls import ModTomlHandler
 from modbuildcore.utils import invoke_subprocess_run
 from invoke import task, Context
 
@@ -32,7 +33,9 @@ def download_archives(c: Context, force: bool = False, reextract: bool = False):
     pre=[download_archives]
 )
 def build_nrm(c: Context):
-    print("Building NRMs")    
+    for mod in [ModTomlHandler(i) for i in mod_project.mod_tomls]:
+        mod.run_make(c, mod_project.make_path)
+        mod.run_mod_tool(c, mod_project.mod_tool_path)
 
 @task(
     default=True,

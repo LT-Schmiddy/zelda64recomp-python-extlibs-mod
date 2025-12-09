@@ -1,39 +1,50 @@
-# Arguments from console:
-BUILD_DIR := build/mod
-CC      := clang
-LD      := ld.lld
-TARGET  := $(BUILD_DIR)/mod.elf
+# Arguments from environment (passed in via Python):
+_BUILD_DIR ?= build/mod
+_MIPS_CC      ?= C:\Users\Alex\Code\RECOMP\zelda64recomp-python-extlibs-mod\compilers\clangmips_win\nrs_bin\clang.exe
+_MIPS_LD      ?= C:\Users\Alex\Code\RECOMP\zelda64recomp-python-extlibs-mod\compilers\clangmips_win\nrs_bin\ld.lld.exe
+_ELF_PATH  ?= $(_BUILD_DIR)/mod.elf
+_SRC_DIR ?= src/mod
+_PY_BUILD_FLAGS ?= 
 
 include ./common.mk
 
-C_SRCS := $(call rwildcard,src/mod,*.c)
-C_OBJS := $(addprefix $(BUILD_DIR)/, $(C_SRCS:.c=.o))
-C_DEPS := $(addprefix $(BUILD_DIR)/, $(C_SRCS:.c=.d))
+$(info    _BUILD_DIR = $(_BUILD_DIR))
+$(info    _MIPS_CC = $(_MIPS_CC))
+$(info    _MIPS_LD = $(_MIPS_LD))
+$(info    _ELF_PATH = $(_ELF_PATH))
+$(info    _SRC_DIR = $(_SRC_DIR))
+$(info    _PY_BUILD_FLAGS = $(_PY_BUILD_FLAGS))
+
+C_SRCS := $(call rwildcard,$(_SRC_DIR),*.c)
+C_OBJS := $(addprefix $(_BUILD_DIR)/, $(C_SRCS:.c=.o))
+C_DEPS := $(addprefix $(_BUILD_DIR)/, $(C_SRCS:.c=.d))
 
 ALL_OBJS := $(C_OBJS)
 ALL_DEPS := $(C_DEPS)
 BUILD_DIRS := $(call getdirs,$(ALL_OBJS))
 
-all: $(TARGET)
+$(info    BUILD_DIRS = $(BUILD_DIRS))
 
-$(TARGET): $(ALL_OBJS) $(LDSCRIPT) | $(BUILD_DIR)
-	$(LD) $(ALL_OBJS) $(LDFLAGS) -o $@
+all: $(_ELF_PATH)
 
-$(BUILD_DIR) $(BUILD_DIRS):
+$(_ELF_PATH): $(ALL_OBJS) $(LDSCRIPT) | $(_BUILD_DIR)
+	$(_MIPS_LD) $(ALL_OBJS) $(LDFLAGS) -Map $(_BUILD_DIR)/mod.map -o $@
+
+$(BUILD_DIRS) $(_BUILD_DIR):
 ifeq ($(OS),Windows_NT)
 	if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
 else
 	mkdir -p $@
 endif
 
-$(C_OBJS): $(BUILD_DIR)/%.o : %.c | $(BUILD_DIRS)
-	$(CC) $(CFLAGS) $(CPPFLAGS) $< -DRECOMP_PY_BUILD_MODE -MMD -MF $(@:.o=.d) -c -o $@
+$(C_OBJS): $(_BUILD_DIR)/%.o : %.c | $(BUILD_DIRS)
+	$(_MIPS_CC) $(CFLAGS) $(CPPFLAGS) $< $(_PY_BUILD_FLAGS) -MMD -MF $(@:.o=.d) -c -o $@
 
 clean:
 ifeq ($(OS),Windows_NT)
-	if exist $(BUILD_DIR) rmdir /S /Q $(BUILD_DIR)
+	if exist $(_BUILD_DIR) rmdir /S /Q $(_BUILD_DIR)
 else
-	rm -rf $(BUILD_DIR)
+	rm -rf $(_BUILD_DIR)
 endif
 
 -include $(ALL_DEPS)
