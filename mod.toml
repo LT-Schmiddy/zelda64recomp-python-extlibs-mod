@@ -169,10 +169,6 @@ native_libraries = [
 # Input elf file to generate a mod from.
 elf_path = "build/mod/mod.elf"
 
-build_folder = "./build/mod"
-# Makefile to generate the elf from.
-makefile_path = "./mod_elf.mk"
-
 # Output mod filename.
 mod_filename = "MM_RecompExternalPython_API"
 

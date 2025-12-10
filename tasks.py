@@ -38,11 +38,13 @@ def extract(c: Context, force: bool = False):
 @task
 def run_makefiles(c: Context):
     for makefile in [MakefileHandler(i) for i in p.mod_project.makefiles]:
+        print(f"-> Running makefile '{makefile.config.makefile_path}'")
         makefile.run_make(c, p.mod_project.make_path)
 
 @task
 def build_nrms(c: Context):
     for mod in [ModTomlHandler(i) for i in p.mod_project.mod_tomls]:
+        print(f"-> Build '{mod.config.data['inputs']['mod_filename']}'.nrm from '{mod.config.toml_path}'")
         mod.run_mod_tool(c, p.mod_project.mod_tool_path)
 
 @task(
