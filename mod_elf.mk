@@ -1,9 +1,9 @@
 # Arguments from environment (passed in via Python):
-_BUILD_DIR ?= build/mod
-_MIPS_CC      ?= clang
-_MIPS_LD      ?= ld.lld
-_ELF_PATH  ?= $(_BUILD_DIR)/mod.elf
-_SRC_DIR ?= src/mod
+_BUILD_DIR ?= 
+_MIPS_CC ?= 
+_MIPS_LD ?= 
+_ELF_PATH ?= 
+_SRC_DIR ?= 
 _PY_BUILD_FLAGS ?= 
 
 include ./common.mk

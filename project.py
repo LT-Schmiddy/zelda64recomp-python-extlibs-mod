@@ -7,6 +7,9 @@ build_dir = root_dir.joinpath("build")
 binaries_dir = root_dir.joinpath("binaries")
 # downloads_dir = root_dir.joinpath("downloads")
 
+make_mips_compiler_path = None
+make_mips_linker_path = None
+
 # The `mod_project` variable is loaded by tasks.py. `project.py` must have a member named `mod_project`.
 mod_project: mbc.ModProjectConfig = mbc.ModProjectConfig(root_dir)
 # mod_project.set_archive_downloads_dir(downloads_dir)
@@ -18,8 +21,8 @@ if platform.system() == "Windows":
         binaries_dir.joinpath("clangmips_win")
     )
     
-    mod_project.set_mips_compiler(binaries_dir.joinpath("clangmips_win/nrs_bin/clang.exe"))
-    mod_project.set_mips_linker(binaries_dir.joinpath("clangmips_win/nrs_bin/ld.lld.exe"))
+    make_mips_compiler_path = binaries_dir.joinpath("clangmips_win/nrs_bin/clang.exe")
+    make_mips_linker_path = binaries_dir.joinpath("clangmips_win/nrs_bin/ld.lld.exe")
     mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_win/nrs_bin/RecompModTool.exe"))
     
 elif platform.system() == "Darwin":
@@ -28,8 +31,8 @@ elif platform.system() == "Darwin":
         binaries_dir.joinpath("clangmips_macos")
     )
     
-    mod_project.set_mips_compiler(binaries_dir.joinpath("clangmips_macos/nrs_bin/clang"))
-    mod_project.set_mips_linker(binaries_dir.joinpath("clangmips_macos/nrs_bin/ld.lld"))
+    make_mips_compiler_path = binaries_dir.joinpath("clangmips_macos/nrs_bin/clang")
+    make_mips_linker_path = binaries_dir.joinpath("clangmips_macos/nrs_bin/ld.lld")
     mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_win/nrs_bin/RecompModTool"))
     
 else:
@@ -38,36 +41,34 @@ else:
         binaries_dir.joinpath("clangmips_linux")
     )
     
-    mod_project.set_mips_compiler(binaries_dir.joinpath("clangmips_linux/nrs_bin/clang"))
-    mod_project.set_mips_linker(binaries_dir.joinpath("clangmips_linux/nrs_bin/ld.lld"))
+    make_mips_compiler_path = binaries_dir.joinpath("clangmips_linux/nrs_bin/clang")
+    make_mips_linker_path = binaries_dir.joinpath("clangmips_linux/nrs_bin/ld.lld")
     mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_win/nrs_bin/RecompModTool"))
 
 
-mod_project.set_make(shutil.which("make"))
-
 # Main API NRM
-mod_project.add_mod_toml(
+mod_project.add_mod_toml_and_makefile(
     root_dir.joinpath("mod.toml"),
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": mbc.TomlMakeSpecialVals.TOML_ELF_PATH,
         "_BUILD_DIR": mbc.TomlMakeSpecialVals.TOML_BUILD_DIR,
-        "_MIPS_CC": mod_project.mips_compiler_path,
-        "_MIPS_LD": mod_project.mips_linker_path,
+        "_MIPS_CC": make_mips_compiler_path,
+        "_MIPS_LD": make_mips_linker_path,
         "_SRC_DIR": "src/mod",
         "_PY_BUILD_FLAGS": "-DRECOMP_PY_BUILD_MODE"
     }
 )
 
 # Tests NRM
-mod_project.add_mod_toml(
+mod_project.add_mod_toml_and_makefile(
     root_dir.joinpath("tests.toml"),
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": mbc.TomlMakeSpecialVals.TOML_ELF_PATH,
         "_BUILD_DIR": mbc.TomlMakeSpecialVals.TOML_BUILD_DIR,
-        "_MIPS_CC": mod_project.mips_compiler_path,
-        "_MIPS_LD": mod_project.mips_linker_path,
+        "_MIPS_CC": make_mips_compiler_path,
+        "_MIPS_LD": make_mips_linker_path,
         "_SRC_DIR": "src/tests",
         "_PY_BUILD_FLAGS": ""
     }

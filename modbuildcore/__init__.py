@@ -31,8 +31,8 @@ class ModProjectConfig:
         self.root_dir = self.path_check_coerse(root_dir, "root_dir")
         
         self.archive_downloads_dir = self.root_dir.joinpath("downloads")
-        self.mips_compiler_path = shutil.which("clang")
-        self.mips_linker_path = shutil.which("ld.lld")
+        
+        # Finding Default Tools:
         self.mod_tool_path = shutil.which("RecompModTool")
         self.make_path = shutil.which("make")
         self.cmake = shutil.which("cmake")
@@ -46,12 +46,6 @@ class ModProjectConfig:
 
     def set_archive_downloads_dir(self, archive_artifacts_dir: Path):
         self.archive_downloads_dir = self.path_check_coerse(archive_artifacts_dir, "archive_artifacts_dir")
-    
-    def set_mips_compiler(self, mips_compiler_path: Path):
-        self.mips_compiler_path = self.path_check_coerse(mips_compiler_path, "mips_compiler_path")
-
-    def set_mips_linker(self, mips_linker_path: Path):
-        self.mips_linker_path = self.path_check_coerse(mips_linker_path, "mips_linker_path")
         
     def set_mod_tool(self, mod_tool_path: Path):
         self.mod_tool_path = self.path_check_coerse(mod_tool_path, "mod_tool_path")
@@ -63,7 +57,13 @@ class ModProjectConfig:
         extract_dir = self.path_check_coerse(extract_dir, "extract_dir")
         self.archive_downloads.append(downloads.DownloadArchiveConfig(url, extract_dir))
         
-    def add_mod_toml(self, toml_path: Path, makefile_path: Path, makefile_extended_env: dict[str, str | TomlMakeSpecialVals], toml_build_dir: Path = None):
+    def add_mod_toml(self, toml_path: Path, toml_build_dir: Path = None):
+        self.mod_tomls.append(tomls.ModTomlConfig(toml_path, toml_build_dir))
+    
+    def add_makefile(self, makefile_path: Path, makefile_extended_env: dict[str, str]):
+         self.makefiles.append(makefiles.MakefileConfig(makefile_path, makefile_extended_env.copy()))
+    
+    def add_mod_toml_and_makefile(self, toml_path: Path, makefile_path: Path, makefile_extended_env: dict[str, str | TomlMakeSpecialVals], toml_build_dir: Path = None):
         toml_path = self.path_check_coerse(toml_path, "toml_path")
         makefile_path = self.path_check_coerse(makefile_path, "makefile_path")
         
