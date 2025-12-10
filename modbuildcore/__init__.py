@@ -56,18 +56,23 @@ class ModProjectConfig:
     def set_make_path(self, make_path: Path):
         self.make_path = self.path_check_coerse(make_path, "make_path")
 
-    def add_download(self, url: str, download_path: Path, append_url_filename: bool = True):
+    def add_download(self, url: str, download_path: Path, append_url_filename: bool = True) -> downloads.DownloadConfig:
         extract_dir = self.path_check_coerse(extract_dir, "extract_dir")
         extract_dir = self.path_check_coerse(download_path, "download_path")
-        self.downloads.append(downloads.DownloadConfig(url, download_path, append_url_filename))
+        
+        retVal = downloads.DownloadConfig(url, download_path, append_url_filename)
+        self.downloads.append(retVal)
+        return retVal
 
-    def add_archive_extraction(self, archive_path: Path, extract_dir: Path):
+    def add_archive_extraction(self, archive_path: Path, extract_dir: Path) -> archives.ArchiveExtractConfig:
         archive_path = self.path_check_coerse(archive_path, "archive_path")
         extract_dir = self.path_check_coerse(extract_dir, "extract_dir")
         
-        self.archive_extractions.append(archives.ArchiveExtractConfig(archive_path, extract_dir))
+        retVal = archives.ArchiveExtractConfig(archive_path, extract_dir)
+        self.archive_extractions.append()
+        return retVal
     
-    def add_archive_download_and_extract(self, url: str, extract_dir: Path):
+    def add_archive_download_and_extract(self, url: str, extract_dir: Path) -> tuple[downloads.DownloadConfig, archives.ArchiveExtractConfig] :
         extract_dir = self.path_check_coerse(extract_dir, "extract_dir")
         new_download = downloads.DownloadConfig(url, self.archive_downloads_dir, True)
         new_extraction = archives.ArchiveExtractConfig(new_download.download_path, extract_dir)
@@ -75,13 +80,20 @@ class ModProjectConfig:
         self.downloads.append(new_download)
         self.archive_extractions.append(new_extraction)
         
-    def add_mod_toml(self, toml_path: Path, toml_build_dir: Path = None):
-        self.mod_tomls.append(tomls.ModTomlConfig(toml_path, toml_build_dir))
+        return new_download, new_extraction
+        
+    def add_mod_toml(self, toml_path: Path, toml_build_dir: Path = None) -> tomls.ModTomlConfig:
+        retVal = tomls.ModTomlConfig(toml_path, toml_build_dir)
+        self.mod_tomls.append(retVal)
+        return retVal
     
-    def add_makefile(self, makefile_path: Path, makefile_extended_env: dict[str, str]):
-         self.makefiles.append(makefiles.MakefileConfig(makefile_path, makefile_extended_env.copy()))
+    def add_makefile(self, makefile_path: Path, makefile_extended_env: dict[str, str]) -> makefiles.MakefileConfig:
+        retVal = makefiles.MakefileConfig(makefile_path, makefile_extended_env.copy())
+        self.makefiles.append(retVal)
+        return retVal
     
-    def add_mod_toml_and_makefile(self, toml_path: Path, makefile_path: Path, makefile_extended_env: dict[str, str | TomlMakeSpecialVals], toml_build_dir: Path = None):
+    def add_mod_toml_and_makefile(self, toml_path: Path, makefile_path: Path, makefile_extended_env: dict[str, str | TomlMakeSpecialVals],
+                                    toml_build_dir: Path = None) -> tuple[tomls.ModTomlConfig, makefiles.MakefileConfig]:
         toml_path = self.path_check_coerse(toml_path, "toml_path")
         makefile_path = self.path_check_coerse(makefile_path, "makefile_path")
         
@@ -90,6 +102,8 @@ class ModProjectConfig:
         
         self.makefiles.append(new_makefile)
         self.mod_tomls.append(new_toml)
+        
+        return new_toml, new_makefile
     
     def mark_path_for_clean(self, path: Path):
         self.extended_clean_paths.append(self.path_check_coerse(path, "path"))
