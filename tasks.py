@@ -14,7 +14,7 @@ import project as p
 
 @task
 def download_archives(c: Context, force: bool = False, reextract: bool = False):
-    for archive in [DownloadArchiveHandler(i, p.mod_project.archive_artifacts_dir) for i in p.mod_project.archive_downloads]:
+    for archive in [DownloadArchiveHandler(i, p.mod_project.archive_downloads_dir) for i in p.mod_project.archive_downloads]:
         if force or archive.should_download():
             print(f"Downloading '{archive.entry.url}'...")
             archive.download()
@@ -37,29 +37,37 @@ def run_makefiles(c: Context):
 @task
 def build_nrms(c: Context):
     for mod in [ModTomlHandler(i) for i in p.mod_project.mod_tomls]:
-        mod.run_mod_tool(c, p.mod_tool_path)
+        mod.run_mod_tool(c, p.mod_project.mod_tool_path)
 
 @task(
     default=True,
     pre=[download_archives, run_makefiles, build_nrms]
 )
-def build_all(c: Context):
+def all(c: Context):
     print("Done!")
     
 @task
 def clean(c: Context):
-    for path in p.mod_project.clean_paths:
+    for path in p.mod_project.get_paths_for_cleaning():
         if path.is_file():
             os.remove(path)
+            print(f"Deleted {path}")
         elif path.is_dir():
             shutil.rmtree(path)
-        
+            print(f"Deleted {path}")
+        else:
+            print(f"Could not delete {path}")
+            
 @task(
     pre=[clean]
 )
 def distclean(c: Context):
-    for path in p.mod_project.distclean_paths:
+    for path in p.mod_project.get_paths_for_distcleaning():
         if path.is_file():
             os.remove(path)
+            print(f"Deleted {path}")
         elif path.is_dir():
             shutil.rmtree(path)
+            print(f"Deleted {path}")
+        else:
+            print(f"Could not delete {path}")

@@ -5,11 +5,11 @@ import modbuildcore as mbc
 root_dir = Path(__file__).parent
 build_dir = root_dir.joinpath("build")
 binaries_dir = root_dir.joinpath("binaries")
-downloads_dir = root_dir.joinpath("downloads")
+# downloads_dir = root_dir.joinpath("downloads")
 
 # The `mod_project` variable is loaded by tasks.py. `project.py` must have a member named `mod_project`.
-mod_project: mbc.ModProjectConfig = mbc.ModProjectConfig()
-mod_project.set_archive_artifacts_dir(downloads_dir)
+mod_project: mbc.ModProjectConfig = mbc.ModProjectConfig(root_dir)
+# mod_project.set_archive_downloads_dir(downloads_dir)
 
 
 if platform.system() == "Windows":
@@ -25,7 +25,7 @@ if platform.system() == "Windows":
 elif platform.system() == "Darwin":
     mod_project.add_archive_download(
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Darwin-arm64.tar.xz",
-        "clangmips_macos"
+        binaries_dir.joinpath("clangmips_macos")
     )
     
     mod_project.set_mips_compiler(binaries_dir.joinpath("clangmips_macos/nrs_bin/clang"))
@@ -35,7 +35,7 @@ elif platform.system() == "Darwin":
 else:
     mod_project.add_archive_download(
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Linux-x86_64.tar.xz",
-        "clangmips_linux"
+        binaries_dir.joinpath("clangmips_linux")
     )
     
     mod_project.set_mips_compiler(binaries_dir.joinpath("clangmips_linux/nrs_bin/clang"))
@@ -77,7 +77,6 @@ mod_project.mark_paths_for_clean([
     build_dir
 ])
 
-mod_project.mark_paths_for_clean([
+mod_project.mark_paths_for_distclean([
     binaries_dir,
-    downloads_dir
 ])
