@@ -6,22 +6,16 @@ if __name__ == '__main__':
 import shutil, os, subprocess, pathlib
 from pathlib import Path
 
-import modbuildcore
-from modbuildcore.archives import ArchiveExtractHandler
-from modbuildcore.cmake import CMakeProjectHandler, CMakeBuildHandler
-from modbuildcore.downloads import DownloadHandler
-from modbuildcore.makefiles import MakefileHandler
-from modbuildcore.tomls import ModTomlHandler
-from modbuildcore.utils import invoke_subprocess_run
-from invoke import task, Context
+from modbuildcore.config import *
+from modbuildcore.handlers import *
 
-project_root = Path(__file__).parent
+from invoke import Context, task
 
 import project as p
 
 @task
 def download(c: Context, force: bool = False):
-    for download in [DownloadHandler(i) for i in p.mod_project.downloads]:
+    for download in [DownloadHandler(i) for i in p.downloads.values()]:
         if force or download.should_download():
             print(f"Downloading '{download.config.url}'...")
             download.download()
@@ -32,7 +26,7 @@ def download(c: Context, force: bool = False):
     
 @task
 def extract(c: Context, force: bool = False):
-    for extraction in [ArchiveExtractHandler(i) for i in p.mod_project.archive_extractions]:
+    for extraction in [ArchiveExtractHandler(i) for i in p.archive_extractions.values()]:
         if force or extraction.should_extract():
             print(f"Extracting '{extraction.config.archive_path}' to '{extraction.config.extract_dir}'...")
             extraction.extract()
@@ -43,21 +37,21 @@ def extract(c: Context, force: bool = False):
 
 @task
 def makefile(c: Context):
-    for makefile in [MakefileHandler(i) for i in p.mod_project.makefiles]:
+    for makefile in [MakefileHandler(i) for i in p.makefiles.values()]:
         print(f"-> Running makefile '{makefile.config.makefile_path}'")
-        makefile.run_make(c, p.mod_project.make_path)
+        makefile.run_make(c, p.make_path)
 
 @task
 def nrm(c: Context):
-    for mod in [ModTomlHandler(i) for i in p.mod_project.mod_tomls]:
+    for mod in [ModTomlHandler(i) for i in p.mod_tomls.values()]:
         print(f"-> Build '{mod.config.data['inputs']['mod_filename']}'.nrm from '{mod.config.toml_path}'")
-        mod.run_mod_tool(c, p.mod_project.mod_tool_path)
+        mod.run_mod_tool(c, p.mod_tool_path)
 
 @task
 def cmake_configure_and_build(c: Context):
-    for project in [CMakeProjectHandler(i) for i in p.mod_project.cmake_projects]:
+    for project in [CMakeProjectHandler(i) for i in p.cmake_projects.values()]:
         for group in project.get_build_group_names():
-            project.configure_and_build_group(c, p.mod_project.cmake_path, group)
+            project.configure_and_build_group(c, p.cmake_path, group)
 
 
 @task(
@@ -69,7 +63,7 @@ def all(c: Context):
     
 @task
 def clean(c: Context):
-    for path in p.mod_project.get_paths_for_cleaning():
+    for path in p.clean_paths:
         if path.is_file():
             os.remove(path)
             print(f"Deleted {path}")
@@ -83,7 +77,7 @@ def clean(c: Context):
     pre=[clean]
 )
 def distclean(c: Context):
-    for path in p.mod_project.get_paths_for_distcleaning():
+    for path in p.distclean_paths:
         if path.is_file():
             os.remove(path)
             print(f"Deleted {path}")
