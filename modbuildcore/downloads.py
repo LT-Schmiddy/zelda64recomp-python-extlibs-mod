@@ -1,50 +1,36 @@
 import pathlib, os, shutil, urllib.request, urllib.parse
 from pathlib import Path
 
-_proot: Path = Path(__file__).parent.parent
-
-class DownloadArchiveConfig:
+class DownloadConfig:
     url: str
-    extract_dir: Path
+    download_path: Path
     
-    def __init__(self, url: str, extract_dir: Path):
+    def __init__(self, url: str, download_path: Path, append_url_filename: bool=True):
         self.url = url
-        self.extract_dir = extract_dir
+        self.download_path = download_path
+        if (append_url_filename):
+            self.download_path = self.download_path.joinpath(self.get_filename_from_url())
         
-        
-class DownloadArchiveHandler:
-    entry: DownloadArchiveConfig
-    artifact_dir: Path
-    cache_path: Path
-    
-    def __init__(self, entry: DownloadArchiveConfig, artifact_dir: Path):
-        self.entry = entry
-        self.artifact_dir = artifact_dir
-        
-        filename = self.get_filename_from_url(self.entry.url)
-        self.cache_path = artifact_dir.joinpath(filename)
-    
-    def get_filename_from_url(self, url: Path) -> Path:
-        parsed_url = urllib.parse.urlparse(url)
+    def get_filename_from_url(self) -> Path:
+        parsed_url = urllib.parse.urlparse(self.url)
         return Path(os.path.basename(parsed_url.path))
     
     
+class DownloadHandler:
+    config: DownloadConfig
     
+    def __init__(self, entry: DownloadConfig):
+        self.config = entry
+    
+        
     def should_download(self) -> bool:
-        return not self.cache_path.exists()
+        return not self.config.download_path.exists()
     
     def download(self) -> Exception:
-        if not self.artifact_dir.exists():
-            os.makedirs(self.artifact_dir)
+        if not self.config.download_path.parent.exists():
+            os.makedirs(self.config.download_path.parent)
             
         urllib.request.urlretrieve(
-            self.entry.url,
-            self.cache_path
+            self.config.url,
+            self.config.download_path
         )
-
-    def should_extract(self) -> bool:
-        return not self.entry.extract_dir.exists()
-    
-    def extract(self):
-        shutil.unpack_archive(self.cache_path, self.entry.extract_dir)
-        

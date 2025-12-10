@@ -2,7 +2,8 @@ import sys, shutil, os, subprocess, pathlib
 from pathlib import Path
 
 import modbuildcore
-from modbuildcore.downloads import DownloadArchiveHandler
+from modbuildcore.archives import ArchiveExtractHandler
+from modbuildcore.downloads import DownloadHandler
 from modbuildcore.makefiles import MakefileHandler
 from modbuildcore.tomls import ModTomlHandler
 from modbuildcore.utils import invoke_subprocess_run
@@ -13,21 +14,26 @@ project_root = Path(__file__).parent
 import project as p
 
 @task
-def download_archives(c: Context, force: bool = False, reextract: bool = False):
-    for archive in [DownloadArchiveHandler(i, p.mod_project.archive_downloads_dir) for i in p.mod_project.archive_downloads]:
-        if force or archive.should_download():
-            print(f"Downloading '{archive.entry.url}'...")
-            archive.download()
+def download(c: Context, force: bool = False):
+    for download in [DownloadHandler(i) for i in p.mod_project.downloads]:
+        if force or download.should_download():
+            print(f"Downloading '{download.config.url}'...")
+            download.download()
         else:
-            print(f"Already downloaded '{archive.cache_path.name}'.")
-
-        if force or reextract or archive.should_extract():
-            print(f"Extracting '{archive.cache_path.name}' to '{archive.entry.extract_dir}'...")
-            archive.extract()
-        else:
-            print(f"Already extracted '{archive.cache_path.name}'.")
+            print(f"Already downloaded '{download.config.download_path}'.")
     
     print("Downloads complete.")
+    
+@task
+def extract(c: Context, force: bool = False):
+    for extraction in [ArchiveExtractHandler(i) for i in p.mod_project.archive_extractions]:
+        if force or extraction.should_extract():
+            print(f"Extracting '{extraction.config.archive_path}' to '{extraction.config.extract_dir}'...")
+            extraction.extract()
+        else:
+            print(f"Already extracted '{extraction.config.archive_path}'.")
+    
+    print("Extractions complete.")
 
 @task
 def run_makefiles(c: Context):
@@ -41,7 +47,7 @@ def build_nrms(c: Context):
 
 @task(
     default=True,
-    pre=[download_archives, run_makefiles, build_nrms]
+    pre=[download, extract, run_makefiles, build_nrms]
 )
 def all(c: Context):
     print("Done!")

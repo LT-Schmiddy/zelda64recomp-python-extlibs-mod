@@ -16,7 +16,7 @@ mod_project: mbc.ModProjectConfig = mbc.ModProjectConfig(root_dir)
 
 
 if platform.system() == "Windows":
-    mod_project.add_archive_download(
+    mod_project.add_archive_download_and_extract(
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Windows-AMD64.zip",
         binaries_dir.joinpath("clangmips_win")
     )
@@ -26,7 +26,7 @@ if platform.system() == "Windows":
     mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_win/nrs_bin/RecompModTool.exe"))
     
 elif platform.system() == "Darwin":
-    mod_project.add_archive_download(
+    mod_project.add_archive_download_and_extract(
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Darwin-arm64.tar.xz",
         binaries_dir.joinpath("clangmips_macos")
     )
@@ -36,7 +36,7 @@ elif platform.system() == "Darwin":
     mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_win/nrs_bin/RecompModTool"))
     
 else:
-    mod_project.add_archive_download(
+    mod_project.add_archive_download_and_extract(
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Linux-x86_64.tar.xz",
         binaries_dir.joinpath("clangmips_linux")
     )
@@ -45,6 +45,10 @@ else:
     make_mips_linker_path = binaries_dir.joinpath("clangmips_linux/nrs_bin/ld.lld")
     mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_win/nrs_bin/RecompModTool"))
 
+assets_archive_path = root_dir.joinpath("assets_archive.zip")
+assets_extracted_path = root_dir.joinpath("assets_extracted/assets")
+
+mod_project.add_archive_extraction(assets_archive_path, assets_extracted_path)
 
 # Main API NRM
 mod_project.add_mod_toml_and_makefile(
@@ -80,4 +84,5 @@ mod_project.mark_paths_for_clean([
 
 mod_project.mark_paths_for_distclean([
     binaries_dir,
+    assets_extracted_path
 ])

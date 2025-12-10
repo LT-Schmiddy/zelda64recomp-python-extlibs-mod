@@ -1,6 +1,7 @@
 import enum, shutil
 from pathlib import Path
 
+from . import archives
 from . import downloads
 from . import makefiles
 from . import tomls
@@ -20,7 +21,8 @@ class ModProjectConfig:
     mod_tool_path: Path
     make_path: Path
     
-    archive_downloads: list[downloads.DownloadArchiveConfig]
+    archive_extractions: list[archives.ArchiveExtractConfig]
+    downloads: list[downloads.DownloadConfig]
     makefiles: list[makefiles.MakefileConfig]
     mod_tomls: list[tomls.ModTomlConfig]
     
@@ -37,7 +39,8 @@ class ModProjectConfig:
         self.make_path = shutil.which("make")
         self.cmake = shutil.which("cmake")
         
-        self.archive_downloads = []
+        self.archive_extractions = []
+        self.downloads = []
         self.makefiles = []
         self.mod_tomls = []
         
@@ -50,12 +53,27 @@ class ModProjectConfig:
     def set_mod_tool(self, mod_tool_path: Path):
         self.mod_tool_path = self.path_check_coerse(mod_tool_path, "mod_tool_path")
         
-    def set_make(self, make_path: Path):
+    def set_make_path(self, make_path: Path):
         self.make_path = self.path_check_coerse(make_path, "make_path")
 
-    def add_archive_download(self, url: str, extract_dir: Path):
+    def add_download(self, url: str, download_path: Path, append_url_filename: bool = True):
         extract_dir = self.path_check_coerse(extract_dir, "extract_dir")
-        self.archive_downloads.append(downloads.DownloadArchiveConfig(url, extract_dir))
+        extract_dir = self.path_check_coerse(download_path, "download_path")
+        self.downloads.append(downloads.DownloadConfig(url, download_path, append_url_filename))
+
+    def add_archive_extraction(self, archive_path: Path, extract_dir: Path):
+        archive_path = self.path_check_coerse(archive_path, "archive_path")
+        extract_dir = self.path_check_coerse(extract_dir, "extract_dir")
+        
+        self.archive_extractions.append(archives.ArchiveExtractConfig(archive_path, extract_dir))
+    
+    def add_archive_download_and_extract(self, url: str, extract_dir: Path):
+        extract_dir = self.path_check_coerse(extract_dir, "extract_dir")
+        new_download = downloads.DownloadConfig(url, self.archive_downloads_dir, True)
+        new_extraction = archives.ArchiveExtractConfig(new_download.download_path, extract_dir)
+        
+        self.downloads.append(new_download)
+        self.archive_extractions.append(new_extraction)
         
     def add_mod_toml(self, toml_path: Path, toml_build_dir: Path = None):
         self.mod_tomls.append(tomls.ModTomlConfig(toml_path, toml_build_dir))
