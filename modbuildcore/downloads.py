@@ -3,8 +3,6 @@ from pathlib import Path
 
 _proot: Path = Path(__file__).parent.parent
 
-default_artifact_download_dir = _proot.joinpath("downloads")
-
 class DownloadArchiveConfig:
     url: str
     extract_dir: Path
@@ -19,7 +17,7 @@ class DownloadArchiveHandler:
     artifact_dir: Path
     cache_path: Path
     
-    def __init__(self, entry: DownloadArchiveConfig, artifact_dir: Path=default_artifact_download_dir):
+    def __init__(self, entry: DownloadArchiveConfig, artifact_dir: Path):
         self.entry = entry
         self.artifact_dir = artifact_dir
         
@@ -45,7 +43,7 @@ class DownloadArchiveHandler:
         )
 
     def should_extract(self) -> bool:
-        return not self.entry.extract_dir
+        return not self.entry.extract_dir.exists()
     
     def extract(self):
         shutil.unpack_archive(self.cache_path, self.entry.extract_dir)

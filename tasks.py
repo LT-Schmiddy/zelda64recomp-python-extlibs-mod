@@ -1,20 +1,20 @@
-import sys, os, subprocess, pathlib
+import sys, shutil, os, subprocess, pathlib
 from pathlib import Path
 
 import modbuildcore
 from modbuildcore.downloads import DownloadArchiveHandler
+from modbuildcore.makefiles import MakefileHandler
 from modbuildcore.tomls import ModTomlHandler
 from modbuildcore.utils import invoke_subprocess_run
 from invoke import task, Context
 
 project_root = Path(__file__).parent
 
-from project import mod_project
-
+import project as p
 
 @task
 def download_archives(c: Context, force: bool = False, reextract: bool = False):
-    for archive in [DownloadArchiveHandler(i) for i in mod_project.archive_downloads]:
+    for archive in [DownloadArchiveHandler(i, p.mod_project.archive_artifacts_dir) for i in p.mod_project.archive_downloads]:
         if force or archive.should_download():
             print(f"Downloading '{archive.entry.url}'...")
             archive.download()
@@ -29,18 +29,37 @@ def download_archives(c: Context, force: bool = False, reextract: bool = False):
     
     print("Downloads complete.")
 
-@task(
-    pre=[download_archives]
-)
-def build_nrm(c: Context):
-    for mod in [ModTomlHandler(i) for i in mod_project.mod_tomls]:
-        mod.run_make(c, mod_project.make_path)
-        mod.run_mod_tool(c, mod_project.mod_tool_path)
+@task
+def run_makefiles(c: Context):
+    for makefile in [MakefileHandler(i) for i in p.mod_project.makefiles]:
+        makefile.run_make(c, p.mod_project.make_path)
+
+@task
+def build_nrms(c: Context):
+    for mod in [ModTomlHandler(i) for i in p.mod_project.mod_tomls]:
+        mod.run_mod_tool(c, p.mod_tool_path)
 
 @task(
     default=True,
-    pre=[build_nrm]
+    pre=[download_archives, run_makefiles, build_nrms]
 )
 def build_all(c: Context):
     print("Done!")
     
+@task
+def clean(c: Context):
+    for path in p.mod_project.clean_paths:
+        if path.is_file():
+            os.remove(path)
+        elif path.is_dir():
+            shutil.rmtree(path)
+        
+@task(
+    pre=[clean]
+)
+def distclean(c: Context):
+    for path in p.mod_project.distclean_paths:
+        if path.is_file():
+            os.remove(path)
+        elif path.is_dir():
+            shutil.rmtree(path)

@@ -1,7 +1,7 @@
 # Arguments from environment (passed in via Python):
 _BUILD_DIR ?= build/mod
-_MIPS_CC      ?= C:\Users\Alex\Code\RECOMP\zelda64recomp-python-extlibs-mod\compilers\clangmips_win\nrs_bin\clang.exe
-_MIPS_LD      ?= C:\Users\Alex\Code\RECOMP\zelda64recomp-python-extlibs-mod\compilers\clangmips_win\nrs_bin\ld.lld.exe
+_MIPS_CC      ?= clang
+_MIPS_LD      ?= ld.lld
 _ELF_PATH  ?= $(_BUILD_DIR)/mod.elf
 _SRC_DIR ?= src/mod
 _PY_BUILD_FLAGS ?= 
@@ -25,14 +25,14 @@ BUILD_DIRS := $(call getdirs,$(ALL_OBJS))
 
 $(info    BUILD_DIRS = $(BUILD_DIRS))
 
-all: $(_ELF_PATH)
+all: $(BUILD_DIRS) $(_ELF_PATH)
 
 $(_ELF_PATH): $(ALL_OBJS) $(LDSCRIPT) | $(_BUILD_DIR)
 	$(_MIPS_LD) $(ALL_OBJS) $(LDFLAGS) -Map $(_BUILD_DIR)/mod.map -o $@
 
 $(BUILD_DIRS) $(_BUILD_DIR):
 ifeq ($(OS),Windows_NT)
-	if not exist "$(subst /,\,$@)" mkdir "$(subst /,\,$@)"
+	mkdir "$(subst /,\,$@)"
 else
 	mkdir -p $@
 endif
