@@ -56,7 +56,7 @@ class CMakeBuildHandler:
         cmake_env.update(self.config.cmake_project.extended_env)
         
         invoke_subprocess_run(c, True,
-            [cmake_bin] + self.config.config_args,
+            [cmake_bin] + self.config.build_args,
             env=cmake_env,
             cwd=self.config.cmake_project.project_dir
         )
