@@ -1,4 +1,9 @@
-import sys, shutil, os, subprocess, pathlib
+import sys
+if __name__ == '__main__':
+    print(f"Wrong file! This is the pyinvoke tasks file for the `modbuild.py` tool. Run `python[3] ./modbuild.py` to use it.")
+    sys.exit(0)
+
+import shutil, os, subprocess, pathlib
 from pathlib import Path
 
 import modbuildcore
