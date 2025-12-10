@@ -61,7 +61,9 @@ else:
     
     make_mips_compiler_path = binaries_dir.joinpath("clangmips_linux/nrs_bin/clang")
     make_mips_linker_path = binaries_dir.joinpath("clangmips_linux/nrs_bin/ld.lld")
-    mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_win/nrs_bin/RecompModTool"))
+    mod_project.set_mod_tool(binaries_dir.joinpath("clangmips_linux/nrs_bin/RecompModTool"))
+    
+    zig_path = binaries_dir.joinpath("zig_linux/zig-x86_64-linux-0.14.1/zig")
 
 # Registering asset_archive extraction
 assets_archive_path = root_dir.joinpath("assets_archive.zip")
