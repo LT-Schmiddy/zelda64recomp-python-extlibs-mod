@@ -13,9 +13,17 @@ from invoke import Context, task
 
 import project as p
 
+ARG_SPLIT_CHAR = ","
+
 @task
-def download(c: Context, force: bool = False):
-    for download in [DownloadHandler(i) for i in p.downloads.values()]:
+def download(c: Context, force: bool = False, name: str = None):
+    dl_list : list[DownloadHandler] = None
+    if name is None:
+        dl_list = [DownloadHandler(i) for i in p.downloads.values()]
+    else:
+        dl_list = [DownloadHandler(p.downloads[i]) for i in name.split(ARG_SPLIT_CHAR)]
+    
+    for download in dl_list:
         if force or download.should_download():
             print(f"Downloading '{download.config.url}'...")
             download.download()
@@ -25,8 +33,14 @@ def download(c: Context, force: bool = False):
     print("Downloads complete.")
     
 @task
-def extract(c: Context, force: bool = False):
-    for extraction in [ArchiveExtractHandler(i) for i in p.archive_extractions.values()]:
+def extract(c: Context, force: bool = False, name: str = None):
+    extract_list : list[ArchiveExtractHandler] = None
+    if name is None:
+        extract_list = [ArchiveExtractHandler(i) for i in p.downloads.values()]
+    else:
+        extract_list = [ArchiveExtractHandler(p.archive_extractions[i]) for i in name.split(ARG_SPLIT_CHAR)]
+    
+    for extraction in extract_list:
         if force or extraction.should_extract():
             print(f"Extracting '{extraction.config.archive_path}' to '{extraction.config.extract_dir}'...")
             extraction.extract()
@@ -36,14 +50,26 @@ def extract(c: Context, force: bool = False):
     print("Extractions complete.")
 
 @task
-def makefile(c: Context):
-    for makefile in [MakefileHandler(i) for i in p.makefiles.values()]:
+def makefile(c: Context, name: str = None):
+    makefile_list : list[MakefileHandler] = None
+    if name is None:
+        makefile_list = [MakefileHandler(i) for i in p.makefiles.values()]
+    else:
+        makefile_list = [MakefileHandler(p.makefiles[i]) for i in name.split(ARG_SPLIT_CHAR)]
+    
+    for makefile in makefile_list:
         print(f"-> Running makefile '{makefile.config.makefile_path}'")
         makefile.run_make(c, p.make_path)
 
 @task
-def nrm(c: Context):
-    for mod in [ModTomlHandler(i) for i in p.mod_tomls.values()]:
+def nrm(c: Context, name: str = None):
+    toml_list : list[ModTomlHandler] = None
+    if name is None:
+        toml_list = [ModTomlHandler(i) for i in p.mod_tomls.values()]
+    else:
+        toml_list = [ModTomlHandler(p.mod_tomls[i]) for i in name.split(ARG_SPLIT_CHAR)]
+    
+    for mod in toml_list:
         print(f"-> Build '{mod.config.data['inputs']['mod_filename']}'.nrm from '{mod.config.toml_path}'")
         mod.run_mod_tool(c, p.mod_tool_path)
 

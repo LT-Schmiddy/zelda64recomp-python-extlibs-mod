@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 prog_root = Path(__file__).parent
 sys.path.append(str(prog_root.joinpath("py")))
-print(sys.path)
 
 # Program startup:
 import sys, os, subprocess, pathlib
