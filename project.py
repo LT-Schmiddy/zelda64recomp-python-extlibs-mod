@@ -1,6 +1,7 @@
 import platform, subprocess
 from pathlib import Path
 import modbuildcore as mbc
+from modbuildcore.cmake import CMakeProjectConfig, CMakeBuildConfig
 
 root_dir = Path(__file__).parent
 build_dir = root_dir.joinpath("build")
@@ -96,6 +97,12 @@ mod_project.add_mod_toml_and_makefile(
     }
 )
 
+extlib = mod_project.add_cmake_project(root_dir, {
+    "ZIG_BINARY": zig_path
+})
+extlib.add_preset_pair_build_to_group("Debug", "Windows", [], "zig-windows-x64-Debug")
+extlib.add_preset_pair_build_to_group("Debug", "Darwin", [], "zig-macos-aarch64-Debug")
+extlib.add_preset_pair_build_to_group("Debug", "Linux", [], "zig-linux-x64-Debug")
 
 
 mod_project.mark_paths_for_clean([
@@ -104,5 +111,5 @@ mod_project.mark_paths_for_clean([
 
 mod_project.mark_paths_for_distclean([
     binaries_dir,
-    assets_extracted_path
+    assets_extracted_path.parent
 ])

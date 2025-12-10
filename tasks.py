@@ -8,6 +8,7 @@ from pathlib import Path
 
 import modbuildcore
 from modbuildcore.archives import ArchiveExtractHandler
+from modbuildcore.cmake import CMakeProjectHandler, CMakeBuildHandler
 from modbuildcore.downloads import DownloadHandler
 from modbuildcore.makefiles import MakefileHandler
 from modbuildcore.tomls import ModTomlHandler
@@ -41,20 +42,27 @@ def extract(c: Context, force: bool = False):
     print("Extractions complete.")
 
 @task
-def run_makefiles(c: Context):
+def makefile(c: Context):
     for makefile in [MakefileHandler(i) for i in p.mod_project.makefiles]:
         print(f"-> Running makefile '{makefile.config.makefile_path}'")
         makefile.run_make(c, p.mod_project.make_path)
 
 @task
-def build_nrms(c: Context):
+def nrm(c: Context):
     for mod in [ModTomlHandler(i) for i in p.mod_project.mod_tomls]:
         print(f"-> Build '{mod.config.data['inputs']['mod_filename']}'.nrm from '{mod.config.toml_path}'")
         mod.run_mod_tool(c, p.mod_project.mod_tool_path)
 
+@task
+def cmake_configure_and_build(c: Context):
+    for project in [CMakeProjectHandler(i) for i in p.mod_project.cmake_projects]:
+        for group in project.get_build_group_names():
+            project.configure_and_build_group(c, p.mod_project.cmake_path, group)
+
+
 @task(
     default=True,
-    pre=[download, extract, run_makefiles, build_nrms]
+    pre=[download, extract, makefile, nrm, cmake_configure_and_build]
 )
 def all(c: Context):
     print("Done!")
