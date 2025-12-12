@@ -7,11 +7,11 @@ prog_root = Path(__file__).parent
 sys.path.append(str(prog_root.joinpath("py")))
 
 # Program startup:
-import sys, os, subprocess, pathlib
 
-from invoke import task, Collection, __version__, Program
+from invoke import Collection, __version__, Program, Argument
 from invoke.config import Config, merge_dicts
 
+import tasks
 
 class Z64rModBuildConfig(Config):
     prefix = 'z64r_modbuild'
@@ -22,11 +22,15 @@ class Z64rModBuildConfig(Config):
         my_defaults = {}
         return merge_dicts(their_defaults, my_defaults)
 
-import tasks
+class ModBuildProgram(Program):
+    def core_args(self):
+        core_args = super().core_args()
+        extra_args = []
+        return core_args + extra_args
 
 if __name__ == '__main__':
     
-    program = Program(
+    program = ModBuildProgram(
         name="Mod Builder",
         binary="modbuild.py",
         binary_names=["modbuild.py"],

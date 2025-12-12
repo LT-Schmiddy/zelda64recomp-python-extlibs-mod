@@ -3,7 +3,7 @@ if __name__ == '__main__':
     print(f"Wrong file! This is the pyinvoke tasks file for the `modbuild.py` tool. Run `python[3] ./modbuild.py` to use it.")
     sys.exit(0)
 
-import shutil, os, subprocess, pathlib
+import shutil, os
 from pathlib import Path
 
 from modbuildcore.config import *
@@ -36,7 +36,7 @@ def download(c: Context, force: bool = False, name: str = None):
 def extract(c: Context, force: bool = False, name: str = None):
     extract_list : list[ArchiveExtractHandler] = None
     if name is None:
-        extract_list = [ArchiveExtractHandler(i) for i in p.downloads.values()]
+        extract_list = [ArchiveExtractHandler(i) for i in p.archive_extractions.values()]
     else:
         extract_list = [ArchiveExtractHandler(p.archive_extractions[i]) for i in name.split(ARG_SPLIT_CHAR)]
     
@@ -74,15 +74,28 @@ def nrm(c: Context, name: str = None):
         mod.run_mod_tool(c, p.mod_tool_path)
 
 @task
-def cmake_configure_and_build(c: Context):
-    for project in [CMakeProjectHandler(i) for i in p.cmake_projects.values()]:
-        for group in project.get_build_group_names():
-            project.configure_and_build_group(c, p.cmake_path, group)
+def cmake(c: Context, name: str = None, group: str = None, build_name: str = None):
+    project_list: list[CMakeProjectHandler] = None
+    if name is None:
+        project_list = [CMakeProjectHandler(i) for i in p.cmake_projects.values()]
+    else:
+        project_list = [CMakeProjectHandler(p.cmake_projects[i]) for i in name.split(ARG_SPLIT_CHAR)]
+    
+    for project in project_list:
+        selected_group = project.config.default_build_group
+        if group is not None:
+            selected_group = group
+            
+        if build_name is None:
+            project.configure_and_build_group(c, p.cmake_path, selected_group)
+        else:
+            project.build_handlers[selected_group][build_name].run_configure(c, p.cmake_path)
+            project.build_handlers[selected_group][build_name].run_build(c, p.cmake_path)
 
 
 @task(
     default=True,
-    pre=[download, extract, makefile, nrm, cmake_configure_and_build]
+    pre=[download, extract, makefile, nrm, cmake]
 )
 def all(c: Context):
     print("Done!")

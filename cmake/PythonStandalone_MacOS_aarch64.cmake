@@ -16,7 +16,7 @@ if(NOT DEFINED INSTALL_NAME_TOOL_COMMAND)
     elseif(CMAKE_HOST_SYSTEM MATCHES "Windows")
         set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
     elseif(CMAKE_HOST_SYSTEM MATCHES "Linux")
-        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool-18)
+        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
     endif()
 endif()
 

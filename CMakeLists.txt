@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
 
-
-
-
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
@@ -24,11 +21,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (NOT DEFINED LIB_NAME)
-    set(LIB_NAME recomp_extlib)
+if (NOT DEFINED ENV{LIB_NAME})
+    set(TARGET_NAME recomp_extlib)
+else()
+    set(TARGET_NAME $ENV{LIB_NAME})
 endif()
-
-set(TARGET_NAME ${LIB_NAME})
 
 function(py_watch)
     set_property(

@@ -11,12 +11,11 @@ class CMakeProjectConfig:
 
 
 class CMakeBuildConfig:
-    cmake_project: CMakeProjectConfig
     config_args: list[str]
     build_args: list[str]
-    output_files: list[Path]
+    output_files: dict[Path, Path]
     
-    def __init__(self, cmake_project: CMakeProjectConfig, output_files: list[Path], config_args: list[str], build_args: list[str]):
+    def __init__(self, cmake_project: CMakeProjectConfig, output_files: dict[Path, Path], config_args: list[str], build_args: list[str]):
         self.cmake_project = cmake_project
         self.output_files = output_files
         self.config_args = config_args
@@ -24,7 +23,7 @@ class CMakeBuildConfig:
         
         
     @classmethod
-    def from_preset_pair(cls, cmake_project: CMakeProjectConfig, output_files: list[Path], config_preset_name: str, build_preset_name: str = None):
+    def from_preset_pair(cls, cmake_project: CMakeProjectConfig, output_files: dict[Path, Path], config_preset_name: str, build_preset_name: str = None):
         if build_preset_name is None:
             build_preset_name = config_preset_name
         
@@ -64,21 +63,15 @@ class CMakeBuildHandler:
 
 class CMakeProjectConfig:
     project_dir: Path
+    default_build_group: str
     extended_env: dict[str, str]
     build_groups: dict[str, dict[str, CMakeBuildConfig]]
     
-    def __init__(self, project_dir: Path, expanded_env: dict[str, str]):
+    def __init__(self, project_dir: Path, default_build_group: str, expanded_env: dict[str, str]):
         self.project_dir = project_dir
+        self.default_build_group = default_build_group
         self.extended_env = expanded_env
         self.build_groups = {}
-    
-    def add_preset_pair_build_to_group(self, group_name: str, entry_name: str, output_files: list[Path], config_preset_name: str, build_preset_name: str = None):
-        new_build = CMakeBuildConfig.from_preset_pair(self, output_files, config_preset_name, build_preset_name)
-        
-        if group_name not in self.build_groups:
-            self.build_groups[group_name] = {}
-        
-        self.build_groups[group_name][entry_name] = new_build
         
         
 class CMakeProjectHandler:
