@@ -16,6 +16,7 @@ make_mips_linker_path: Path = None
 mod_tool_path: Path = None
 zig_dir_path: Path = None
 zig_bin_path: Path = None
+llvm_path: Path = None
 
 archive_extractions: dict[str, ArchiveExtractConfig] = {}
 downloads: dict[str, DownloadConfig] = {}
@@ -23,10 +24,9 @@ makefiles: dict[str, MakefileConfig] = {}
 mod_tomls: dict[str, ModTomlConfig] = {}
 cmake_projects: dict[str, CMakeProjectConfig] = {}
 
-llvm_path = Path(shutil.which("clang")).parent.parent
+test_env_mod_dir: Path = root_dir.joinpath("test_env/mods")
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
-
 # Convienience function for downloading compiler artifacts.
 def add_archive_download_and_extract(name: str, url: str, extract_dir: Path) -> tuple[DownloadConfig, ArchiveExtractConfig]:
     global archive_extractions, downloads, archive_downloads_dir
@@ -182,9 +182,18 @@ def native_preset_name(build_type: str):
 
 extlib.build_groups = {
     "Debug" : {
-        "Windows": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-windows-x64-Debug"),
-        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-macos-aarch64-Debug"),
-        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-linux-x64-Debug"),
+        "Windows": CMakeBuildConfig.from_preset_pair(extlib, {
+                root_dir.joinpath("build/zig-windows-x64-Debug/lib/python313.dll"): Path("python313.dll"),
+                root_dir.joinpath("build/zig-windows-x64-Debug/lib/libRecompPythonNative.dll"): Path("RecompPythonNative.dll")
+            }, "zig-windows-x64-Debug"),
+        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {
+                root_dir.joinpath("build/zig-macos-aarch64-Debug/lib/libpython3.13.dylib"): Path("libpython3.13.dylib"),
+                root_dir.joinpath("build/zig-macos-aarch64-Debug/lib/libRecompPythonNative.dylib"): Path("RecompPythonNative.dylib")
+            }, "zig-macos-aarch64-Debug"),
+        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {
+                root_dir.joinpath("build/zig-linux-x64-Debug/lib/libpython3.13.so"): Path("libpython3.13.so"),
+                root_dir.joinpath("build/zig-linux-x64-Debug/lib/libRecompPythonNative.so"): Path("RecompPythonNative.so")
+            }, "zig-linux-x64-Debug"),
     },
     "Release" : {
         "Windows": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-windows-x64-Release"),

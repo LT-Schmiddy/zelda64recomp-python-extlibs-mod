@@ -23,6 +23,9 @@ class ModTomlConfig:
     def get_elf_path(self) -> Path:
         return self.get_path_from_toml(self.data["inputs"]["elf_path"])
     
+    def get_output_path(self) -> Path:
+        return self.build_dir.joinpath(self.data["inputs"]["mod_filename"]).with_suffix(".nrm")
+    
 class ModTomlHandler:
     config: ModTomlConfig
     data: dict

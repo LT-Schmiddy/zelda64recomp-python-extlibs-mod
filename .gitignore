@@ -1,10 +1,10 @@
 # Directories
 assets_extracted/
 binaries/
-downloads/
 build/
-runtime/
+downloads/
 doxygen/
+test_env/
 OLD/
 venv*/
 __pycache__/**

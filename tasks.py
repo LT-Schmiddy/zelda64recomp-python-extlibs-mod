@@ -15,6 +15,9 @@ import project as p
 
 ARG_SPLIT_CHAR = ","
 
+_built_tomls: list[ModTomlHandler] = []
+_built_cmake_handlers: list[CMakeBuildHandler] = []
+
 @task
 def download(c: Context, force: bool = False, name: str = None):
     dl_list : list[DownloadHandler] = None
@@ -63,6 +66,7 @@ def makefile(c: Context, name: str = None):
 
 @task
 def nrm(c: Context, name: str = None):
+    global _built_tomls
     toml_list : list[ModTomlHandler] = None
     if name is None:
         toml_list = [ModTomlHandler(i) for i in p.mod_tomls.values()]
@@ -72,9 +76,11 @@ def nrm(c: Context, name: str = None):
     for mod in toml_list:
         print(f"-> Build '{mod.config.data['inputs']['mod_filename']}'.nrm from '{mod.config.toml_path}'")
         mod.run_mod_tool(c, p.mod_tool_path)
+        _built_tomls.append(mod)
 
 @task
 def cmake(c: Context, name: str = None, group: str = None, build_name: str = None):
+    global _built_cmake_handlers
     project_list: list[CMakeProjectHandler] = None
     if name is None:
         project_list = [CMakeProjectHandler(i) for i in p.cmake_projects.values()]
@@ -87,18 +93,42 @@ def cmake(c: Context, name: str = None, group: str = None, build_name: str = Non
             selected_group = group
             
         if build_name is None:
-            project.configure_and_build_group(c, p.cmake_path, selected_group)
+            for handler in project.build_handlers[selected_group].values():
+                handler.run_configure(c, p.cmake_path)
+                handler.run_build(c, p.cmake_path)
+                _built_cmake_handlers.append(handler)
         else:
             project.build_handlers[selected_group][build_name].run_configure(c, p.cmake_path)
             project.build_handlers[selected_group][build_name].run_build(c, p.cmake_path)
+            _built_cmake_handlers.append(project.build_handlers[selected_group][build_name])
+            
+@task
+def test_env(C: Context, name: str = None, group: str = None, build_name: str = None):
+    global _built_tomls, _built_cmake_handlers
+    os.makedirs(p.test_env_mod_dir, exist_ok=True)
+    
+    # Copying NRM outputs
+    for toml in _built_tomls:
+        src = toml.config.get_output_path()
+        dst = p.test_env_mod_dir.joinpath(toml.config.get_output_path().name)
+        print(f"Copying '{str(src)}' to '{str(dst)}'...")
+        shutil.copy(src, dst)
 
+    for handler in _built_cmake_handlers:
+        for src, dst in handler.config.output_files.items():
+        
+            if not dst.is_absolute():
+                dst = p.test_env_mod_dir.joinpath(dst)
+            
+            print(f"Copying '{str(src)}' to '{str(dst)}'...")
+            shutil.copy(src, dst)
 
 @task(
     default=True,
-    pre=[download, extract, makefile, nrm, cmake]
+    pre=[download, extract, makefile, nrm, cmake, test_env]
 )
 def all(c: Context):
-    print("Done!")
+    pass
     
 @task
 def clean(c: Context):
