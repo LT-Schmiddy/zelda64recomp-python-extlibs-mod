@@ -5,8 +5,8 @@ from modbuildcore.config import *
 root_dir: Path = Path(__file__).parent
 
 archive_downloads_dir: Path = root_dir.joinpath("downloads")
-build_dir = root_dir.joinpath("build")
-binaries_dir = root_dir.joinpath("binaries")
+build_dir: Path = root_dir.joinpath("build")
+binaries_dir: Path = root_dir.joinpath("binaries")
 
 make_path: Path = shutil.which("make")
 cmake_path: Path = shutil.which("cmake")
@@ -25,6 +25,7 @@ mod_tomls: dict[str, ModTomlConfig] = {}
 cmake_projects: dict[str, CMakeProjectConfig] = {}
 
 test_env_mod_dir: Path = root_dir.joinpath("test_env/mods")
+thunderstore_package_dir: Path = root_dir.joinpath("thunderstore_package")
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
 # Convienience function for downloading compiler artifacts.
@@ -37,7 +38,6 @@ def add_archive_download_and_extract(name: str, url: str, extract_dir: Path) -> 
     archive_extractions[name] = new_extraction
     
     return new_download, new_extraction
-
 
 # Deciding with compiler/tool archive to download for your platform:
 if platform.system() == "Windows":
@@ -135,12 +135,14 @@ def prepend_to_env_path(to_append: Path) -> str:
 
 # Registering mod toml files to build
 # Main API NRM
-mod_tomls['mod'] = ModTomlConfig(root_dir.joinpath("mod.toml"))
-makefiles['mod'] = MakefileConfig(
+
+main_toml_key = 'mod'
+mod_tomls[main_toml_key] = ModTomlConfig(root_dir.joinpath("mod.toml"))
+makefiles[main_toml_key] = MakefileConfig(
     root_dir.joinpath("mod_elf.mk"),
     {
-        "_ELF_PATH": str(mod_tomls['mod'].get_elf_path()),
-        "_BUILD_DIR": str(mod_tomls['mod'].get_elf_path().parent),
+        "_ELF_PATH": str(mod_tomls[main_toml_key].get_elf_path()),
+        "_BUILD_DIR": str(mod_tomls[main_toml_key].get_elf_path().parent),
         "_MIPS_CC": str(make_mips_compiler_path),
         "_MIPS_LD": str(make_mips_linker_path),
         "_SRC_DIR": "src/mod",
@@ -162,15 +164,75 @@ makefiles['tests'] = MakefileConfig(
     }
 )
 
+cmake_default_build_group = "Debug"
+cmake_thunderstore_build_group = "Release"
+
+extlib_name = "RecompPythonNative"
 extlib = CMakeProjectConfig(
     root_dir,
-    "Debug",
     {
         # Unlike with clangmips, we're gonna prepend the LLVM and ZIG directories to the PATH that CMake recieves.
         "PATH": prepend_to_env_path([llvm_path.joinpath("bin"), zig_dir_path]),
-        "LIB_NAME": "RecompPythonNative"
+        "LIB_NAME": extlib_name
     },
 )
+
+def get_preset_lib_path(preset_name: str) -> Path:
+    global root_dir
+    return root_dir.joinpath(f"build/{preset_name}/lib")
+
+def with_windows_dlls(preset_string: str, output_paths: dict[Path, Path]) -> dict[Path, Path]:
+    global root_dir
+    windows_dll_names = [
+        "libcrypto-3-x64.dll",
+        "libffi-8.dll",
+        "libssl-3-x64.dll",
+        "pyexpat.pyd",
+        "select.pyd",
+        "sqlite3.dll",
+        "tcl86t.dll",
+        "tk86t.dll",
+        "unicodedata.pyd",
+        "winsound.pyd",
+        "_asyncio.pyd",
+        "_bz2.pyd",
+        "_ctypes.pyd",
+        "_ctypes_test.pyd",
+        "_decimal.pyd",
+        "_elementtree.pyd",
+        "_hashlib.pyd",
+        "_lzma.pyd",
+        "_multiprocessing.pyd",
+        "_overlapped.pyd",
+        "_queue.pyd",
+        "_socket.pyd",
+        "_sqlite3.pyd",
+        "_ssl.pyd",
+        "_testbuffer.pyd",
+        "_testcapi.pyd",
+        "_testclinic.pyd",
+        "_testclinic_limited.pyd",
+        "_testconsole.pyd",
+        "_testimportmultiple.pyd",
+        "_testinternalcapi.pyd",
+        "_testlimitedcapi.pyd",
+        "_testmultiphase.pyd",
+        "_testsinglephase.pyd",
+        "_tkinter.pyd",
+        "_uuid.pyd",
+        "_wmi.pyd",
+        "_zoneinfo.pyd",
+    ]
+    
+    python_dll_dir =  root_dir.joinpath(f"build/{preset_string}/python-standalone/python/DLLs")
+    
+    for file in [python_dll_dir.joinpath(i) for i in windows_dll_names]:
+        if file.suffix == ".dll":
+            output_paths[file] = Path(file.name)
+        elif file.suffix == ".pyd":
+            output_paths[file] = Path(file.with_suffix(".dll").name)
+            
+    return output_paths
 
 def native_preset_name(build_type: str):
     if platform.system() == "Windows":
@@ -180,39 +242,79 @@ def native_preset_name(build_type: str):
     if platform.system() == "Linux":
         return f"native-linux-x64-{build_type}"
 
+def native_output_files(build_type: str) -> dict[Path, Path]:
+    preset_name = native_preset_name(build_type)
+    if platform.system() == "Windows":
+        return with_windows_dlls(preset_name, {
+            get_preset_lib_path(preset_name).joinpath("python313.dll"): Path("python313.dll"),
+            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
+            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
+        })
+    if platform.system() == "Darwin":
+        return {
+            get_preset_lib_path(preset_name).joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
+            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+        }
+    if platform.system() == "Linux":
+        return {
+            get_preset_lib_path(preset_name).joinpath("libpython3.13.so"): Path("libpython3.13.so"),
+            get_preset_lib_path(preset_name).joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+        }
+    
+
 extlib.build_groups = {
     "Debug" : {
-        "Windows": CMakeBuildConfig.from_preset_pair(extlib, {
-                root_dir.joinpath("build/zig-windows-x64-Debug/lib/python313.dll"): Path("python313.dll"),
-                root_dir.joinpath("build/zig-windows-x64-Debug/lib/libRecompPythonNative.dll"): Path("RecompPythonNative.dll")
-            }, "zig-windows-x64-Debug"),
+        "Windows": CMakeBuildConfig.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Debug", {
+                get_preset_lib_path("zig-windows-x64-Debug").joinpath("python313.dll"): Path("python313.dll"),
+                get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
+                get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
+            }), "zig-windows-x64-Debug"),
         "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {
-                root_dir.joinpath("build/zig-macos-aarch64-Debug/lib/libpython3.13.dylib"): Path("libpython3.13.dylib"),
-                root_dir.joinpath("build/zig-macos-aarch64-Debug/lib/libRecompPythonNative.dylib"): Path("RecompPythonNative.dylib")
+                get_preset_lib_path("zig-macos-aarch64-Debug").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
+                get_preset_lib_path("zig-macos-aarch64-Debug").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-Debug"),
         "Linux": CMakeBuildConfig.from_preset_pair(extlib, {
-                root_dir.joinpath("build/zig-linux-x64-Debug/lib/libpython3.13.so"): Path("libpython3.13.so"),
-                root_dir.joinpath("build/zig-linux-x64-Debug/lib/libRecompPythonNative.so"): Path("RecompPythonNative.so")
+                get_preset_lib_path("zig-linux-x64-Debug").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
+                get_preset_lib_path("zig-linux-x64-Debug").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
             }, "zig-linux-x64-Debug"),
     },
     "Release" : {
-        "Windows": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-windows-x64-Release"),
-        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-macos-aarch64-Release"),
-        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-linux-x64-Release"),
+        "Windows": CMakeBuildConfig.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Release", {
+                get_preset_lib_path("zig-windows-x64-Release").joinpath("python313.dll"): Path("python313.dll"),
+                get_preset_lib_path("zig-windows-x64-Release").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll")
+            }), "zig-windows-x64-Release"),
+        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {
+                get_preset_lib_path("zig-macos-aarch64-Release").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
+                get_preset_lib_path("zig-macos-aarch64-Release").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+            }, "zig-macos-aarch64-Release"),
+        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {
+                get_preset_lib_path("zig-linux-x64-Release").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
+                get_preset_lib_path("zig-linux-x64-Release").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+            }, "zig-linux-x64-Release"),
     }, 
     "RelWithDebInfo": {
-        "Windows": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-windows-x64-RelWithDebInfo"),
-        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-macos-aarch64-RelWithDebInfo"),
-        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {}, "zig-linux-x64-RelWithDebInfo"),
+        "Windows": CMakeBuildConfig.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-RelWithDebInfo", {
+                get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath("python313.dll"): Path("python313.dll"),
+                get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
+                get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
+            }), "zig-windows-x64-RelWithDebInfo"),
+        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {
+                get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
+                get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+            }, "zig-macos-aarch64-RelWithDebInfo"),
+        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {
+                get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
+                get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+            }, "zig-linux-x64-RelWithDebInfo"),
     },
     "native-Debug" : {
-        "Native": CMakeBuildConfig.from_preset_pair(extlib, {}, native_preset_name("Debug")),
+        "Native": CMakeBuildConfig.from_preset_pair(extlib, native_output_files("Debug"), native_preset_name("Debug")),
     },
     "native-Release" : {
-        "Native": CMakeBuildConfig.from_preset_pair(extlib, {}, native_preset_name("Release")),
+        "Native": CMakeBuildConfig.from_preset_pair(extlib, native_output_files("Release"), native_preset_name("Release")),
     }, 
     "native-RelWithDebInfo": {
-        "Native": CMakeBuildConfig.from_preset_pair(extlib, {}, native_preset_name("RelWithDebInfo")),
+        "Native": CMakeBuildConfig.from_preset_pair(extlib, native_output_files("RelWithDebInfo"), native_preset_name("RelWithDebInfo")),
     }
 }
 cmake_projects["extlib"] = extlib

@@ -63,13 +63,11 @@ class CMakeBuildHandler:
 
 class CMakeProjectConfig:
     project_dir: Path
-    default_build_group: str
     extended_env: dict[str, str]
     build_groups: dict[str, dict[str, CMakeBuildConfig]]
     
-    def __init__(self, project_dir: Path, default_build_group: str, expanded_env: dict[str, str]):
+    def __init__(self, project_dir: Path, expanded_env: dict[str, str]):
         self.project_dir = project_dir
-        self.default_build_group = default_build_group
         self.extended_env = expanded_env
         self.build_groups = {}
         

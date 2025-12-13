@@ -1,9 +1,11 @@
 
-import sys, os, subprocess, pathlib
+import sys, os, subprocess, pathlib, shutil, json, zipfile, re
 from pathlib import Path
 
 from invoke import Context
 from invoke.config import Config
+
+from . import tomls
 
 # For a couple different reasons (primarily related to cross-platform compatability),
 # it will usually be better for us to use subprocess instead of shell commands.
@@ -38,3 +40,8 @@ def invoke_subprocess_run(c: Context, required: bool, *args, **kwargs) -> subpro
     
     return result
 
+def slugify(text: str) -> str:
+    text = text.strip()
+    text = re.sub(r'[\s_]+', '_', text)
+    text = re.sub(r'[^a-zA-Z0-9_]', '', text)
+    return text
