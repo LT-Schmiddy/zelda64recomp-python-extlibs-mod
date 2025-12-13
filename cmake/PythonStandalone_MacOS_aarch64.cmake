@@ -64,6 +64,8 @@ function(link_python_standalone P_TARGET_NAME)
                 "$<TARGET_FILE_DIR:${P_TARGET_NAME}>/libpython3.13.dylib"
     )
 
+    message("INSTALL_NAME_TOOL_COMMAND = ${INSTALL_NAME_TOOL_COMMAND}")
+
     add_custom_command(TARGET ${P_TARGET_NAME} POST_BUILD
         COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change /install/lib/libpython3.13.dylib @loader_path/libpython3.13.dylib ${DYLIB_FILE}
     )
