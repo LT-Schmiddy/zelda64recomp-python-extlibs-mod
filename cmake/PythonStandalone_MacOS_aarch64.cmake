@@ -20,8 +20,6 @@ set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
     endif()
 # endif()
 
-set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
-
 # Download the artifact
 if(NOT EXISTS "${PYTHON_ARCHIVE}")
     message(STATUS "Downloading Python artifact...")
