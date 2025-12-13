@@ -3,7 +3,7 @@ if __name__ == '__main__':
     print(f"Wrong file! This is the pyinvoke tasks file for the `modbuild.py` tool. Run `python[3] ./modbuild.py` to use it.")
     sys.exit(0)
 
-import shutil, os
+import shutil, os, json
 from pathlib import Path
 
 from modbuildcore.config import *
@@ -135,28 +135,36 @@ def update_test_env(C: Context):
 def all(c: Context):
     pass
 
+
+@task
+def create_thunderstore_package(c: Context, name: str = None):
+    package_list: list[ThunderstorePackageHandler] = None
+    if name is None:
+        package_list = [ThunderstorePackageHandler(i) for i in p.thunderstore_packages.values()]
+    else:
+        package_list = [ThunderstorePackageHandler(p.thunderstore_packages[i]) for i in name.split(ARG_SPLIT_CHAR)]
+        
+    for package in package_list:
+        package.assemble_package()
+
+@task
+def print_thunderstore_manifest(c: Context, name: str = None):
+    package_list: list[ThunderstorePackageHandler] = None
+    if name is None:
+        package_list = [ThunderstorePackageHandler(i) for i in p.thunderstore_packages.values()]
+    else:
+        package_list = [ThunderstorePackageHandler(p.thunderstore_packages[i]) for i in name.split(ARG_SPLIT_CHAR)]
+        
+    for package in package_list:
+        print(json.dumps(package.config.manifest, indent=4))
+
+
 @task(
-    pre=[download, extract, makefile, nrm, call(cmake, group=p.cmake_thunderstore_build_group)]
+    pre=[download, extract, makefile, nrm, call(cmake, group=p.cmake_thunderstore_build_group), create_thunderstore_package]
 )
 def thunderstore(c: Context):
-    global _built_tomls, _built_cmake_handlers
-    os.makedirs(p.thunderstore_package_dir, exist_ok=True)
-    
-    # Copying NRM outputs
-    for toml in _built_tomls:
-        src = toml.config.get_output_path()
-        dst = p.thunderstore_package_dir.joinpath(toml.config.get_output_path().name)
-        print(f"Copying '{str(src)}' to '{str(dst)}'...")
-        shutil.copy(src, dst)
+    pass
 
-    for handler in _built_cmake_handlers:
-        for src, dst in handler.config.output_files.items():
-        
-            if not dst.is_absolute():
-                dst = p.thunderstore_package_dir.joinpath(dst)
-            
-            print(f"Copying '{str(src)}' to '{str(dst)}'...")
-            shutil.copy(src, dst)
 
 @task
 def clean(c: Context):

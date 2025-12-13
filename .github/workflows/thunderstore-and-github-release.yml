@@ -25,17 +25,12 @@ jobs:
     - name: Get Apt Packages
       id: get_apt_packages
       run: |-
-        sudo apt install -y clang lld ninja-build jq
-
-    - name: Get Snap Packages
-      id: get_snap_packages
-      run: |-
-        sudo snap install zig --classic --beta
+        sudo apt install -y cmake make ninja-build python3 jq
 
     - name: Run Buildscript
       id: run_buildscript
       run: |-
-        make thunderstore
+        python3 ./modbuild.py thunderstore
 
     - name: Upload Build Artifacts
       id: upload_build_artifacts

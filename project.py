@@ -23,9 +23,9 @@ downloads: dict[str, DownloadConfig] = {}
 makefiles: dict[str, MakefileConfig] = {}
 mod_tomls: dict[str, ModTomlConfig] = {}
 cmake_projects: dict[str, CMakeProjectConfig] = {}
+thunderstore_packages: dict[str, ThunderstorePackageConfig] = {}
 
 test_env_mod_dir: Path = root_dir.joinpath("test_env/mods")
-thunderstore_package_dir: Path = root_dir.joinpath("thunderstore_package")
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
 # Convienience function for downloading compiler artifacts.
@@ -136,13 +136,13 @@ def prepend_to_env_path(to_append: Path) -> str:
 # Registering mod toml files to build
 # Main API NRM
 
-main_toml_key = 'mod'
-mod_tomls[main_toml_key] = ModTomlConfig(root_dir.joinpath("mod.toml"))
-makefiles[main_toml_key] = MakefileConfig(
+main_toml = ModTomlConfig(root_dir.joinpath("mod.toml"))
+mod_tomls['mod'] = main_toml
+makefiles['mod'] = MakefileConfig(
     root_dir.joinpath("mod_elf.mk"),
     {
-        "_ELF_PATH": str(mod_tomls[main_toml_key].get_elf_path()),
-        "_BUILD_DIR": str(mod_tomls[main_toml_key].get_elf_path().parent),
+        "_ELF_PATH": str(mod_tomls['mod'].get_elf_path()),
+        "_BUILD_DIR": str(mod_tomls['mod'].get_elf_path().parent),
         "_MIPS_CC": str(make_mips_compiler_path),
         "_MIPS_LD": str(make_mips_linker_path),
         "_SRC_DIR": "src/mod",
@@ -318,6 +318,23 @@ extlib.build_groups = {
     }
 }
 cmake_projects["extlib"] = extlib
+
+thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
+thunderstore_packages['package'] = ThunderstorePackageConfig(
+    root_dir.joinpath(f"{thunderstore_package_name}.thunderstore.zip"),
+    {
+        "name": thunderstore_package_name,
+        "version_number": main_toml.data["manifest"]["version"],
+        "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
+        "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
+        "dependencies": []
+    },
+    root_dir.joinpath("thunderstore_info/README.md"),
+    root_dir.joinpath("thunderstore_info/CHANGELOG.md"),
+    root_dir.joinpath("thumb.png"),
+    [main_toml],
+    [i for i in extlib.build_groups["Release"].values()]
+)
 
 clean_paths: list[Path] = [
     build_dir
