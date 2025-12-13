@@ -37,8 +37,9 @@ if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
 endif()
 
 # Find the real root of the extracted directory (the archive contains a folder)
-file(GLOB EXTRACTED_DIRS LIST_DIRECTORIES true "${PYTHON_EXTRACT_DIR}/*")
-list(GET EXTRACTED_DIRS 0 PYTHON_ROOT)
+# file(GLOB EXTRACTED_DIRS LIST_DIRECTORIES true "${PYTHON_EXTRACT_DIR}/*")
+# list(GET EXTRACTED_DIRS 0 PYTHON_ROOT)
+set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
 
 
 function(log_target_property P_TARGET_NAME P_PROP_NAME)
