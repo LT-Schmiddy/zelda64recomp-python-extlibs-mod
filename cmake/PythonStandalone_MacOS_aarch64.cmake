@@ -64,6 +64,7 @@ function(link_python_standalone P_TARGET_NAME)
                 "$<TARGET_FILE_DIR:${P_TARGET_NAME}>/libpython3.13.dylib"
     )
 
+    message("CMAKE_HOST_SYSTEM = ${CMAKE_HOST_SYSTEM}")
     message("INSTALL_NAME_TOOL_COMMAND = ${INSTALL_NAME_TOOL_COMMAND}")
 
     add_custom_command(TARGET ${P_TARGET_NAME} POST_BUILD
