@@ -10,15 +10,15 @@ set(PYTHON_ARCHIVE "${CMAKE_BINARY_DIR}/cpython.tar.gz")
 set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
 
 # Handling the install_name change for the dylib:
-# # if(NOT DEFINED INSTALL_NAME_TOOL_COMMAND)
-#     if (CMAKE_HOST_SYSTEM STREQUAL "Darwin")
-#         set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
-#     elseif(CMAKE_HOST_SYSTEM MATCHES "Windows")
-#         set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
-#     elseif(CMAKE_HOST_SYSTEM MATCHES "Linux")
-#         
-#     endif()
-# # endif()
+# if(NOT DEFINED INSTALL_NAME_TOOL_COMMAND)
+    if (CMAKE_HOST_SYSTEM STREQUAL "Darwin")
+        set(INSTALL_NAME_TOOL_COMMAND install_name_tool
+    elseif(CMAKE_HOST_SYSTEM MATCHES "Windows")
+        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
+    elseif(CMAKE_HOST_SYSTEM MATCHES "Linux")
+        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
+    endif()
+# endif()
 
 set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
 
