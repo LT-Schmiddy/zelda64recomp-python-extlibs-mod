@@ -92,7 +92,7 @@ elif platform.system() == "Darwin":
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/LLVM-19.1.7-macOS-ARM64.tar.xz",
         binaries_dir.joinpath("llvm_macos")
     )
-    llvm_path = binaries_dir.joinpath("llvm_linux/LLVM-19.1.7-macOS-ARM64")
+    llvm_path = binaries_dir.joinpath("llvm_macos/LLVM-19.1.7-macOS-ARM64")
     
 else:
     add_archive_download_and_extract(
