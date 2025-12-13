@@ -76,7 +76,7 @@ elif platform.system() == "Darwin":
     )
     make_mips_compiler_path = binaries_dir.joinpath("llvmmips_macos/nrs_bin/clang")
     make_mips_linker_path = binaries_dir.joinpath("llvmmips_macos/nrs_bin/ld.lld")
-    mod_tool_path = binaries_dir.joinpath("llvmmips_win/nrs_bin/RecompModTool")
+    mod_tool_path = binaries_dir.joinpath("llvmmips_macos/nrs_bin/RecompModTool")
     
     add_archive_download_and_extract(
         "zig",
