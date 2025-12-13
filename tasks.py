@@ -65,7 +65,7 @@ def makefile(c: Context, name: str = None):
         makefile.run_make(c, p.make_path)
 
 @task
-def nrm(c: Context, name: str = None):
+def nrm(c: Context, name: str = None, path_fix: bool = True):
     global _built_tomls
     toml_list : list[ModTomlHandler] = None
     if name is None:
@@ -74,8 +74,13 @@ def nrm(c: Context, name: str = None):
         toml_list = [ModTomlHandler(p.mod_tomls[i]) for i in name.split(ARG_SPLIT_CHAR)]
     
     for mod in toml_list:
-        print(f"-> Build '{mod.config.data['inputs']['mod_filename']}'.nrm from '{mod.config.toml_path}'")
+        print(f"-> Building {mod.config.data['inputs']['mod_filename']}.nrm from '{mod.config.toml_path}'...")
         mod.run_mod_tool(c, p.mod_tool_path)
+        
+        if (path_fix):
+            print(f"\tCorrecting path backslashes in {mod.config.data['inputs']['mod_filename']}.nrm...")
+            mod.run_nrm_path_fix()
+        
         _built_tomls.append(mod)
 
 @task

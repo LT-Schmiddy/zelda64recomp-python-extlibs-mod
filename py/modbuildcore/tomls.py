@@ -1,4 +1,4 @@
-import tomllib, pathlib
+import tomllib, pathlib, zipfile, os
 from pathlib import Path
 
 from invoke import Context
@@ -38,4 +38,20 @@ class ModTomlHandler:
         invoke_subprocess_run(context, True,
             [mod_tool_binary, self.config.toml_path, self.config.build_dir]
         )
+    
+    def run_nrm_path_fix(self):
+        in_zip = zipfile.ZipFile(self.config.get_output_path(), 'r')
+        out_file_path = self.config.get_output_path().with_suffix(".nrm_temp")        
+        out_zip = zipfile.ZipFile(out_file_path, 'w', zipfile.ZIP_DEFLATED)        
+        
+        for file in in_zip.filelist:
+            new_path = file.filename.replace("\\", "/")
+            
+            out_zip.writestr(new_path, in_zip.read(file))
+        
+        in_zip.close()
+        out_zip.close()
+        
+        os.remove(self.config.get_output_path())
+        os.rename(out_file_path, self.config.get_output_path())
         
