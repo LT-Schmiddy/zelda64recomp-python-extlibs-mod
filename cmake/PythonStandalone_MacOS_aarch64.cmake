@@ -12,7 +12,7 @@ set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
 # Handling the install_name change for the dylib:
 # if(NOT DEFINED INSTALL_NAME_TOOL_COMMAND)
     if (CMAKE_HOST_SYSTEM MATCHES "Darwin")
-        set(INSTALL_NAME_TOOL_COMMAND install_name_tool)
+        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
     elseif(CMAKE_HOST_SYSTEM MATCHES "Windows")
         set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
     elseif(CMAKE_HOST_SYSTEM MATCHES "Linux")
