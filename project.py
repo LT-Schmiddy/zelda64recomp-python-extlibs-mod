@@ -18,14 +18,16 @@ zig_dir_path: Path = None
 zig_bin_path: Path = None
 llvm_path: Path = None
 
-archive_extractions: dict[str, ArchiveExtractConfig] = {}
 downloads: dict[str, DownloadConfig] = {}
+archive_extractions: dict[str, ArchiveExtractConfig] = {}
 makefiles: dict[str, MakefileConfig] = {}
 mod_tomls: dict[str, ModTomlConfig] = {}
 cmake_projects: dict[str, CMakeProjectConfig] = {}
 thunderstore_packages: dict[str, ThunderstorePackageConfig] = {}
 
 test_env_mod_dir: Path = root_dir.joinpath("test_env/mods")
+
+nrm_path_fix_by_default = True
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
 # Convienience function for downloading compiler artifacts.
@@ -164,9 +166,6 @@ makefiles['tests'] = MakefileConfig(
     }
 )
 
-cmake_default_build_group = "Debug"
-cmake_thunderstore_build_group = "Release"
-
 extlib_name = "RecompPythonNative"
 extlib = CMakeProjectConfig(
     root_dir,
@@ -175,8 +174,9 @@ extlib = CMakeProjectConfig(
         "PATH": prepend_to_env_path([llvm_path.joinpath("bin"), zig_dir_path]),
         "LIB_NAME": extlib_name
     },
+    "Debug",
+    "Release"
 )
-
 def get_preset_lib_path(preset_name: str) -> Path:
     global root_dir
     return root_dir.joinpath(f"build/{preset_name}/lib")

@@ -3,6 +3,30 @@ import sys, subprocess, re
 from pathlib import Path
 
 from invoke import Context
+from colors import *
+
+def slugify(text: str) -> str:
+    text = text.strip()
+    text = re.sub(r'[\s_]+', '_', text)
+    text = re.sub(r'[^a-zA-Z0-9_]', '', text)
+    return text
+
+
+def print_color(fg: str, *args, **kwargs):
+    p_list = []
+    for i in args:
+        p_list.append(color(str(i), fg=fg))
+
+    print(*p_list, **kwargs)
+
+
+def print_error(*args, **kwargs):
+    print_color("red", *args, **kwargs)
+
+
+def print_warning(*args, **kwargs):
+    print_color("yellow", *args, **kwargs)
+    
 # For a couple different reasons (primarily related to cross-platform compatability),
 # it will usually be better for us to use subprocess instead of shell commands.
 # This is a convienient helper function to make subprocess work better with the
@@ -29,17 +53,9 @@ def invoke_subprocess_run(c: Context, required: bool, *args, **kwargs) -> subpro
     
     if result.returncode != 0:
         if warn or not required:
-            print(f"WARNING! Command '{subprocess_str}' returned non-zero exit status {result.returncode}.")
+            print_warning(f"WARNING! Command '{subprocess_str}' returned non-zero exit status {result.returncode}.")
         else:
-            print(f"FATAL! Command '{subprocess_str}' returned non-zero exit status {result.returncode}. Aborting...")
+            print_error(f"FATAL! Command '{subprocess_str}' returned non-zero exit status {result.returncode}. Aborting...")
             sys.exit(1)
     
     return result
-
-
-def slugify(text: str) -> str:
-    text = text.strip()
-    text = re.sub(r'[\s_]+', '_', text)
-    text = re.sub(r'[^a-zA-Z0-9_]', '', text)
-    return text
-

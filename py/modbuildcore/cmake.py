@@ -64,13 +64,17 @@ class CMakeBuildHandler:
 class CMakeProjectConfig:
     project_dir: Path
     extended_env: dict[str, str]
+    debug_build_group_name: str
+    release_build_group_name: str
     build_groups: dict[str, dict[str, CMakeBuildConfig]]
     
-    def __init__(self, project_dir: Path, expanded_env: dict[str, str]):
+    def __init__(self, project_dir: Path, expanded_env: dict[str, str], debug_build_group_name: str, release_build_group_name: str):
         self.project_dir = project_dir
         self.extended_env = expanded_env
+        self.debug_build_group_name = debug_build_group_name
+        self.release_build_group_name = release_build_group_name
         self.build_groups = {}
-        
+
         
 class CMakeProjectHandler:
     config: CMakeProjectConfig
@@ -88,6 +92,12 @@ class CMakeProjectHandler:
             
     def get_build_group_names(self) -> list[str]:
         return list(self.build_handlers.keys())
+    
+    def get_debug_build_group(self) -> dict[str, CMakeBuildConfig]:
+        return self.build_handlers[self.config.debug_build_group_name]
+    
+    def get_release_build_group(self) -> dict[str, CMakeBuildConfig]:
+        return self.build_handlers[self.config.release_build_group_name]
     
     def configure_group(self, c: Context, cmake_path: Path, group_name: str):
         for handler in self.build_handlers[group_name].values():
