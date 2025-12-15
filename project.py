@@ -22,7 +22,7 @@ downloads: dict[str, DownloadConfig] = {}
 archive_extractions: dict[str, ArchiveExtractConfig] = {}
 makefiles: dict[str, MakefileConfig] = {}
 mod_tomls: dict[str, ModTomlConfig] = {}
-cmake_projects: dict[str, CMakeProjectConfig] = {}
+cmake_build_groups: dict[str, dict[str, CMakeBuildConfig]] = {}
 thunderstore_packages: dict[str, ThunderstorePackageConfig] = {}
 
 test_env_mod_dir: Path = root_dir.joinpath("test_env/mods")
@@ -173,9 +173,7 @@ extlib = CMakeProjectConfig(
         # Unlike with clangmips, we're gonna prepend the LLVM and ZIG directories to the PATH that CMake recieves.
         "PATH": prepend_to_env_path([llvm_path.joinpath("bin"), zig_dir_path]),
         "LIB_NAME": extlib_name
-    },
-    "Debug",
-    "Release"
+    }
 )
 def get_preset_lib_path(preset_name: str) -> Path:
     global root_dir
@@ -245,11 +243,13 @@ def native_preset_name(build_type: str):
 def native_output_files(build_type: str) -> dict[Path, Path]:
     preset_name = native_preset_name(build_type)
     if platform.system() == "Windows":
-        return with_windows_dlls(preset_name, {
+        win_base = {
             get_preset_lib_path(preset_name).joinpath("python313.dll"): Path("python313.dll"),
-            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
-            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
-        })
+            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dll"): Path(f"{extlib_name}.dll")
+        }
+        if build_type == "Debug" or build_type == "RelWithDebInfo":
+            win_base[get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.pdb")] = Path(f"{extlib_name}.pdb")
+        return with_windows_dlls(preset_name, win_base)
     if platform.system() == "Darwin":
         return {
             get_preset_lib_path(preset_name).joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
@@ -261,8 +261,9 @@ def native_output_files(build_type: str) -> dict[Path, Path]:
             get_preset_lib_path(preset_name).joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
         }
     
-
-extlib.build_groups = {
+cmake_debug_build_group_name: str = "Debug"
+cmake_release_build_group_name: str = "Release"
+cmake_build_groups = {
     "Debug" : {
         "Windows": CMakeBuildConfig.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Debug", {
                 get_preset_lib_path("zig-windows-x64-Debug").joinpath("python313.dll"): Path("python313.dll"),
@@ -317,7 +318,6 @@ extlib.build_groups = {
         "Native": CMakeBuildConfig.from_preset_pair(extlib, native_output_files("RelWithDebInfo"), native_preset_name("RelWithDebInfo")),
     }
 }
-cmake_projects["extlib"] = extlib
 
 thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
 thunderstore_packages['package'] = ThunderstorePackageConfig(
@@ -333,7 +333,7 @@ thunderstore_packages['package'] = ThunderstorePackageConfig(
     root_dir.joinpath("thunderstore_info/CHANGELOG.md"),
     root_dir.joinpath("thumb.png"),
     [main_toml],
-    [i for i in extlib.build_groups["Release"].values()]
+    [i for i in cmake_build_groups["Release"].values()]
 )
 
 clean_paths: list[Path] = [

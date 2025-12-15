@@ -24,6 +24,9 @@ _built_cmake_handlers: list[CMakeBuildHandler] = []
 
 def print_task_header(*args, **kwargs): 
     print_color('green', "\n-> ", *args, **kwargs)
+    
+def print_sub_header(*args, **kwargs):
+    print_color('blue', f"\n--> ", *args, **kwargs)
 
 @task(help={
     'force': "Redownloads any previously downloaded files.",
@@ -95,7 +98,7 @@ def makefile(c: Context, name: str = None):
         makefile_list = [MakefileHandler(p.makefiles[i]) for i in name.split(ARG_SPLIT_CHAR)]
     
     for makefile in makefile_list:
-        print(f"-> Running makefile '{makefile.config.makefile_path}'")
+        print_sub_header(f"Running makefile '{makefile.config.makefile_path}'")
         makefile.run_make(c, p.make_path)
 
 @task(help={
@@ -124,60 +127,55 @@ def nrm(c: Context, name: str = None, path_fix: bool = p.nrm_path_fix_by_default
         mod.run_mod_tool(c, p.mod_tool_path)
         
         if (path_fix):
-            print(f"\tCorrecting path backslashes in {mod.config.data['inputs']['mod_filename']}.nrm...")
+            print(f"Correcting path backslashes in {mod.config.data['inputs']['mod_filename']}.nrm...")
             mod.run_nrm_path_fix()
         
         _built_tomls.append(mod)
 
 @task(help={
-    
+    'release_group': "Use re",
+    'group_name': "",
+    'build_name': "",
 })
-def cmake(c: Context, project_name: str = None, release_group: bool=False, group_name: str = None, build_name: str = None):
+def cmake(c: Context, release_group: bool=False, group_name: str = None, build_name: str = None):
     """
-    Run the
-    """
+    Run CMake Builds by group.
     
+    """
     print_task_header("Running CMake builds...")
-    
     global _built_cmake_handlers
-    project_list: list[CMakeProjectHandler] = None
-    if project_name is None:
-        project_list = [CMakeProjectHandler(i) for i in p.cmake_projects.values()]
-    else:
-        project_list = [CMakeProjectHandler(p.cmake_projects[i]) for i in project_name.split(ARG_SPLIT_CHAR)]
     
-    for project in project_list:
-        selected_groups: dict[str, dict[str, CMakeBuildHandler]] = {}
-        if release_group and (group_name is not None):
-            print_error("Error: Subcommand `cmake` arguments `release_group` and `group_name` cannot be used together.")
-            sys.exit(1)
+    selected_groups: dict[str, dict[str, CMakeBuildHandler]] = {}
+    if release_group and (group_name is not None):
+        print_error("Error: Subcommand `cmake` arguments `release_group` and `group_name` cannot be used together.")
+        sys.exit(1)
+    
+    if release_group:
+        selected_groups[p.cmake_release_build_group_name] = p.cmake_build_groups[p.cmake_release_build_group_name]
+    elif group_name is not None:
+        for i in group_name.split(ARG_SPLIT_CHAR):
+            selected_groups[i] = p.cmake_build_groups[i]
+    else:
+        selected_groups[p.cmake_debug_build_group_name] = p.cmake_build_groups[p.cmake_debug_build_group_name]
         
-        if release_group:
-            selected_groups[project.config.release_build_group_name] = project.get_release_build_group()
-        elif group_name is not None:
-            for i in group_name.split(ARG_SPLIT_CHAR):
-                selected_groups[i] = project.build_handlers[i]
-        else:
-            selected_groups[project.config.debug_build_group_name] = project.get_debug_build_group()
-            
-        for group_key, group in selected_groups.items():
-            if build_name is None:
-                for build_key, build_handler in group.items():
-                    print_color('blue', f"\n--> CMake build '{build_key}', from build group '{group_key}': Configure")
-                    build_handler.run_configure(c, p.cmake_path)
-                    
-                    print_color('blue', f"\n--> CMake build '{build_key}', from build group '{group_key}': Build")
-                    build_handler.run_build(c, p.cmake_path)
-                    _built_cmake_handlers.append(build_handler)
-            else:
-                for build_key, build_handler in [(i, group[i]) for i in build_name.split(ARG_SPLIT_CHAR)]:
+    for group_key, group in selected_groups.items():
+        if build_name is None:
+            for build_key, build_handler in [(bkey, CMakeBuildHandler(build_config)) for bkey, build_config in group.items()]:
+                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Configure")
+                build_handler.run_configure(c, p.cmake_path)
                 
-                    print_color('blue', f"\n--> CMake build '{build_key}', from build group '{group_key}': Configure")
-                    build_handler.run_configure(c, p.cmake_path)
-                    
-                    print_color('blue', f"\n--> CMake build '{build_key}', from build group '{group_key}': Build")
-                    build_handler.run_build(c, p.cmake_path)
-                    _built_cmake_handlers.append(build_handler)
+                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Build")
+                build_handler.run_build(c, p.cmake_path)
+                _built_cmake_handlers.append(build_handler)
+        else:
+            for build_key, build_handler in [(bkey, CMakeBuildHandler(group[bkey])) for bkey in build_name.split(ARG_SPLIT_CHAR)]:
+            
+                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Configure")
+                build_handler.run_configure(c, p.cmake_path)
+                
+                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Build")
+                build_handler.run_build(c, p.cmake_path)
+                _built_cmake_handlers.append(build_handler)
                     
 @task
 def update_test_env(C: Context):

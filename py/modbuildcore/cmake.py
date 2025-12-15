@@ -7,7 +7,12 @@ from .utils import invoke_subprocess_run
 
 # Class declaration before definition:
 class CMakeProjectConfig:
-    ...
+    project_working_dir: Path
+    extended_env: dict[str, str]
+    
+    def __init__(self, project_working_dir: Path, expanded_env: dict[str, str]):
+        self.project_working_dir = project_working_dir
+        self.extended_env = expanded_env
 
 
 class CMakeBuildConfig:
@@ -30,7 +35,7 @@ class CMakeBuildConfig:
         return cls(
             cmake_project,
             output_files,
-            ["--preset", config_preset_name, cmake_project.project_dir],
+            ["--preset", config_preset_name, cmake_project.project_working_dir],
             ["--build", "--preset", build_preset_name]
         )
         
@@ -47,7 +52,7 @@ class CMakeBuildHandler:
         invoke_subprocess_run(c, True,
             [cmake_bin] + self.config.config_args,
             env=cmake_env,
-            cwd=self.config.cmake_project.project_dir
+            cwd=self.config.cmake_project.project_working_dir
         )
     
     def run_build(self, c: Context, cmake_bin: Path):
@@ -57,58 +62,6 @@ class CMakeBuildHandler:
         invoke_subprocess_run(c, True,
             [cmake_bin] + self.config.build_args,
             env=cmake_env,
-            cwd=self.config.cmake_project.project_dir
+            cwd=self.config.cmake_project.project_working_dir
         )
 
-
-class CMakeProjectConfig:
-    project_dir: Path
-    extended_env: dict[str, str]
-    debug_build_group_name: str
-    release_build_group_name: str
-    build_groups: dict[str, dict[str, CMakeBuildConfig]]
-    
-    def __init__(self, project_dir: Path, expanded_env: dict[str, str], debug_build_group_name: str, release_build_group_name: str):
-        self.project_dir = project_dir
-        self.extended_env = expanded_env
-        self.debug_build_group_name = debug_build_group_name
-        self.release_build_group_name = release_build_group_name
-        self.build_groups = {}
-
-        
-class CMakeProjectHandler:
-    config: CMakeProjectConfig
-    
-    build_handlers: dict[str, dict[str, CMakeBuildHandler]]
-    
-    def __init__(self, config: CMakeProjectConfig):
-        self.config = config
-        
-        self.build_handlers = {}
-        for group_name, group_configs in self.config.build_groups.items():
-            self.build_handlers[group_name] = {}
-            for build_name, build_config in group_configs.items():
-                self.build_handlers[group_name][build_name] = CMakeBuildHandler(build_config)
-            
-    def get_build_group_names(self) -> list[str]:
-        return list(self.build_handlers.keys())
-    
-    def get_debug_build_group(self) -> dict[str, CMakeBuildConfig]:
-        return self.build_handlers[self.config.debug_build_group_name]
-    
-    def get_release_build_group(self) -> dict[str, CMakeBuildConfig]:
-        return self.build_handlers[self.config.release_build_group_name]
-    
-    def configure_group(self, c: Context, cmake_path: Path, group_name: str):
-        for handler in self.build_handlers[group_name].values():
-            handler.run_configure(c, cmake_path)
-    
-    def build_group(self, c: Context, cmake_path: Path, group_name: str):
-        for handler in self.build_handlers[group_name].values():
-            handler.run_build(c, cmake_path)
-            
-    
-    def configure_and_build_group(self, c: Context, cmake_path: Path, group_name: str):
-        for handler in self.build_handlers[group_name].values():
-            handler.run_configure(c, cmake_path)
-            handler.run_build(c, cmake_path)
