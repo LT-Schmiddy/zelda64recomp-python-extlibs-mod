@@ -31,7 +31,7 @@ def print_task_header(*args, **kwargs):
     print_color('green', "\n-> ", *args, **kwargs)
     
 def print_job_header(*args, **kwargs):
-    print_color('blue', f"\n--> ", *args, flush=True, **kwargs)
+    print_color('blue', f"\n--> ", *args, **kwargs)
     
 # For a couple different reasons (primarily related to cross-platform compatability),
 # it will usually be better for us to use subprocess instead of shell commands.
