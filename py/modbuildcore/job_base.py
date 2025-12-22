@@ -2,6 +2,18 @@ from invoke import Context
 from pathlib import Path
 
 class JobBase:
+    # Class
+    _resolved_jobs: list[JobBase] = []
+    
+    @classmethod
+    def get_all_resolved_mod_outputs(cls) -> dict[Path, Path]:
+        retVal = {}
+        for i in cls._resolved_jobs:
+            retVal.update(i.mod_output_files)
+        
+        return retVal
+    
+    # Instance:
     _has_been_resolved: bool
     no_duplication: bool
     dependencies: list[JobBase]
@@ -25,22 +37,26 @@ class JobBase:
         self.dependencies.extend(new_dependencies)
         return self
     
-    def resolve(self, c: Context, run_dependencies: bool = True):            
+    def resolve(self, c: Context, skip_dependencies: bool = False):            
         if self.no_duplication and self._has_been_resolved:
             return
         
         if self.needs_to_run(c):
-            if run_dependencies:
+            if not skip_dependencies:
                 for i in self.dependencies:
                     i.resolve(c)
             self.run(c)
         
         self._has_been_resolved = True
+        self._resolved_jobs.append(self)
         
-    def get_recursive_mod_outputs(self) -> dict[Path, Path]:
+    def get_recursive_mod_outputs(self, include_unresolved_jobs: bool = True) -> dict[Path, Path]:
+        if not (self._has_been_resolved or include_unresolved_jobs):
+            return {}
+        
         retVal = self.mod_output_files
         
         for i in self.dependencies:
-            retVal.update(i.get_recursive_mod_outputs())
+            retVal.update(i.get_recursive_mod_outputs(include_unresolved_jobs))
         
         return retVal

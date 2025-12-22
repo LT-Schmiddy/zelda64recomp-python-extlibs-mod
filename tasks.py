@@ -31,7 +31,7 @@ def print_job_header(*args, **kwargs):
     'force': "Redownloads any previously downloaded files.",
     'name': f"Only download specific files. Names should be the keys used in `project.downloads`, separated by '{ARG_SPLIT_CHAR}'."
 })
-def download(c: Context, force: bool = False, name: str = None):
+def download(c: Context, skip_dependencies: bool = False, force: bool = False, name: str = None):
     """
     Runs the downloads defined in `project.downloads`. 
     
@@ -48,13 +48,13 @@ def download(c: Context, force: bool = False, name: str = None):
     
     for download in dl_list:
         download.force = force
-        download.resolve(c)
+        download.resolve(c, skip_dependencies)
     
 @task(help={
     'force': "Re-extract archives even if the output folder already exists",
     'name': f"Only extract specific archives. Names should be the keys used in `project.archive_extractions`, separated by '{ARG_SPLIT_CHAR}'."
 })
-def extract(c: Context, force: bool = False, name: str = None):
+def extract(c: Context, skip_dependencies: bool = False, force: bool = False, name: str = None):
     """
     Runs the archive extractions defined in `project.archive_extractions`. 
     
@@ -71,12 +71,12 @@ def extract(c: Context, force: bool = False, name: str = None):
     
     for extraction in extract_list:
         extraction.force = force
-        extraction.resolve(c)
+        extraction.resolve(c, skip_dependencies)
 
 @task(help={
     'name': f"Only run specific makefile configurations. Names should be the keys used in `project.makefiles`, separated by '{ARG_SPLIT_CHAR}'."
 })
-def makefile(c: Context, name: str = None):
+def makefile(c: Context, skip_dependencies: bool = False, name: str = None):
     """
     Builds the makefile configurations defined in `project.makefiles`.
     
@@ -91,14 +91,14 @@ def makefile(c: Context, name: str = None):
         makefile_list = [p.makefiles[i] for i in name.split(ARG_SPLIT_CHAR)]
     
     for makefile in makefile_list:
-        makefile.resolve(c)
+        makefile.resolve(c, skip_dependencies)
 
 @task(help={
     'name': f"Only build .nrm files from specific registered .toml files. " \
         "Names should be the keys used in `project.mod_tomls`, separated by '{ARG_SPLIT_CHAR}'.",
     'path_fix': "EXPERIMENTAL! Reconstructs the .nrm file after RecompModTool finishes in order to eliminate backslashes from filepaths."
 })
-def nrm(c: Context, name: str = None, path_fix: bool = p.nrm_path_fix_by_default):
+def nrm(c: Context, skip_dependencies: bool = False, name: str = None, path_fix: bool = p.nrm_path_fix_by_default):
     """
     Builds .nrm files from .toml files, as specified in `project.mod_tomls`.
     
@@ -116,7 +116,7 @@ def nrm(c: Context, name: str = None, path_fix: bool = p.nrm_path_fix_by_default
     
     for mod in toml_list:
         mod.run_nrm_path_fix = path_fix
-        mod.resolve(c)
+        mod.resolve(c, skip_dependencies)
 
 @task(help={
     'group_name': "Build selected groups by name. Should not be used with `release_group`." \
@@ -124,7 +124,7 @@ def nrm(c: Context, name: str = None, path_fix: bool = p.nrm_path_fix_by_default
     'build_name': "Only run specific builds within selected groups. Build names should be the keys used in "\
         "`project.mod_tomls`, separated by '{ARG_SPLIT_CHAR}'. Will error if any build name is not in all groups.",
 })
-def cmake(c: Context, group_name: str = None, build_name: str = None):
+def cmake(c: Context, skip_dependencies: bool = False, group_name: str = None, build_name: str = None):
     """
     Run CMake Builds by group. Build groups are `dict[str, CMakeBuildConfig]` entries in `project.cmake_build_groups`. 
      
@@ -148,22 +148,22 @@ def cmake(c: Context, group_name: str = None, build_name: str = None):
     for group_key, group in selected_groups.items():
         if build_name is None:
             for build_key, build_job in  group.items():
-                build_job.resolve(c)
+                build_job.resolve(c, skip_dependencies)
         else:
             for build_key, build_job in [(bkey, group[bkey]) for bkey in build_name.split(ARG_SPLIT_CHAR)]:
-                build_job.resolve(c)
+                build_job.resolve(c, skip_dependencies)
                     
 @task (
-    default=True
+    # default=True
 )
-def test(c: Context, name: str=None):
+def test(c: Context, skip_dependencies: bool = False, unresolved_jobs: bool = False, all_resolved_jobs: bool = False, name: str=None):
     """
     Updates the test environment mod folder with the resultant .nrm files and CMake build outputs from the current run.
     
     This utility decides which files to copy by tracking which ModTomlConfig and CMakeBuildConfig objects were processed while running.
     Therefore, if neither the `nrm` or `cmake` tasks were run in the current invokation, this command will do nothing.
     """
-    print_task_header("Updating mod test environment...")
+    print_task_header("Preparing test folders...")
     
     test_dir_list : list[TestDirJob] = None
     if name is None:
@@ -172,20 +172,22 @@ def test(c: Context, name: str=None):
         test_dir_list = [p.test_dirs[i] for i in name.split(ARG_SPLIT_CHAR)]
     
     for test_dir in test_dir_list:
-        test_dir.resolve(c)
+        test_dir.include_unresolved_jobs = unresolved_jobs
+        test_dir.include_all_resolved_jobs = all_resolved_jobs
+        test_dir.resolve(c, skip_dependencies)
 
     
-# @task (
-#     default=True,
-#     pre=[download, extract, makefile, nrm, cmake]
-# )
-# def build(c: Context):
-#     """
-#     Compile makefiles, .nrm files, and CMake debug builds, and then update the test_env folder. Handles downloads and extractions if needed.
+@task (
+    default=True,
+    pre=[download, extract, makefile, nrm, cmake, test]
+)
+def build(c: Context):
+    """
+    Compile makefiles, .nrm files, and CMake debug builds, and then update the test_env folder. Handles downloads and extractions if needed.
     
-#     Shortcut for `modbuild.py download extract makefile nrm cmake update-test-env`.
-#     """
-#     pass
+    Shortcut for `modbuild.py download extract makefile nrm cmake update-test-env`.
+    """
+    pass
 
 @task
 def print_thunderstore_manifest(c: Context, name: str = None):
@@ -200,7 +202,7 @@ def print_thunderstore_manifest(c: Context, name: str = None):
 
 
 @task
-def thunderstore(c: Context, name: str = None):
+def thunderstore(c: Context, skip_dependencies: bool = False, name: str = None):
     """
     Create the Thunderstore package zip. 
     """
@@ -211,7 +213,7 @@ def thunderstore(c: Context, name: str = None):
         package_list = [p.thunderstore_packages[i] for i in name.split(ARG_SPLIT_CHAR)]
         
     for package in package_list:
-        package.resolve(c)
+        package.resolve(c, skip_dependencies)
 
 @task
 def clean(c: Context):
