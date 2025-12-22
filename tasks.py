@@ -179,7 +179,7 @@ def test(c: Context, skip_dependencies: bool = False, unresolved_jobs: bool = Fa
 
 
 @task
-def print_thunderstore_manifest(c: Context, name: str = None):
+def manifest(c: Context, name: str = None):
     package_list: list[ThunderstorePackageJob] = None
     if name is None:
         package_list = p.thunderstore_packages.values()
