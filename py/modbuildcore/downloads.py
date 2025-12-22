@@ -3,15 +3,18 @@ from pathlib import Path
 
 from invoke import Context
 from .job_base import JobBase
+from .utils import print_job_header
 
 class DownloadJob(JobBase):
     url: str
     download_path: Path
+    force: bool
     
     def __init__(self, url: str, download_path: Path, append_url_filename: bool=True):
         super().__init__()
         self.url = url
         self.download_path = download_path
+        self.force = False
         if (append_url_filename):
             self.download_path = self.download_path.joinpath(self.get_filename_from_url())
         
@@ -21,9 +24,10 @@ class DownloadJob(JobBase):
     
     # Override:
     def needs_to_run(self, c: Context):
-        return not self.download_path.exists()
+        return self.force or not self.download_path.exists()
     
     def run(self, c):
+        print_job_header(f"Download Job: {self.url} to {self.download_path}")
         if not self.download_path.parent.exists():
             os.makedirs(self.download_path.parent)
             

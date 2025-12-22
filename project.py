@@ -1,6 +1,5 @@
 import platform, shutil, enum, os
 from pathlib import Path
-from modbuildcore.config import *
 from modbuildcore.jobs import *
 
 root_dir: Path = Path(__file__).parent
@@ -21,10 +20,10 @@ llvm_path: Path = None
 
 downloads: dict[str, DownloadJob] = {}
 archive_extractions: dict[str, ArchiveExtractJob] = {}
-makefiles: dict[str, MakefileConfig] = {}
-mod_tomls: dict[str, ModTomlConfig] = {}
-cmake_build_groups: dict[str, dict[str, CMakeBuildConfig]] = {}
-thunderstore_packages: dict[str, ThunderstorePackageConfig] = {}
+makefiles: dict[str, MakefileJob] = {}
+mod_tomls: dict[str, ModTomlJob] = {}
+cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
+# thunderstore_packages: dict[str, ThunderstorePackageConfig] = {}
 
 test_env_mod_dir: Path = root_dir.joinpath("test_env/mods")
 
@@ -140,9 +139,10 @@ def prepend_to_env_path(to_append: Path) -> str:
 # Registering mod toml files to build
 # Main API NRM
 
-main_toml = ModTomlConfig(root_dir.joinpath("mod.toml"))
+main_toml = ModTomlJob(mod_tool_path, root_dir.joinpath("mod.toml"))
 mod_tomls['mod'] = main_toml
-makefiles['mod'] = MakefileConfig(
+makefiles['mod'] = MakefileJob(
+    make_path,
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": str(mod_tomls['mod'].get_elf_path()),
@@ -153,10 +153,12 @@ makefiles['mod'] = MakefileConfig(
         "_PY_BUILD_FLAGS": "-DRECOMP_PY_BUILD_MODE"
     }
 )
+main_toml.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 
 # Tests NRM
-mod_tomls['tests'] = ModTomlConfig(root_dir.joinpath("tests.toml"))
-makefiles['tests'] = MakefileConfig(
+mod_tomls['tests'] = ModTomlJob(mod_tool_path, root_dir.joinpath("tests.toml"))
+makefiles['tests'] = MakefileJob(
+    make_path,
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": str(mod_tomls['tests'].get_elf_path()),
@@ -167,9 +169,11 @@ makefiles['tests'] = MakefileConfig(
         "_PY_BUILD_FLAGS": ""
     }
 )
+mod_tomls['tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
 
 extlib_name = "RecompPythonNative"
 extlib = CMakeProjectConfig(
+    cmake_path,
     root_dir,
     {
         # Unlike with clangmips, we're gonna prepend the LLVM and ZIG directories to the PATH that CMake recieves.
@@ -264,79 +268,85 @@ def native_output_files(build_type: str) -> dict[Path, Path]:
         }
     
 cmake_default_build_group_name: str = "Debug"
-cmake_release_build_group_name: str = "Release"
 cmake_build_groups = {
     "Debug" : {
-        "Windows": CMakeBuildConfig.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Debug", {
+        "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Debug", {
                 get_preset_lib_path("zig-windows-x64-Debug").joinpath("python313.dll"): Path("python313.dll"),
                 get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
                 get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
             }), "zig-windows-x64-Debug"),
-        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {
+        "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
                 get_preset_lib_path("zig-macos-aarch64-Debug").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
                 get_preset_lib_path("zig-macos-aarch64-Debug").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-Debug"),
-        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {
+        "Linux": CMakeBuildJob.from_preset_pair(extlib, {
                 get_preset_lib_path("zig-linux-x64-Debug").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
                 get_preset_lib_path("zig-linux-x64-Debug").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
             }, "zig-linux-x64-Debug"),
     },
     "Release" : {
-        "Windows": CMakeBuildConfig.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Release", {
+        "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Release", {
                 get_preset_lib_path("zig-windows-x64-Release").joinpath("python313.dll"): Path("python313.dll"),
                 get_preset_lib_path("zig-windows-x64-Release").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll")
             }), "zig-windows-x64-Release"),
-        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {
+        "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
                 get_preset_lib_path("zig-macos-aarch64-Release").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
                 get_preset_lib_path("zig-macos-aarch64-Release").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-Release"),
-        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {
+        "Linux": CMakeBuildJob.from_preset_pair(extlib, {
                 get_preset_lib_path("zig-linux-x64-Release").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
                 get_preset_lib_path("zig-linux-x64-Release").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
             }, "zig-linux-x64-Release"),
     }, 
     "RelWithDebInfo": {
-        "Windows": CMakeBuildConfig.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-RelWithDebInfo", {
+        "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-RelWithDebInfo", {
                 get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath("python313.dll"): Path("python313.dll"),
                 get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
                 get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
             }), "zig-windows-x64-RelWithDebInfo"),
-        "Darwin": CMakeBuildConfig.from_preset_pair(extlib, {
+        "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
                 get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
                 get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-RelWithDebInfo"),
-        "Linux": CMakeBuildConfig.from_preset_pair(extlib, {
+        "Linux": CMakeBuildJob.from_preset_pair(extlib, {
                 get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
                 get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
             }, "zig-linux-x64-RelWithDebInfo"),
     },
     "native-Debug" : {
-        "Native": CMakeBuildConfig.from_preset_pair(extlib, native_output_files("Debug"), native_preset_name("Debug")),
+        "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("Debug"), native_preset_name("Debug")),
     },
     "native-Release" : {
-        "Native": CMakeBuildConfig.from_preset_pair(extlib, native_output_files("Release"), native_preset_name("Release")),
+        "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("Release"), native_preset_name("Release")),
     }, 
     "native-RelWithDebInfo": {
-        "Native": CMakeBuildConfig.from_preset_pair(extlib, native_output_files("RelWithDebInfo"), native_preset_name("RelWithDebInfo")),
+        "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("RelWithDebInfo"), native_preset_name("RelWithDebInfo")),
     }
 }
 
-thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
-thunderstore_packages['package'] = ThunderstorePackageConfig(
-    root_dir.joinpath(f"{thunderstore_package_name}.thunderstore.zip"),
-    {
-        "name": thunderstore_package_name,
-        "version_number": main_toml.data["manifest"]["version"],
-        "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
-        "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
-        "dependencies": []
-    },
-    root_dir.joinpath("thunderstore_info/README.md"),
-    root_dir.joinpath("thunderstore_info/CHANGELOG.md"),
-    root_dir.joinpath("thumb.png"),
-    [main_toml],
-    [i for i in cmake_build_groups["Release"].values()]
-)
+for group_key, group in cmake_build_groups.items():
+    for build_key, build in group.items():
+        if group_key.startswith("native-"):
+            build.depends_on([archive_extractions["llvm"]])
+        else:
+            build.depends_on([archive_extractions["zig"]])
+
+# thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
+# thunderstore_packages['package'] = ThunderstorePackageConfig(
+#     root_dir.joinpath(f"{thunderstore_package_name}.thunderstore.zip"),
+#     {
+#         "name": thunderstore_package_name,
+#         "version_number": main_toml.data["manifest"]["version"],
+#         "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
+#         "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
+#         "dependencies": []
+#     },
+#     root_dir.joinpath("thunderstore_info/README.md"),
+#     root_dir.joinpath("thunderstore_info/CHANGELOG.md"),
+#     root_dir.joinpath("thumb.png"),
+#     [main_toml],
+#     [i for i in cmake_build_groups["Release"].values()]
+# )
 
 clean_paths: list[Path] = [
     build_dir

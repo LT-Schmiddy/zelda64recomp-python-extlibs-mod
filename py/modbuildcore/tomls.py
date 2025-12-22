@@ -2,14 +2,20 @@ import tomllib, pathlib, zipfile, os
 from pathlib import Path
 
 from invoke import Context
+from .job_base import JobBase
 from .utils import invoke_subprocess_run
 
-class ModTomlConfig:
+class ModTomlJob(JobBase):
+    mod_tool_path: Path
     toml_path: Path
+    run_nrm_path_fix: bool
     build_dir: Path
     
-    def __init__(self, toml_path: Path, build_dir: Path = None):
-        self.toml_path = toml_path    
+    def __init__(self, mod_tool_path: Path, toml_path: Path, run_nrm_path_fix: bool = False, build_dir: Path = None):
+        super().__init__()
+        self.mod_tool_path = mod_tool_path    
+        self.toml_path = toml_path
+        self.run_nrm_path_fix = run_nrm_path_fix
         self.build_dir = build_dir
         self.data = tomllib.loads(self.toml_path.read_text())
         
@@ -25,22 +31,9 @@ class ModTomlConfig:
     def get_output_path(self) -> Path:
         return self.build_dir.joinpath(self.data["inputs"]["mod_filename"]).with_suffix(".nrm")
     
-class ModTomlHandler:
-    config: ModTomlConfig
-    data: dict
-    
-    def __init__(self, config: ModTomlConfig):
-        self.config = config
-        self.data = tomllib.loads(self.config.toml_path.read_text())
-        
-    def run_mod_tool(self, context: Context, mod_tool_binary: Path):
-        invoke_subprocess_run(context, True,
-            [mod_tool_binary, self.config.toml_path, self.config.build_dir]
-        )
-    
-    def run_nrm_path_fix(self):
-        in_zip = zipfile.ZipFile(self.config.get_output_path(), 'r')
-        out_file_path = self.config.get_output_path().with_suffix(".nrm_temp")        
+    def nrm_path_fix(self):
+        in_zip = zipfile.ZipFile(self.get_output_path(), 'r')
+        out_file_path = self.get_output_path().with_suffix(".nrm_temp")        
         out_zip = zipfile.ZipFile(out_file_path, 'w', in_zip.compression)        
         
         for file in in_zip.filelist:
@@ -50,6 +43,10 @@ class ModTomlHandler:
         in_zip.close()
         out_zip.close()
         
-        os.remove(self.config.get_output_path())
-        os.rename(out_file_path, self.config.get_output_path())
+        os.remove(self.get_output_path())
+        os.rename(out_file_path, self.get_output_path())
         
+    def run(self, c: Context):
+        invoke_subprocess_run(c, True,
+            [self.mod_tool_path, self.toml_path, self.build_dir]
+        )

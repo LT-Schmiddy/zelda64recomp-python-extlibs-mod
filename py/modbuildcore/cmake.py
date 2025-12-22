@@ -2,25 +2,27 @@ import pathlib, os
 from pathlib import Path
 
 from invoke import Context
-
-from .utils import invoke_subprocess_run
+from .job_base import JobBase
+from .utils import invoke_subprocess_run, print_job_header
 
 # Class declaration before definition:
 class CMakeProjectConfig:
+    cmake_binary_path: Path
     project_working_dir: Path
     extended_env: dict[str, str]
     
-    def __init__(self, project_working_dir: Path, expanded_env: dict[str, str]):
+    def __init__(self, cmake_binary_path: Path, project_working_dir: Path, expanded_env: dict[str, str]):
+        self.cmake_binary_path = cmake_binary_path
         self.project_working_dir = project_working_dir
         self.extended_env = expanded_env
 
 
-class CMakeBuildConfig:
+class CMakeBuildJob(JobBase):
     config_args: list[str]
     build_args: list[str]
-    output_files: dict[Path, Path]
     
     def __init__(self, cmake_project: CMakeProjectConfig, output_files: dict[Path, Path], config_args: list[str], build_args: list[str]):
+        super().__init__()
         self.cmake_project = cmake_project
         self.output_files = output_files
         self.config_args = config_args
@@ -39,29 +41,28 @@ class CMakeBuildConfig:
             ["--build", "--preset", build_preset_name]
         )
         
-
-class CMakeBuildHandler:
-    config: CMakeBuildConfig
-    def __init__(self, config: CMakeBuildConfig):
-        self.config = config
-        
-    def run_configure(self, c: Context, cmake_bin: Path):
+    def run_configure(self, c: Context):
+        print_job_header(f"CMake Configure: {self.config_args}:")
         cmake_env = os.environ.copy()
-        cmake_env.update(self.config.cmake_project.extended_env)
+        cmake_env.update(self.cmake_project.extended_env)
         
         invoke_subprocess_run(c, True,
-            [cmake_bin] + self.config.config_args,
+            [self.cmake_project.cmake_binary_path] + self.config_args,
             env=cmake_env,
-            cwd=self.config.cmake_project.project_working_dir
+            cwd=self.cmake_project.project_working_dir
         )
     
-    def run_build(self, c: Context, cmake_bin: Path):
+    def run_build(self, c: Context):
+        print_job_header(f"CMake Build: {self.build_args}:")
         cmake_env = os.environ.copy()
-        cmake_env.update(self.config.cmake_project.extended_env)
+        cmake_env.update(self.cmake_project.extended_env)
         
         invoke_subprocess_run(c, True,
-            [cmake_bin] + self.config.build_args,
+            [self.cmake_project.cmake_binary_path] + self.build_args,
             env=cmake_env,
-            cwd=self.config.cmake_project.project_working_dir
+            cwd=self.cmake_project.project_working_dir
         )
 
+    def run(self, c: Context):
+        self.run_configure(c)
+        self.run_build(c)

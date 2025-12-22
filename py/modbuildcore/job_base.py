@@ -1,14 +1,17 @@
 from invoke import Context
+from pathlib import Path
 
 class JobBase:
     _has_been_resolved: bool
     no_duplication: bool
     dependencies: list[JobBase]
+    output_files: dict[Path, Path]
     
     def __init__(self):
         self._has_been_resolved = False
         self.no_duplication = True
         self.dependencies = []
+        self.output_files = {}
     
     # Overridable Functions:
     def needs_to_run(self, c: Context) -> bool:
