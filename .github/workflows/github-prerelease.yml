@@ -21,18 +21,17 @@ jobs:
     - name: Get Apt Packages
       id: get_apt_packages
       run: |-
-        sudo apt install -y clang lld ninja-build jq llvm-18
+        sudo apt install -y cmake ninja-build jq python3
 
     - name: Get Snap Packages
       id: get_snap_packages
       run: |-
-        sudo snap install zig --classic --beta
         sudo snap install cmake --classic
 
     - name: Run Buildscript
       id: run_buildscript
       run: |-
-        make thunderstore
+        python3 ./modbuild.py thunderstore -n package
 
     - name: Upload Build Artifacts
       id: upload_build_artifacts
@@ -40,14 +39,15 @@ jobs:
       with:
         name: ThunderstorePackage
         path: |
-          ./thunderstore_package/*
+          ./*.thunderstore.zip
 
     - name: Read Thunderstore Manifest
       id: read_thunderstore_manifest
       run: |
-        NAME=$(jq -r '.name' ${{ github.workspace }}/thunderstore_package/manifest.json)
-        VERSION=$(jq -r '.version_number' ${{ github.workspace }}/thunderstore_package/manifest.json)
-        DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/thunderstore_package/manifest.json)
+        python3 ./modbuild.py print_thunderstore_manifest >> ${{ github.workspace }}/manifest.json
+        NAME=$(jq -r '.name' ${{ github.workspace }}/manifest.json)
+        VERSION=$(jq -r '.version_number' ${{ github.workspace }}/manifest.json)
+        DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/manifest.json)
         echo "name=$NAME" >> "$GITHUB_OUTPUT"
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         echo "description=$DESCRIPTION" >> "$GITHUB_OUTPUT"
