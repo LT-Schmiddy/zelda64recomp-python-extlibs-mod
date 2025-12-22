@@ -177,18 +177,6 @@ def test(c: Context, skip_dependencies: bool = False, unresolved_jobs: bool = Fa
         test_dir.include_all_resolved_jobs = all_resolved_jobs
         test_dir.resolve(c, skip_dependencies)
 
-    
-@task (
-    default=True,
-    pre=[download, extract, makefile, nrm, cmake, test]
-)
-def build(c: Context):
-    """
-    Compile makefiles, .nrm files, and CMake debug builds, and then update the test_env folder. Handles downloads and extractions if needed.
-    
-    Shortcut for `modbuild.py download extract makefile nrm cmake update-test-env`.
-    """
-    pass
 
 @task
 def print_thunderstore_manifest(c: Context, name: str = None):
@@ -207,6 +195,8 @@ def thunderstore(c: Context, skip_dependencies: bool = False, name: str = None):
     """
     Create the Thunderstore package zip. 
     """
+    
+    print_task_header("Preparing Thunderstore packages..")
     package_list: list[ThunderstorePackageJob] = None
     if name is None:
         package_list = p.thunderstore_packages.values()
@@ -215,6 +205,19 @@ def thunderstore(c: Context, skip_dependencies: bool = False, name: str = None):
         
     for package in package_list:
         package.resolve(c, skip_dependencies)
+
+
+@task (
+    pre=[download, extract, makefile, nrm, cmake, test, thunderstore]
+)
+def all(c: Context):
+    """
+    Compile makefiles, .nrm files, and CMake debug builds, and then update the test_env folder. Handles downloads and extractions if needed.
+    
+    Shortcut for `modbuild.py download extract makefile nrm cmake update-test-env`.
+    """
+    pass
+
 
 @task
 def clean(c: Context):
@@ -239,12 +242,10 @@ def distclean(c: Context):
     Deletes files and folders specified in `project.clean_paths` and `project.distclean_paths`. Used for deleting build folders andexit downloaded artifacts.
     """
     for path in p.distclean_paths:
+        print(f"Deleting '{path}'...")
         if path.is_file():
             os.remove(path)
-            print(f"Deleted {path}")
         elif path.is_dir():
             shutil.rmtree(path)
-            print(f"Deleted {path}")
         else:
             print(f"Could not delete {path}")
-            
