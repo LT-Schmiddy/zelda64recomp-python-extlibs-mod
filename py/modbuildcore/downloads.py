@@ -24,7 +24,11 @@ class DownloadJob(JobBase):
     
     # Override:
     def needs_to_run(self, c: Context):
-        return self.force or not self.download_path.exists()
+        retVal = self.force or not self.download_path.exists()
+        if not retVal:
+            print_job_header(f"Download Job: {self.download_path} already downloaded.")
+        return retVal
+        
     
     def run(self, c):
         print_job_header(f"Download Job: {self.url} to {self.download_path}")

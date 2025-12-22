@@ -17,7 +17,10 @@ class ArchiveExtractJob(JobBase):
         self.force = False
         
     def needs_to_run(self, c: Context) -> bool:
-        return self.force or not self.extract_dir.exists()
+        retVal = self.force or not self.extract_dir.exists()
+        if not retVal:
+            print_job_header(f"Archive Extraction Job: {self.extract_dir} already exists.")
+        return retVal
     
     def run(self, c: Context):
         print_job_header(f"Archive Extraction Job: {self.archive_path} to {self.extract_dir}")
