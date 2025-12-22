@@ -35,6 +35,6 @@ class ThunderstorePackageJob(JobBase):
         output_file.write(self.changelog_file, "CHANGELOG.md")
         output_file.write(self.icon_file, "icon.png")
         
-        for src, dst in self.get_recursive_mod_outputs().items():
+        for dst, src in self.get_recursive_mod_outputs().items():
             print_fl(f"Adding '{src}' as '{dst}'...")
             output_file.write(src, dst)

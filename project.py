@@ -22,7 +22,7 @@ archive_extractions: dict[str, ArchiveExtractJob] = {}
 makefiles: dict[str, MakefileJob] = {}
 mod_tomls: dict[str, ModTomlJob] = {}
 cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
-test_dirs: dict[str, TestDirJob] = {}
+test_dirs: dict[str, BuildOutputJob] = {}
 thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
 nrm_path_fix_by_default = True
@@ -248,81 +248,81 @@ def native_output_files(build_type: str) -> dict[Path, Path]:
     preset_name = native_preset_name(build_type)
     if platform.system() == "Windows":
         win_base = {
-            get_preset_lib_path(preset_name).joinpath("python313.dll"): Path("python313.dll"),
-            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dll"): Path(f"{extlib_name}.dll")
+            Path("python313.dll"): get_preset_lib_path(preset_name).joinpath("python313.dll"),
+            Path(f"{extlib_name}.dll"): get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dll")
         }
         if build_type == "Debug" or build_type == "RelWithDebInfo":
-            win_base[get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.pdb")] = Path(f"{extlib_name}.pdb")
+            win_base[Path(f"{extlib_name}.pdb")] = get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.pdb")
         return with_windows_dlls(preset_name, win_base)
     if platform.system() == "Darwin":
         return {
-            get_preset_lib_path(preset_name).joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
-            get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+            Path("libpython3.13.dylib"): get_preset_lib_path(preset_name).joinpath("libpython3.13.dylib"),
+            Path(f"{extlib_name}.dylib"): get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dylib")
         }
     if platform.system() == "Linux":
         return {
-            get_preset_lib_path(preset_name).joinpath("libpython3.13.so"): Path("libpython3.13.so"),
-            get_preset_lib_path(preset_name).joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+            Path("libpython3.13.so"): get_preset_lib_path(preset_name).joinpath("libpython3.13.so"),
+            Path(f"{extlib_name}.so"): get_preset_lib_path(preset_name).joinpath(f"lib{extlib_name}.so")
         }
     
 cmake_default_build_group_name: str = "Debug"
 cmake_build_groups = {
     "Debug" : {
         "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Debug", {
-                get_preset_lib_path("zig-windows-x64-Debug").joinpath("python313.dll"): Path("python313.dll"),
-                get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
-                get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
+                Path("python313.dll"): get_preset_lib_path("zig-windows-x64-Debug").joinpath("python313.dll"),
+                Path(f"{extlib_name}.dll"): get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.dll"),
+                Path(f"{extlib_name}.pdb"): get_preset_lib_path("zig-windows-x64-Debug").joinpath(f"lib{extlib_name}.pdb")
             }), "zig-windows-x64-Debug"),
         "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-macos-aarch64-Debug").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
-                get_preset_lib_path("zig-macos-aarch64-Debug").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+                Path("libpython3.13.dylib"): get_preset_lib_path("zig-macos-aarch64-Debug").joinpath("libpython3.13.dylib"),
+                Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-Debug").joinpath(f"lib{extlib_name}.dylib")
             }, "zig-macos-aarch64-Debug"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-linux-x64-Debug").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
-                get_preset_lib_path("zig-linux-x64-Debug").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+                Path("libpython3.13.so"): get_preset_lib_path("zig-linux-x64-Debug").joinpath("libpython3.13.so"),
+                Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-Debug").joinpath(f"lib{extlib_name}.so")
             }, "zig-linux-x64-Debug"),
     },
     "Release" : {
         "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-Release", {
-                get_preset_lib_path("zig-windows-x64-Release").joinpath("python313.dll"): Path("python313.dll"),
-                get_preset_lib_path("zig-windows-x64-Release").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll")
+                 Path("python313.dll"): get_preset_lib_path("zig-windows-x64-Release").joinpath("python313.dll"),
+                Path(f"{extlib_name}.dll"): get_preset_lib_path("zig-windows-x64-Release").joinpath(f"lib{extlib_name}.dll")
             }), "zig-windows-x64-Release"),
         "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-macos-aarch64-Release").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
-                get_preset_lib_path("zig-macos-aarch64-Release").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+                Path("libpython3.13.dylib"): get_preset_lib_path("zig-macos-aarch64-Release").joinpath("libpython3.13.dylib"),
+                Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-Release").joinpath(f"lib{extlib_name}.dylib")
             }, "zig-macos-aarch64-Release"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-linux-x64-Release").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
-                get_preset_lib_path("zig-linux-x64-Release").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+                Path("libpython3.13.so"): get_preset_lib_path("zig-linux-x64-Release").joinpath("libpython3.13.so"),
+                Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-Release").joinpath(f"lib{extlib_name}.so")
             }, "zig-linux-x64-Release"),
     }, 
     "RelWithDebInfo": {
         "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-RelWithDebInfo", {
-                get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath("python313.dll"): Path("python313.dll"),
-                get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll"),
-                get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.pdb"): Path(f"{extlib_name}.pdb")
+                Path("python313.dll"): get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath("python313.dll"),
+                Path(f"{extlib_name}.dll"): get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dll"),
+                Path(f"{extlib_name}.pdb"): get_preset_lib_path("zig-windows-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.pdb")
             }), "zig-windows-x64-RelWithDebInfo"),
         "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
-                get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+                Path("libpython3.13.dylib"): get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath("libpython3.13.dylib"),
+                Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath(f"lib{extlib_name}.dylib")
             }, "zig-macos-aarch64-RelWithDebInfo"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
-                get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+                Path("libpython3.13.so"): get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath("libpython3.13.so"),
+                Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.so")
             }, "zig-linux-x64-RelWithDebInfo"),
     },
     "MinSizeRel": {
         "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-MinSizeRel", {
-                get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath("python313.dll"): Path("python313.dll"),
-                get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll")
+                Path("python313.dll"): get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath("python313.dll"),
+                Path(f"{extlib_name}.dll"): get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath(f"lib{extlib_name}.dll")
             }), "zig-windows-x64-MinSizeRel"),
         "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-macos-aarch64-MinSizeRel").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
-                get_preset_lib_path("zig-macos-aarch64-MinSizeRel").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+                Path("libpython3.13.dylib"): get_preset_lib_path("zig-macos-aarch64-MinSizeRel").joinpath("libpython3.13.dylib"),
+                Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-MinSizeRel").joinpath(f"lib{extlib_name}.dylib")
             }, "zig-macos-aarch64-MinSizeRel"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
-                get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+                Path("libpython3.13.so"): get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath("libpython3.13.so"),
+                Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath(f"lib{extlib_name}.so")
             }, "zig-linux-x64-MinSizeRel"),
     },
     "native-Debug" : {
@@ -346,7 +346,7 @@ for group_key, group in cmake_build_groups.items():
         build.depends_on([archive_extractions["llvm"]])
 
 
-debug_test_dir = TestDirJob(root_dir.joinpath("test_env/mods"))
+debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/mods"))
 debug_test_dir.depends_on([
     mod_tomls['mod'],
     mod_tomls['tests']
