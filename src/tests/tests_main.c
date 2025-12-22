@@ -605,10 +605,10 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(py_globals);
     REPY_Release(py_locals);
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
-    recomp_printf("Starting Interavtive Shell. Call `exit()` to continue to game...\n");
-    REPY_Handle code_module = REPY_ImportModule("code");
-    REPY_CallAttrCStr(code_module, "interact", 0, 0);
-    REPY_ClearError();
-    REPY_Release(code_module);
+    // recomp_printf("Starting Interavtive Shell. Call `exit()` to continue to game...\n");
+    // REPY_Handle code_module = REPY_ImportModule("code");
+    // REPY_CallAttrCStr(code_module, "interact", 0, 0);
+    // REPY_ClearError();
+    // REPY_Release(code_module);
 }
 
