@@ -15,7 +15,6 @@ make_mips_compiler_path: Path = None
 make_mips_linker_path: Path = None
 mod_tool_path: Path = None
 zig_dir_path: Path = None
-zig_bin_path: Path = None
 llvm_path: Path = None
 
 downloads: dict[str, DownloadJob] = {}

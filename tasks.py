@@ -144,6 +144,7 @@ def cmake(c: Context, skip_dependencies: bool = False, group_name: str = None, b
             selected_groups[i] = p.cmake_build_groups[i]
     else:
         selected_groups[p.cmake_default_build_group_name] = p.cmake_build_groups[p.cmake_default_build_group_name]
+        selected_groups = p.cmake_build_groups
         
     for group_key, group in selected_groups.items():
         if build_name is None:
