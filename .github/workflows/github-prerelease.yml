@@ -28,6 +28,11 @@ jobs:
       run: |-
         sudo snap install cmake --classic
 
+    - name: Print Python Version
+      id: print_python_version
+      run: |-
+        python3 --version
+
     - name: Run Buildscript
       id: run_buildscript
       run: |-
