@@ -1,6 +1,10 @@
 from invoke import Context
 from pathlib import Path
 
+## Some older version of python don't like the self-referential annotation. This is a work-around.
+class JobBase:
+    ...
+    
 class JobBase:
     # Class
     _resolved_jobs: list[JobBase] = []
