@@ -261,7 +261,7 @@ def native_output_files(build_type: str) -> dict[Path, Path]:
             get_preset_lib_path(preset_name).joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
         }
     
-cmake_debug_build_group_name: str = "Debug"
+cmake_default_build_group_name: str = "Debug"
 cmake_release_build_group_name: str = "Release"
 cmake_build_groups = {
     "Debug" : {

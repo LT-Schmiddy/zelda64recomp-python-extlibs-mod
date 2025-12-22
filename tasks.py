@@ -133,14 +133,22 @@ def nrm(c: Context, name: str = None, path_fix: bool = p.nrm_path_fix_by_default
         _built_tomls.append(mod)
 
 @task(help={
-    'release_group': "Use re",
-    'group_name': "",
-    'build_name': "",
+    'release_group': "Build the release group instead of the default group. Should not be used with `group_name`.",
+    'group_name': "Build selected groups by name. Should not be used with `release_group`." \
+        " Group names should be the keys used in `project.mod_tomls`, separated by '{ARG_SPLIT_CHAR}'.",
+    'build_name': "Only run specific builds within selected groups. Build names should be the keys used in "\
+        "`project.mod_tomls`, separated by '{ARG_SPLIT_CHAR}'. Will error if any build name is not in all groups.",
 })
 def cmake(c: Context, release_group: bool=False, group_name: str = None, build_name: str = None):
     """
-    Run CMake Builds by group.
+    Run CMake Builds by group. Build groups are `dict[str, CMakeBuildConfig]` entries in `project.cmake_build_groups`. 
+     
+    By default, this command will only build the default build group, since running too many CMake builds can be time consuming,
+    and some CMake build outputs can overwrite each other in the test directory. The default group is set via the varaible 
+    `project.cmake_default_build_group_name`, which should be assigned to a key value from `project.cmake_build_groups`. 
+    Generally, this should be some sort of debug build group.
     
+    You will also need to select a build group to be used for releases. This will be set with the variable `project.cmake_release_build_group_name`
     """
     print_task_header("Running CMake builds...")
     global _built_cmake_handlers
@@ -156,7 +164,7 @@ def cmake(c: Context, release_group: bool=False, group_name: str = None, build_n
         for i in group_name.split(ARG_SPLIT_CHAR):
             selected_groups[i] = p.cmake_build_groups[i]
     else:
-        selected_groups[p.cmake_debug_build_group_name] = p.cmake_build_groups[p.cmake_debug_build_group_name]
+        selected_groups[p.cmake_default_build_group_name] = p.cmake_build_groups[p.cmake_default_build_group_name]
         
     for group_key, group in selected_groups.items():
         if build_name is None:
@@ -221,6 +229,12 @@ def build(c: Context):
 
 @task
 def create_thunderstore_package(c: Context, name: str = None):
+    """
+    Creates Thunderstore .zip packages, as specified in `project.thunderstore_packages`.
+    
+    Entries in `project.thunderstore_packages` should be instances of `modbuildcore.thunderstore.ThunderstorePackageConfig`. 
+    This command does not build mod tomls or cmake builds that the project depends on. Consider looking at the `thunderstore` command for that.
+    """
     print_task_header("Creating Thunderstore packages...")
     
     package_list: list[ThunderstorePackageHandler] = None
@@ -259,7 +273,7 @@ def thunderstore(c: Context):
 @task
 def clean(c: Context):
     """
-    Deletes the contents of the builds folder.
+    Deletes files and folders specified in `project.clean_paths`. Used for deleting build folders.
     """
     for path in p.clean_paths:
         if path.is_file():
@@ -275,6 +289,9 @@ def clean(c: Context):
     pre=[clean]
 )
 def distclean(c: Context):
+    """_summary_
+    Deletes files and folders specified in `project.clean_paths` and `project.distclean_paths`. Used for deleting build folders andexit downloaded artifacts.
+    """
     for path in p.distclean_paths:
         if path.is_file():
             os.remove(path)
@@ -284,3 +301,8 @@ def distclean(c: Context):
             print(f"Deleted {path}")
         else:
             print(f"Could not delete {path}")
+            
+@task
+def invoke_test(c: Context):
+    makefile(c)
+    nrm(c)
