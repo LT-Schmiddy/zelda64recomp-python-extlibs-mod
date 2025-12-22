@@ -311,6 +311,20 @@ cmake_build_groups = {
                 get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
             }, "zig-linux-x64-RelWithDebInfo"),
     },
+    "MinSizeRel": {
+        "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-MinSizeRel", {
+                get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath("python313.dll"): Path("python313.dll"),
+                get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath(f"lib{extlib_name}.dll"): Path(f"{extlib_name}.dll")
+            }), "zig-windows-x64-MinSizeRel"),
+        "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
+                get_preset_lib_path("zig-macos-aarch64-MinSizeRel").joinpath("libpython3.13.dylib"): Path("libpython3.13.dylib"),
+                get_preset_lib_path("zig-macos-aarch64-MinSizeRel").joinpath(f"lib{extlib_name}.dylib"): Path(f"{extlib_name}.dylib")
+            }, "zig-macos-aarch64-MinSizeRel"),
+        "Linux": CMakeBuildJob.from_preset_pair(extlib, {
+                get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath("libpython3.13.so"): Path("libpython3.13.so"),
+                get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath(f"lib{extlib_name}.so"): Path(f"{extlib_name}.so")
+            }, "zig-linux-x64-MinSizeRel"),
+    },
     "native-Debug" : {
         "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("Debug"), native_preset_name("Debug")),
     },
@@ -319,6 +333,9 @@ cmake_build_groups = {
     }, 
     "native-RelWithDebInfo": {
         "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("RelWithDebInfo"), native_preset_name("RelWithDebInfo")),
+    },
+    "native-MinSizeRel": {
+        "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("MinSizeRel"), native_preset_name("MinSizeRel")),
     }
 }
 

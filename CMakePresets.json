@@ -48,6 +48,13 @@
             }
         },
         {
+            "name": "native-windows-x64-MinSizeRel",
+            "inherits": "native-windows-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
+            }
+        },
+        {
             "name": "native-linux-x64",
             "inherits": "default",
             "cacheVariables": {
@@ -76,6 +83,13 @@
             "inherits": "native-linux-x64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Release"
+            }
+        },
+        {
+            "name": "native-linux-x64-MinSizeRel",
+            "inherits": "native-linux-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
             }
         },
         {
@@ -110,6 +124,13 @@
             }
         },
         {
+            "name": "native-macos-x64-MinSizeRel",
+            "inherits": "native-macos-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
+            }
+        },
+        {
             "name": "native-macos-aarch64",
             "inherits": "default",
             "cacheVariables": {
@@ -138,6 +159,13 @@
             "inherits": "native-macos-aarch64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Release"
+            }
+        },
+        {
+            "name": "native-macos-aarch64-MinSizeRel",
+            "inherits": "native-macos-aarch64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
             }
         },
         {
@@ -173,6 +201,13 @@
             }
         }, 
         {
+            "name": "zig-windows-x64-MinSizeRel",
+            "inherits": "zig-windows-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
+            }
+        }, 
+        {
             "name": "zig-linux-x64",
             "inherits": "default",
             "cacheVariables": {
@@ -201,6 +236,13 @@
             "inherits": "zig-linux-x64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Release"
+            }
+        },
+        {
+            "name": "zig-linux-x64-MinSizeRel",
+            "inherits": "zig-linux-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
             }
         },
         {
@@ -236,6 +278,13 @@
             }
         },
         {
+            "name": "zig-macos-x64-MinSizeRel",
+            "inherits": "zig-macos-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
+            }
+        },
+        {
             "name": "zig-macos-aarch64",
             "inherits": "default",
             "cacheVariables": {
@@ -265,6 +314,13 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Release"
             }
+        },
+        {
+            "name": "zig-macos-aarch64-MinSizeRel",
+            "inherits": "zig-macos-aarch64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"MinSizeRel"
+            }
         }
     ],
     "buildPresets": [
@@ -289,6 +345,10 @@
             "configurePreset": "native-windows-x64-Release"
         },
         {
+            "name": "native-windows-x64-MinSizeRel",
+            "configurePreset": "native-windows-x64-MinSizeRel"
+        },
+        {
             "name": "native-linux-x64",
             "configurePreset": "native-linux-x64"
         },
@@ -303,6 +363,10 @@
         {
             "name": "native-linux-x64-Release",
             "configurePreset": "native-linux-x64-Release"
+        },
+        {
+            "name": "native-linux-x64-MinSizeRel",
+            "configurePreset": "native-linux-x64-MinSizeRel"
         },
         {
             "name": "native-macos-x64",
@@ -321,6 +385,10 @@
             "configurePreset": "native-macos-x64-Release"
         },
         {
+            "name": "native-macos-x64-MinSizeRel",
+            "configurePreset": "native-macos-x64-MinSizeRel"
+        },
+        {
             "name": "native-macos-aarch64",
             "configurePreset": "native-macos-aarch64"
         },
@@ -335,6 +403,10 @@
         {
             "name": "native-macos-aarch64-Release",
             "configurePreset": "native-macos-aarch64-Release"
+        },
+        {
+            "name": "native-macos-aarch64-MinSizeRel",
+            "configurePreset": "native-macos-aarch64-MinSizeRel"
         },
         {
             "name": "zig-windows-x64",
@@ -353,6 +425,10 @@
             "configurePreset": "zig-windows-x64-Release"
         },
         {
+            "name": "zig-windows-x64-MinSizeRel",
+            "configurePreset": "zig-windows-x64-MinSizeRel"
+        },
+        {
             "name": "zig-linux-x64",
             "configurePreset": "zig-linux-x64"
         },
@@ -367,6 +443,10 @@
         {
             "name": "zig-linux-x64-Release",
             "configurePreset": "zig-linux-x64-Release"
+        },
+        {
+            "name": "zig-linux-x64-MinSizeRel",
+            "configurePreset": "zig-linux-x64-MinSizeRel"
         },
         {
             "name": "zig-macos-x64",
@@ -385,6 +465,10 @@
             "configurePreset": "zig-macos-x64-Release"
         },
         {
+            "name": "zig-macos-x64-MinSizeRel",
+            "configurePreset": "zig-macos-x64-MinSizeRel"
+        },
+        {
             "name": "zig-macos-aarch64",
             "configurePreset": "zig-macos-x64"
         },
@@ -399,6 +483,10 @@
         {
             "name": "zig-macos-aarch64-Release",
             "configurePreset": "zig-macos-aarch64-Release"
+        },
+        {
+            "name": "zig-macos-aarch64-MinSizeRel",
+            "configurePreset": "zig-macos-aarch64-MinSizeRel"
         }
     ]
 }
