@@ -230,9 +230,9 @@ def with_windows_dlls(preset_string: str, output_paths: dict[Path, Path]) -> dic
     
     for file in [python_dll_dir.joinpath(i) for i in windows_dll_names]:
         if file.suffix == ".dll":
-            output_paths[file] = Path(file.name)
+            output_paths[Path(file.name)] = file
         elif file.suffix == ".pyd":
-            output_paths[file] = Path(file.with_suffix(".dll").name)
+            output_paths[Path(file.with_suffix(".dll").name)] = file
             
     return output_paths
 
