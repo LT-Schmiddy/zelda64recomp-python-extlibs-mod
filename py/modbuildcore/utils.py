@@ -11,29 +11,27 @@ def slugify(text: str) -> str:
     text = re.sub(r'[^a-zA-Z0-9_]', '', text)
     return text
 
+def print_fl(*args, **kwargs):
+    print(*args, flush=True, **kwargs)
 
 def print_color(fg: str, *args, **kwargs):
     p_list = []
     for i in args:
         p_list.append(color(str(i), fg=fg))
 
-    print(*p_list, **kwargs)
-
+    print_fl(*p_list, **kwargs)
 
 def print_error(*args, **kwargs):
     print_color("red", *args, **kwargs)
 
-
 def print_warning(*args, **kwargs):
     print_color("yellow", *args, **kwargs)
-
 
 def print_task_header(*args, **kwargs): 
     print_color('green', "\n-> ", *args, **kwargs)
     
 def print_job_header(*args, **kwargs):
-    print_color('blue', f"\n--> ", *args, **kwargs)
-    
+    print_color('blue', f"\n--> ", *args, flush=True, **kwargs)
     
 # For a couple different reasons (primarily related to cross-platform compatability),
 # it will usually be better for us to use subprocess instead of shell commands.

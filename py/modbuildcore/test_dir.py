@@ -3,7 +3,7 @@ from pathlib import Path
 
 from invoke import Context
 from .job_base import JobBase
-from .utils import invoke_subprocess_run, print_job_header
+from .utils import invoke_subprocess_run, print_job_header, print_fl
 
 class TestDirJob(JobBase):
     test_path: Path
@@ -25,7 +25,7 @@ class TestDirJob(JobBase):
             if not dst.is_absolute():
                 dst = self.test_path.joinpath(dst)
             
-            print(f"Copying '{str(src)}' to '{str(dst)}'...")
+            print_fl(f"Copying '{str(src)}' to '{str(dst)}'...")
             shutil.copy(src, dst)
             
         if self.include_all_resolved_jobs:
@@ -33,7 +33,7 @@ class TestDirJob(JobBase):
                 if not dst.is_absolute():
                     dst = self.test_path.joinpath(dst)
                 
-                print(f"Copying '{str(src)}' to '{str(dst)}'...")
+                print_fl(f"Copying '{str(src)}' to '{str(dst)}'...")
                 shutil.copy(src, dst)
         
         

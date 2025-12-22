@@ -227,12 +227,12 @@ def clean(c: Context):
     for path in p.clean_paths:
         if path.is_file():
             os.remove(path)
-            print(f"Deleted {path}")
+            print_fl(f"Deleted {path}")
         elif path.is_dir():
             shutil.rmtree(path)
-            print(f"Deleted {path}")
+            print_fl(f"Deleted {path}")
         else:
-            print(f"Could not delete {path}")
+            print_fl(f"Could not delete {path}")
             
 @task(
     pre=[clean]
@@ -242,10 +242,10 @@ def distclean(c: Context):
     Deletes files and folders specified in `project.clean_paths` and `project.distclean_paths`. Used for deleting build folders andexit downloaded artifacts.
     """
     for path in p.distclean_paths:
-        print(f"Deleting '{path}'...")
+        print_fl(f"Deleting '{path}'...")
         if path.is_file():
             os.remove(path)
         elif path.is_dir():
             shutil.rmtree(path)
         else:
-            print(f"Could not delete {path}")
+            print_fl(f"Could not delete {path}")

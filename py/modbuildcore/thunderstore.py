@@ -3,7 +3,7 @@ from pathlib import Path
 
 from invoke import Context
 from .job_base import JobBase
-from .utils import print_job_header
+from .utils import print_job_header, print_fl
 
 class ThunderstorePackageJob(JobBase):
     package_file: Path
@@ -36,5 +36,5 @@ class ThunderstorePackageJob(JobBase):
         output_file.write(self.icon_file, "icon.png")
         
         for src, dst in self.get_recursive_mod_outputs().items():
-            print(f"Adding '{src}' as '{dst}'...")
+            print_fl(f"Adding '{src}' as '{dst}'...")
             output_file.write(src, dst)
