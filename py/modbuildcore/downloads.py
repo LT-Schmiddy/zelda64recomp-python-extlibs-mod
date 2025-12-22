@@ -1,11 +1,15 @@
 import pathlib, os, shutil, urllib.request, urllib.parse
 from pathlib import Path
 
-class DownloadConfig:
+from invoke import Context
+from .job_base import JobBase
+
+class DownloadJob(JobBase):
     url: str
     download_path: Path
     
     def __init__(self, url: str, download_path: Path, append_url_filename: bool=True):
+        super().__init__()
         self.url = url
         self.download_path = download_path
         if (append_url_filename):
@@ -15,22 +19,15 @@ class DownloadConfig:
         parsed_url = urllib.parse.urlparse(self.url)
         return Path(os.path.basename(parsed_url.path))
     
+    # Override:
+    def needs_to_run(self, c: Context):
+        return not self.download_path.exists()
     
-class DownloadHandler:
-    config: DownloadConfig
-    
-    def __init__(self, entry: DownloadConfig):
-        self.config = entry
-    
-        
-    def should_download(self) -> bool:
-        return not self.config.download_path.exists()
-    
-    def download(self) -> Exception:
-        if not self.config.download_path.parent.exists():
-            os.makedirs(self.config.download_path.parent)
+    def run(self, c):
+        if not self.download_path.parent.exists():
+            os.makedirs(self.download_path.parent)
             
         urllib.request.urlretrieve(
-            self.config.url,
-            self.config.download_path
+            self.url,
+            self.download_path
         )

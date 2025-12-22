@@ -1,6 +1,7 @@
 import platform, shutil, enum, os
 from pathlib import Path
 from modbuildcore.config import *
+from modbuildcore.jobs import *
 
 root_dir: Path = Path(__file__).parent
 
@@ -18,8 +19,8 @@ zig_dir_path: Path = None
 zig_bin_path: Path = None
 llvm_path: Path = None
 
-downloads: dict[str, DownloadConfig] = {}
-archive_extractions: dict[str, ArchiveExtractConfig] = {}
+downloads: dict[str, DownloadJob] = {}
+archive_extractions: dict[str, ArchiveExtractJob] = {}
 makefiles: dict[str, MakefileConfig] = {}
 mod_tomls: dict[str, ModTomlConfig] = {}
 cmake_build_groups: dict[str, dict[str, CMakeBuildConfig]] = {}
@@ -31,11 +32,12 @@ nrm_path_fix_by_default = True
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
 # Convienience function for downloading compiler artifacts.
-def add_archive_download_and_extract(name: str, url: str, extract_dir: Path) -> tuple[DownloadConfig, ArchiveExtractConfig]:
+def add_archive_download_and_extract(name: str, url: str, extract_dir: Path) -> tuple[DownloadJob, ArchiveExtractJob]:
     global archive_extractions, downloads, archive_downloads_dir
     
-    new_download = DownloadConfig(url, archive_downloads_dir, True)
-    new_extraction = ArchiveExtractConfig(new_download.download_path, extract_dir)
+    new_download = DownloadJob(url, archive_downloads_dir, True)
+    new_extraction = ArchiveExtractJob(new_download.download_path, extract_dir)
+    new_extraction.depends_on([new_download])
     downloads[name] = new_download
     archive_extractions[name] = new_extraction
     
@@ -125,7 +127,7 @@ else:
 # Registering asset_archive extraction
 assets_archive_path = root_dir.joinpath("assets_archive.zip")
 assets_extracted_path = root_dir.joinpath("assets_extracted/assets")
-archive_extractions['assets'] = ArchiveExtractConfig(assets_archive_path, assets_extracted_path)
+archive_extractions['assets'] = ArchiveExtractJob(assets_archive_path, assets_extracted_path)
 
 def prepend_to_env_path(to_append: Path) -> str:
     global llvm_path

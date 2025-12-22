@@ -8,6 +8,7 @@ from pathlib import Path
 
 from modbuildcore.config import *
 from modbuildcore.handlers import *
+from modbuildcore.jobs import *
 from modbuildcore.utils import *
 
 from invoke import Context, task, call
@@ -25,7 +26,7 @@ _built_cmake_handlers: list[CMakeBuildHandler] = []
 def print_task_header(*args, **kwargs): 
     print_color('green', "\n-> ", *args, **kwargs)
     
-def print_sub_header(*args, **kwargs):
+def print_job_header(*args, **kwargs):
     print_color('blue', f"\n--> ", *args, **kwargs)
 
 @task(help={
@@ -41,18 +42,14 @@ def download(c: Context, force: bool = False, name: str = None):
     """
     print_task_header("Performing downloads...")
     
-    dl_list : list[DownloadHandler] = None
+    dl_list : list[DownloadJob] = None
     if name is None:
-        dl_list = [DownloadHandler(i) for i in p.downloads.values()]
+        dl_list = p.downloads.values()
     else:
-        dl_list = [DownloadHandler(p.downloads[i]) for i in name.split(ARG_SPLIT_CHAR)]
+        dl_list = [p.downloads[i] for i in name.split(ARG_SPLIT_CHAR)]
     
     for download in dl_list:
-        if force or download.should_download():
-            print(f"Downloading '{download.config.url}'...")
-            download.download()
-        else:
-            print(f"Already downloaded '{download.config.download_path}'.")
+        download.resolve(c)
     
 @task(help={
     'force': "Re-extract archives even if the output folder already exists",
@@ -67,18 +64,14 @@ def extract(c: Context, force: bool = False, name: str = None):
     """
     print_task_header("Extracting archives...")
     
-    extract_list : list[ArchiveExtractHandler] = None
+    extract_list : list[ArchiveExtractJob] = None
     if name is None:
-        extract_list = [ArchiveExtractHandler(i) for i in p.archive_extractions.values()]
+        extract_list = p.archive_extractions.values()
     else:
-        extract_list = [ArchiveExtractHandler(p.archive_extractions[i]) for i in name.split(ARG_SPLIT_CHAR)]
+        extract_list = [p.archive_extractions[i] for i in name.split(ARG_SPLIT_CHAR)]
     
     for extraction in extract_list:
-        if force or extraction.should_extract():
-            print(f"Extracting '{extraction.config.archive_path}' to '{extraction.config.extract_dir}'...")
-            extraction.extract()
-        else:
-            print(f"Already extracted '{extraction.config.archive_path}'.")
+        extraction.resolve()
 
 @task(help={
     'name': f"Only run specific makefile configurations. Names should be the keys used in `project.makefiles`, separated by '{ARG_SPLIT_CHAR}'."
@@ -98,7 +91,7 @@ def makefile(c: Context, name: str = None):
         makefile_list = [MakefileHandler(p.makefiles[i]) for i in name.split(ARG_SPLIT_CHAR)]
     
     for makefile in makefile_list:
-        print_sub_header(f"Running makefile '{makefile.config.makefile_path}'")
+        print_job_header(f"Running makefile '{makefile.config.makefile_path}'")
         makefile.run_make(c, p.make_path)
 
 @task(help={
@@ -169,19 +162,19 @@ def cmake(c: Context, release_group: bool=False, group_name: str = None, build_n
     for group_key, group in selected_groups.items():
         if build_name is None:
             for build_key, build_handler in [(bkey, CMakeBuildHandler(build_config)) for bkey, build_config in group.items()]:
-                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Configure")
+                print_job_header(f"CMake build '{build_key}', from build group '{group_key}': Configure")
                 build_handler.run_configure(c, p.cmake_path)
                 
-                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Build")
+                print_job_header(f"CMake build '{build_key}', from build group '{group_key}': Build")
                 build_handler.run_build(c, p.cmake_path)
                 _built_cmake_handlers.append(build_handler)
         else:
             for build_key, build_handler in [(bkey, CMakeBuildHandler(group[bkey])) for bkey in build_name.split(ARG_SPLIT_CHAR)]:
             
-                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Configure")
+                print_job_header(f"CMake build '{build_key}', from build group '{group_key}': Configure")
                 build_handler.run_configure(c, p.cmake_path)
                 
-                print_sub_header(f"CMake build '{build_key}', from build group '{group_key}': Build")
+                print_job_header(f"CMake build '{build_key}', from build group '{group_key}': Build")
                 build_handler.run_build(c, p.cmake_path)
                 _built_cmake_handlers.append(build_handler)
                     

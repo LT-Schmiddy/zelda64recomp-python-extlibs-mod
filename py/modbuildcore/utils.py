@@ -26,6 +26,14 @@ def print_error(*args, **kwargs):
 
 def print_warning(*args, **kwargs):
     print_color("yellow", *args, **kwargs)
+
+
+def print_task_header(*args, **kwargs): 
+    print_color('green', "\n-> ", *args, **kwargs)
+    
+def print_job_header(*args, **kwargs):
+    print_color('blue', f"\n--> ", *args, **kwargs)
+    
     
 # For a couple different reasons (primarily related to cross-platform compatability),
 # it will usually be better for us to use subprocess instead of shell commands.
