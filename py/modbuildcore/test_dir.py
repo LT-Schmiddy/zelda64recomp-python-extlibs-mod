@@ -1,0 +1,27 @@
+import os, shutil
+from pathlib import Path
+
+from invoke import Context
+from .job_base import JobBase
+from .utils import invoke_subprocess_run, print_job_header
+
+class TestDirJob(JobBase):
+    test_path: Path
+    
+    def __init__(self, test_path: Path):
+        super().__init__()
+        self.test_path = test_path
+        
+    def run(self, c: Context):
+        print_job_header(f"Test Directory Job: {self.test_path}")
+        
+        os.makedirs(self.test_path, exist_ok=True)
+        
+        for src, dst in self.get_recursive_mod_outputs().items():
+            if not dst.is_absolute():
+                dst = self.test_path.joinpath(dst)
+            
+            print(f"Copying '{str(src)}' to '{str(dst)}'...")
+            shutil.copy(src, dst)
+        
+        

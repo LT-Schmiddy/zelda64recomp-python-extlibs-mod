@@ -5,13 +5,13 @@ class JobBase:
     _has_been_resolved: bool
     no_duplication: bool
     dependencies: list[JobBase]
-    output_files: dict[Path, Path]
+    mod_output_files: dict[Path, Path]
     
     def __init__(self):
         self._has_been_resolved = False
         self.no_duplication = True
         self.dependencies = []
-        self.output_files = {}
+        self.mod_output_files = {}
     
     # Overridable Functions:
     def needs_to_run(self, c: Context) -> bool:
@@ -36,3 +36,11 @@ class JobBase:
             self.run(c)
         
         self._has_been_resolved = True
+        
+    def get_recursive_mod_outputs(self) -> dict[Path, Path]:
+        retVal = self.mod_output_files
+        
+        for i in self.dependencies:
+            retVal.update(i.get_recursive_mod_outputs())
+        
+        return retVal

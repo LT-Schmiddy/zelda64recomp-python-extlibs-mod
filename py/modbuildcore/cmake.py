@@ -24,7 +24,7 @@ class CMakeBuildJob(JobBase):
     def __init__(self, cmake_project: CMakeProjectConfig, output_files: dict[Path, Path], config_args: list[str], build_args: list[str]):
         super().__init__()
         self.cmake_project = cmake_project
-        self.output_files = output_files
+        self.mod_output_files = output_files
         self.config_args = config_args
         self.build_args = build_args
         

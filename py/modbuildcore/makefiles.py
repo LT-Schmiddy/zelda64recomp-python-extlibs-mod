@@ -4,7 +4,7 @@ from pathlib import Path
 from invoke import Context
 from .job_base import JobBase
 
-from .utils import invoke_subprocess_run
+from .utils import invoke_subprocess_run, print_job_header
         
 class MakefileJob(JobBase):
     make_binary_path: Path
@@ -18,6 +18,7 @@ class MakefileJob(JobBase):
         self.extended_env = extended_env
     
     def run(self, c: Context):
+        print_job_header(f"Makefile Job: {self.makefile_path}")
         make_env = os.environ.copy()
         make_env.update(self.extended_env)
         

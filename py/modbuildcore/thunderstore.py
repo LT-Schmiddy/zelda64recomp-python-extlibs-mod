@@ -1,17 +1,16 @@
 import os, shutil, json, zipfile
 from pathlib import Path
 
-from . import tomls
-from . import cmake
+from invoke import Context
+from .job_base import JobBase
+from .utils import print_job_header
 
-class ThunderstorePackageConfig:
+class ThunderstorePackageJob(JobBase):
     package_file: Path
     manifest: dict[str, str]
     readme_file: Path
     changelog_file: Path
     icon_file: Path
-    mod_list: list[tomls.ModTomlConfig]
-    cmake_build_list: list[cmake.CMakeBuildConfig]
     
     def __init__(self,
             package_file: Path,
@@ -19,36 +18,23 @@ class ThunderstorePackageConfig:
             readme_file: Path,
             changelog_file: Path,
             icon_file: Path,
-            mod_list: list[tomls.ModTomlConfig],
-            cmake_build_list: list[cmake.CMakeBuildConfig]
         ):
+        super().__init__()
         self.package_file = package_file
         self.manifest = manifest
-        self.mod_list = mod_list
         self.readme_file = readme_file
         self.changelog_file = changelog_file
         self.icon_file = icon_file
-        self.cmake_build_list = cmake_build_list
         
-
-class ThunderstorePackageHandler:
-    config: ThunderstorePackageConfig
-    
-    def __init__(self, config: ThunderstorePackageConfig):
-        self.config = config
-        
-    def assemble_package(self):
+    def run(self, c: Context):
+        print_job_header(f"Thunderstore Package Job: {self.manifest['name']}")
         # Thunderstore Metadata:
-        output_file = zipfile.ZipFile(self.config.package_file, 'w', zipfile.ZIP_DEFLATED)
-        output_file.writestr("manifest.json", json.dumps(self.config.manifest, indent=4))
-        output_file.write(self.config.readme_file, "README.md")
-        output_file.write(self.config.changelog_file, "CHANGELOG.md")
-        output_file.write(self.config.icon_file, "icon.png")
+        output_file = zipfile.ZipFile(self.package_file, 'w', zipfile.ZIP_DEFLATED)
+        output_file.writestr("manifest.json", json.dumps(self.manifest, indent=4))
+        output_file.write(self.readme_file, "README.md")
+        output_file.write(self.changelog_file, "CHANGELOG.md")
+        output_file.write(self.icon_file, "icon.png")
         
-        # Copying NRM outputs
-        for toml in self.config.mod_list:
-            output_file.write(toml.get_output_path(), toml.get_output_path().name)
-
-        for cmake_build in self.config.cmake_build_list:
-            for src, dst in cmake_build.output_files.items():
-                output_file.write(src, dst)
+        for src, dst in self.get_recursive_mod_outputs().items():
+            print(f"Adding '{src}' as '{dst}'...")
+            output_file.write(src, dst)

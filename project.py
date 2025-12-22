@@ -23,9 +23,8 @@ archive_extractions: dict[str, ArchiveExtractJob] = {}
 makefiles: dict[str, MakefileJob] = {}
 mod_tomls: dict[str, ModTomlJob] = {}
 cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
-# thunderstore_packages: dict[str, ThunderstorePackageConfig] = {}
-
-test_env_mod_dir: Path = root_dir.joinpath("test_env/mods")
+test_dirs: dict[str, TestDirJob] = {}
+thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
 nrm_path_fix_by_default = True
 
@@ -326,27 +325,37 @@ cmake_build_groups = {
 
 for group_key, group in cmake_build_groups.items():
     for build_key, build in group.items():
-        if group_key.startswith("native-"):
-            build.depends_on([archive_extractions["llvm"]])
-        else:
+        if not group_key.startswith("native-"):
             build.depends_on([archive_extractions["zig"]])
+        build.depends_on([archive_extractions["llvm"]])
 
-# thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
-# thunderstore_packages['package'] = ThunderstorePackageConfig(
-#     root_dir.joinpath(f"{thunderstore_package_name}.thunderstore.zip"),
-#     {
-#         "name": thunderstore_package_name,
-#         "version_number": main_toml.data["manifest"]["version"],
-#         "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
-#         "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
-#         "dependencies": []
-#     },
-#     root_dir.joinpath("thunderstore_info/README.md"),
-#     root_dir.joinpath("thunderstore_info/CHANGELOG.md"),
-#     root_dir.joinpath("thumb.png"),
-#     [main_toml],
-#     [i for i in cmake_build_groups["Release"].values()]
-# )
+
+debug_test_dir = TestDirJob(root_dir.joinpath("test_env/mods"))
+debug_test_dir.depends_on([
+    mod_tomls['mod'],
+    mod_tomls['tests']
+] + [i for i in cmake_build_groups["Debug"].values()])
+
+test_dirs["debug"] = debug_test_dir
+
+thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
+main_package = ThunderstorePackageJob(
+    root_dir.joinpath(f"{thunderstore_package_name}.thunderstore.zip"),
+    {
+        "name": thunderstore_package_name,
+        "version_number": main_toml.data["manifest"]["version"],
+        "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
+        "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
+        "dependencies": []
+    },
+    root_dir.joinpath("thunderstore_info/README.md"),
+    root_dir.joinpath("thunderstore_info/CHANGELOG.md"),
+    root_dir.joinpath("thumb.png")
+)
+main_package.depends_on([
+    mod_tomls['mod']
+] + [i for i in cmake_build_groups["Release"].values()])
+thunderstore_packages['package'] = main_package
 
 clean_paths: list[Path] = [
     build_dir

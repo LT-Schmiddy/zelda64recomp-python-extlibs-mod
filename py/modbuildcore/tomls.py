@@ -3,7 +3,7 @@ from pathlib import Path
 
 from invoke import Context
 from .job_base import JobBase
-from .utils import invoke_subprocess_run
+from .utils import invoke_subprocess_run, print_job_header
 
 class ModTomlJob(JobBase):
     mod_tool_path: Path
@@ -21,6 +21,8 @@ class ModTomlJob(JobBase):
         
         if self.build_dir is None:
             self.build_dir = self.get_elf_path().parent
+            
+        self.mod_output_files[self.get_output_path()] = Path(self.get_output_path().name)
     
     def get_path_from_toml(self, rel_path: str | Path) -> Path:
         return self.toml_path.parent.joinpath(rel_path).resolve()
@@ -47,6 +49,7 @@ class ModTomlJob(JobBase):
         os.rename(out_file_path, self.get_output_path())
         
     def run(self, c: Context):
+        print_job_header(f"Mod Toml Job: {self.toml_path}")
         invoke_subprocess_run(c, True,
             [self.mod_tool_path, self.toml_path, self.build_dir]
         )

@@ -71,7 +71,7 @@ def extract(c: Context, force: bool = False, name: str = None):
     
     for extraction in extract_list:
         extraction.force = force
-        extraction.resolve()
+        extraction.resolve(c)
 
 @task(help={
     'name': f"Only run specific makefile configurations. Names should be the keys used in `project.makefiles`, separated by '{ARG_SPLIT_CHAR}'."
@@ -91,7 +91,6 @@ def makefile(c: Context, name: str = None):
         makefile_list = [p.makefiles[i] for i in name.split(ARG_SPLIT_CHAR)]
     
     for makefile in makefile_list:
-        print_job_header(f"Running makefile '{makefile.config.makefile_path}'")
         makefile.resolve(c)
 
 @task(help={
@@ -134,7 +133,6 @@ def cmake(c: Context, group_name: str = None, build_name: str = None):
     `project.cmake_default_build_group_name`, which should be assigned to a key value from `project.cmake_build_groups`. 
     Generally, this should be some sort of debug build group.
     
-    You will also need to select a build group to be used for releases. This will be set with the variable `project.cmake_release_build_group_name`
     """
     print_task_header("Running CMake builds...")
     global _built_cmake_handlers
@@ -155,8 +153,10 @@ def cmake(c: Context, group_name: str = None, build_name: str = None):
             for build_key, build_job in [(bkey, group[bkey]) for bkey in build_name.split(ARG_SPLIT_CHAR)]:
                 build_job.resolve(c)
                     
-@task
-def update_test_env(C: Context):
+@task (
+    default=True
+)
+def test(c: Context, name: str=None):
     """
     Updates the test environment mod folder with the resultant .nrm files and CMake build outputs from the current run.
     
@@ -165,80 +165,53 @@ def update_test_env(C: Context):
     """
     print_task_header("Updating mod test environment...")
     
-    global _built_tomls, _built_cmake_handlers
-    os.makedirs(p.test_env_mod_dir, exist_ok=True)
+    test_dir_list : list[TestDirJob] = None
+    if name is None:
+        test_dir_list = p.test_dirs.values()
+    else:
+        test_dir_list = [p.test_dirs[i] for i in name.split(ARG_SPLIT_CHAR)]
     
-    # Copying NRM outputs
-    for toml in _built_tomls:
-        src = toml.config.get_output_path()
-        dst = p.test_env_mod_dir.joinpath(toml.config.get_output_path().name)
-        print(f"Copying '{str(src)}' to '{str(dst)}'...")
-        shutil.copy(src, dst)
+    for test_dir in test_dir_list:
+        test_dir.resolve(c)
 
-    for handler in _built_cmake_handlers:
-        for src, dst in handler.config.output_files.items():
-        
-            if not dst.is_absolute():
-                dst = p.test_env_mod_dir.joinpath(dst)
-            
-            print(f"Copying '{str(src)}' to '{str(dst)}'...")
-            shutil.copy(src, dst)
-
-@task(
-    default=True,
-    pre=[download, extract, makefile, nrm, cmake, update_test_env]
-)
-def build(c: Context):
-    """
-    Compile makefiles, .nrm files, and CMake debug builds, and then update the test_env folder. Handles downloads and extractions if needed.
     
-    Shortcut for `modbuild.py download extract makefile nrm cmake update-test-env`.
-    """
-    pass
-
-
-# @task
-# def create_thunderstore_package(c: Context, name: str = None):
-#     """
-#     Creates Thunderstore .zip packages, as specified in `project.thunderstore_packages`.
-    
-#     Entries in `project.thunderstore_packages` should be instances of `modbuildcore.thunderstore.ThunderstorePackageConfig`. 
-#     This command does not build mod tomls or cmake builds that the project depends on. Consider looking at the `thunderstore` command for that.
-#     """
-#     print_task_header("Creating Thunderstore packages...")
-    
-#     package_list: list[ThunderstorePackageHandler] = None
-#     if name is None:
-#         package_list = [ThunderstorePackageHandler(i) for i in p.thunderstore_packages.values()]
-#     else:
-#         package_list = [ThunderstorePackageHandler(p.thunderstore_packages[i]) for i in name.split(ARG_SPLIT_CHAR)]
-        
-#     for package in package_list:
-#         package.assemble_package()
-
-# @task
-# def print_thunderstore_manifest(c: Context, name: str = None):
-#     package_list: list[ThunderstorePackageHandler] = None
-#     if name is None:
-#         package_list = [ThunderstorePackageHandler(i) for i in p.thunderstore_packages.values()]
-#     else:
-#         package_list = [ThunderstorePackageHandler(p.thunderstore_packages[i]) for i in name.split(ARG_SPLIT_CHAR)]
-        
-#     for package in package_list:
-#         print(json.dumps(package.config.manifest, indent=4))
-
-
-# @task(
-#     pre=[download, extract, makefile, nrm, call(cmake, release_group=True), create_thunderstore_package]
+# @task (
+#     default=True,
+#     pre=[download, extract, makefile, nrm, cmake]
 # )
-# def thunderstore(c: Context):
+# def build(c: Context):
 #     """
-#     Compile makefiles, .nrm files, and CMake release builds, and then create the Thunderstore package zip. Handles downloads and extractions if needed.
+#     Compile makefiles, .nrm files, and CMake debug builds, and then update the test_env folder. Handles downloads and extractions if needed.
     
-#     Shortcut for `modbuild.py download extract makefile nrm cmake -r create-thunderstore-package`.
+#     Shortcut for `modbuild.py download extract makefile nrm cmake update-test-env`.
 #     """
 #     pass
 
+@task
+def print_thunderstore_manifest(c: Context, name: str = None):
+    package_list: list[ThunderstorePackageJob] = None
+    if name is None:
+        package_list = p.thunderstore_packages.values()
+    else:
+        package_list = [p.thunderstore_packages[i] for i in name.split(ARG_SPLIT_CHAR)]
+        
+    for package in package_list:
+        print(json.dumps(package.manifest, indent=4))
+
+
+@task
+def thunderstore(c: Context, name: str = None):
+    """
+    Create the Thunderstore package zip. 
+    """
+    package_list: list[ThunderstorePackageJob] = None
+    if name is None:
+        package_list = p.thunderstore_packages.values()
+    else:
+        package_list = [p.thunderstore_packages[i] for i in name.split(ARG_SPLIT_CHAR)]
+        
+    for package in package_list:
+        package.resolve(c)
 
 @task
 def clean(c: Context):
@@ -272,7 +245,3 @@ def distclean(c: Context):
         else:
             print(f"Could not delete {path}")
             
-@task
-def invoke_test(c: Context):
-    makefile(c)
-    nrm(c)
