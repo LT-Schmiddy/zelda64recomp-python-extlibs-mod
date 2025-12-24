@@ -1,4 +1,4 @@
-import platform, shutil, enum, os
+import platform, shutil, enum, os, subprocess
 from pathlib import Path
 from modbuildcore.jobs import *
 
@@ -7,9 +7,6 @@ root_dir: Path = Path(__file__).parent
 archive_downloads_dir: Path = root_dir.joinpath("downloads")
 build_dir: Path = root_dir.joinpath("build")
 binaries_dir: Path = root_dir.joinpath("binaries")
-
-make_path: Path = shutil.which("make")
-cmake_path: Path = shutil.which("cmake")
 
 make_mips_compiler_path: Path = None
 make_mips_linker_path: Path = None
@@ -22,7 +19,7 @@ archive_extractions: dict[str, ArchiveExtractJob] = {}
 makefiles: dict[str, MakefileJob] = {}
 mod_tomls: dict[str, ModTomlJob] = {}
 cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
-test_dirs: dict[str, BuildOutputJob] = {}
+build_outputs: dict[str, BuildOutputJob] = {}
 thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
 nrm_path_fix_by_default = True
@@ -32,7 +29,7 @@ nrm_path_fix_by_default = True
 def add_archive_download_and_extract(name: str, url: str, extract_dir: Path) -> tuple[DownloadJob, ArchiveExtractJob]:
     global archive_extractions, downloads, archive_downloads_dir
     
-    new_download = DownloadJob(url, archive_downloads_dir, True)
+    new_download = DownloadJob(url, archive_downloads_dir)
     new_extraction = ArchiveExtractJob(new_download.download_path, extract_dir)
     new_extraction.depends_on([new_download])
     downloads[name] = new_download
@@ -140,7 +137,6 @@ def prepend_to_env_path(to_append: Path) -> str:
 main_toml = ModTomlJob(mod_tool_path, root_dir.joinpath("mod.toml"))
 mod_tomls['mod'] = main_toml
 makefiles['mod'] = MakefileJob(
-    make_path,
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": str(mod_tomls['mod'].get_elf_path()),
@@ -156,7 +152,6 @@ main_toml.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 # Tests NRM
 mod_tomls['tests'] = ModTomlJob(mod_tool_path, root_dir.joinpath("tests.toml"))
 makefiles['tests'] = MakefileJob(
-    make_path,
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": str(mod_tomls['tests'].get_elf_path()),
@@ -171,7 +166,6 @@ mod_tomls['tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests
 
 extlib_name = "RecompPythonNative"
 extlib = CMakeProjectConfig(
-    cmake_path,
     root_dir,
     {
         # Unlike with clangmips, we're gonna prepend the LLVM and ZIG directories to the PATH that CMake recieves.
@@ -352,7 +346,25 @@ debug_test_dir.depends_on([
     mod_tomls['tests']
 ] + [i for i in cmake_build_groups["Debug"].values()])
 
-test_dirs["debug"] = debug_test_dir
+build_outputs["debug"] = debug_test_dir
+
+def package_url_from_git() -> str:
+    result = subprocess.run(
+        [
+            shutil.which("git"),
+            "config", 
+            "--get", 
+            "remote.origin.url"
+        ],
+        cwd=root_dir,
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode == 0:
+        return result.stdout.strip()
+    else:
+        return None
 
 thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
 main_package = ThunderstorePackageJob(
@@ -360,12 +372,12 @@ main_package = ThunderstorePackageJob(
     {
         "name": thunderstore_package_name,
         "version_number": main_toml.data["manifest"]["version"],
-        "website_url": "https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod",
+        "website_url": package_url_from_git(),
         "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
         "dependencies": []
     },
-    root_dir.joinpath("thunderstore_info/README.md"),
-    root_dir.joinpath("thunderstore_info/CHANGELOG.md"),
+    root_dir.joinpath("thunderstore_info/README.md").read_text(),
+    root_dir.joinpath("thunderstore_info/CHANGELOG.md").read_text(),
     root_dir.joinpath("thumb.png")
 )
 main_package.depends_on([
