@@ -2,7 +2,7 @@
 #define __EXTLIB_FUNCTIONS__
 
 #include "modding.h"
-#include "global.h"
+// #include "global.h"
 #include "libc/stdarg.h"
 #include "repy_api.h"
 
