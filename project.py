@@ -2,7 +2,6 @@ import platform, shutil, enum, os, subprocess
 from pathlib import Path
 from modbuildcore.jobs import *
 import toml
-from deep_dict_update import deep_dict_update
 
 root_dir: Path = Path(__file__).parent
 
@@ -36,21 +35,23 @@ tests_elf_path = tests_build_dir.joinpath("tests.elf")
 
 mm_mod_build_dir = mod_build_dir.joinpath("mm")
 mm_mod_toml_path = mm_mod_build_dir.joinpath("mm_mod.toml")
-mm_test_toml_path = mm_mod_build_dir.joinpath("mm_test.toml")
+
+mm_tests_build_dir = tests_build_dir.joinpath("mm")
+mm_tests_toml_path = mm_tests_build_dir.joinpath("mm_tests.toml")
 
 bk_mod_build_dir = mod_build_dir.joinpath("bk")
 bk_mod_toml_path = bk_mod_build_dir.joinpath("bk_mod.toml")
-bk_test_toml_path = bk_mod_build_dir.joinpath("bk_test.toml")
+
+bk_tests_build_dir = tests_build_dir.joinpath("bk")
+bk_tests_toml_path = bk_tests_build_dir.joinpath("bk_tests.toml")
 
 mm_toml_data = {
     "manifest": {
-        "id": project_name,
         "version": project_version_string,
         "game_id": "mm",
         "minimum_recomp_version": "1.2.1"
     },
     "inputs": {
-        "mod_filename": "MM_" + project_name,
         "func_reference_syms_file": str(root_dir.joinpath("./syms/Zelda64RecompSyms/mm.us.rev1.syms.toml")),
         "data_reference_syms_files": [ 
             str(root_dir.joinpath("./syms/Zelda64RecompSyms/mm.us.rev1.datasyms.toml")),
@@ -61,13 +62,11 @@ mm_toml_data = {
 
 bk_toml_data = {
     "manifest": {
-        "id": project_name,
         "version": project_version_string,
         "game_id": "bk",
         "minimum_recomp_version": "0.0.1"
     },
     "inputs": {
-        "mod_filename": "BK_" + project_name,
         "func_reference_syms_file": str(root_dir.joinpath("./syms/BanjoRecompSyms/bk.us.rev0.syms.toml")),
         "data_reference_syms_files": [ 
             str(root_dir.joinpath("./syms/BanjoRecompSyms/bk.us.rev0.datasyms.toml"))
@@ -77,6 +76,7 @@ bk_toml_data = {
 
 mod_toml_data = {
     "manifest": {
+        "id": project_name,
         "dependencies": []
     },
     "inputs": {
@@ -90,6 +90,7 @@ mod_toml_data = {
 
 tests_toml_data = {
     "manifest": {
+        "id": "Test_" + project_name,
         "dependencies": [
             f"{project_name}:{project_version_string}"
         ]
@@ -211,16 +212,14 @@ def prepend_to_env_path(to_append: Path) -> str:
 mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
 tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
 
-
-mm_mod_toml = GenerateTomlJob.from_merged_dicts(mm_mod_toml_path, [mod_common_data, mm_toml_data, mod_toml_data])
-mm_mod_nrm = ModToNRMJob(mod_tool_path, mm_mod_toml_path, mm_mod_build_dir, delay_read=True)
+mm_mod_toml = GenerateTomlJob.from_merged_dicts(mm_mod_toml_path, [mod_common_data, mm_toml_data, mod_toml_data, {"inputs": {"mod_filename": "MM_" + project_name}}])
+nrms['mm_mod'] = mm_mod_nrm = ModToNRMJob(mod_tool_path, mm_mod_toml_path, mm_mod_build_dir, delay_read=True)
 mm_mod_nrm.depends_on([mm_mod_toml])
-nrms['mm_mod'] = mm_mod_nrm
 
-bk_mod_toml = GenerateTomlJob.from_merged_dicts(bk_mod_toml_path, [mod_common_data, bk_toml_data, mod_toml_data])
-bk_mod_nrm = ModToNRMJob(mod_tool_path, bk_mod_toml_path, bk_mod_build_dir, delay_read=True)
+bk_mod_toml = GenerateTomlJob.from_merged_dicts(bk_mod_toml_path, [mod_common_data, bk_toml_data, mod_toml_data, {"inputs": {"mod_filename": "BK_" + project_name}}])
+nrms['bk_mod'] = bk_mod_nrm = ModToNRMJob(mod_tool_path, bk_mod_toml_path, bk_mod_build_dir, delay_read=True)
 bk_mod_nrm.depends_on([bk_mod_toml])
-nrms['bk_mod'] = bk_mod_nrm
+
 
 makefiles['mod'] = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
@@ -237,8 +236,13 @@ mm_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 bk_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 
 # Tests NRM
-nrms['mm_tests'] = ModToNRMJob(mod_tool_path, root_dir.joinpath("tomls/mm_tests.toml"), delay_read=True)
-nrms['bk_tests'] = ModToNRMJob(mod_tool_path, root_dir.joinpath("tomls/bk_tests.toml"), delay_read=True)
+mm_tests_toml =  GenerateTomlJob.from_merged_dicts(mm_tests_toml_path, [tests_common_data, mm_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_MM_" + project_name}}])
+nrms['mm_tests'] = mm_tests_nrm = ModToNRMJob(mod_tool_path, mm_tests_toml_path, mm_tests_build_dir, delay_read=True)
+mm_tests_nrm.depends_on([mm_tests_toml])
+
+bk_tests_toml =  GenerateTomlJob.from_merged_dicts(bk_tests_toml_path, [tests_common_data, bk_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_BK_" + project_name}}])
+nrms['bk_tests'] = bk_tests_nrm = ModToNRMJob(mod_tool_path, bk_tests_toml_path, bk_tests_build_dir, delay_read=True)
+bk_tests_nrm.depends_on([bk_tests_toml])
 
 makefiles['tests'] = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
@@ -430,13 +434,17 @@ for group_key, group in cmake_build_groups.items():
         build.depends_on([archive_extractions["llvm"]])
 
 
-debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/mods"))
-debug_test_dir.depends_on([
+build_outputs["zelda_debug"] = zelda_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/zelda/mods"))
+zelda_debug_test_dir.depends_on([
     nrms['mm_mod'],
     nrms['mm_tests']
 ] + [i for i in cmake_build_groups["Debug"].values()])
 
-build_outputs["debug"] = debug_test_dir
+build_outputs["bk_debug"] = zelda_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/bk/mods"))
+zelda_debug_test_dir.depends_on([
+    nrms['bk_mod'],
+    nrms['bk_tests']
+] + [i for i in cmake_build_groups["Debug"].values()])
 
 def package_url_from_git() -> str:
     result = subprocess.run(
@@ -463,7 +471,7 @@ main_package = ThunderstorePackageJob(
         "name": project_name,
         "version_number": project_version_string,
         "website_url": package_url_from_git(),
-        "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
+        "description": "A resource for modders. Enables use of Python code and the Python Standard Library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
         "dependencies": []
     },
     root_dir.joinpath("thunderstore_info/README.md").read_text(),
