@@ -1,9 +1,6 @@
 [submodule "Zelda64RecompSyms"]
 	path = Zelda64RecompSyms
 	url = https://github.com/Zelda64Recomp/Zelda64RecompSyms
-[submodule "mm-decomp"]
-	path = mm-decomp
-	url = https://github.com/zeldaret/mm
 [submodule "extern/pybind11"]
 	path = extern/pybind11
 	url = https://github.com/pybind/pybind11.git
