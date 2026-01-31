@@ -3,19 +3,13 @@
         {
             "name": "Combined",
             "includePath": [
-                "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/mod/",
                 "${workspaceFolder}/include/mod/dummy_headers",
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/include_in_dependents",
                 "${workspaceFolder}/src/extlib",
                 "${workspaceFolder}/src/mod",
-                "${workspaceFolder}/mm-decomp/include",
-                "${workspaceFolder}/mm-decomp/src",
                 "${workspaceFolder}/offline_build",
-                "${workspaceFolder}/assets_extracted",
-                "${workspaceFolder}/assets_extracted/assets",
-                "${workspaceFolder}/mm-decomp/extracted/n64-us",
                 "${workspaceFolder}/build/*/python-standalone/python/include",
                 "${workspaceFolder}/extern/pybind11/include",
                 "${workspaceFolder}/extern/plog/include",
@@ -31,22 +25,15 @@
             ],
             // "compilerPath": "clang",
             "cStandard": "c99",
-            "cppStandard": "c++23"
+            "cppStandard": "c++23",
             // "intelliSenseMode": "clang-x86"
         },
         {
             "name": "Mod_Only",
             "includePath": [
-                "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/mod/",
                 "${workspaceFolder}/include/mod/dummy_headers",
-                "${workspaceFolder}/include/lib",
-                "${workspaceFolder}/include_in_dependents",
-                "${workspaceFolder}/mm-decomp/include",
-                "${workspaceFolder}/mm-decomp/src",
-                "${workspaceFolder}/assets_extracted",
-                "${workspaceFolder}/assets_extracted/assets",
-                "${workspaceFolder}/mm-decomp/extracted/n64-us"
+                "${workspaceFolder}/include_in_dependents"
             ],
             "defines": [
                 "F3DEX_GBI_2",
@@ -55,7 +42,7 @@
             ],
             "compilerPath": "clang",
             "cStandard": "c99",
-            "intelliSenseMode": "clang-x86"
+
         },
         {
             "name": "Lib_Win32_Only",

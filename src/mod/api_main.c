@@ -3,8 +3,6 @@
 #include "recomputils.h"
 #include "recompconfig.h"
 #include "recomp_incbin.h"
-#include "libc/stdarg.h"
-
 #include "extlib_functions.h"
 #include "mod_logging.h"
 

@@ -3,14 +3,13 @@
 #include "recomputils.h"
 #include "recompconfig.h"
 #include "recomp_incbin.h"
-#include "libc/stdarg.h"
 #include "printf.h"
 #include "extlib_functions.h"
-#include "mod_logging.h"
 #include "mod_logging.h"
 
 
 #define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s -> "
+
 RECOMP_EXPORT char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, u32 line_number, char* identifier) {
     int idlen = lenprintf_(PYCODE_INLINE_IDENTIFIER_FORMAT, category, filename, function_name, line_number,identifier);
     char* retVal = recomp_alloc(idlen + 1);
