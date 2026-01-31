@@ -41,7 +41,7 @@ typedef double REPY_f64;
  * The `recomp_py.h` imports all the functions and events needed for REPY, 
  * so you probably won't need to use this directly.
  */
-#define REPY_MOD_ID_STR "MM_RecompExternalPython_API"
+#define REPY_MOD_ID_STR "RecompExternalPython_API"
 
 #ifdef DOXYGEN
 #define REPY_IMPORT(func) func

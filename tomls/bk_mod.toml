@@ -1,0 +1,194 @@
+# Config file for an example Majora's Mask: Recompiled mod.
+
+# Fields that end up in the mod's manifest.
+[manifest]
+
+# Unique ID of this mod. Pick something long enough that it'll never be the same as any other mod.
+# The name displayed in the mod management menu is separate from this so this doesn't need to be human readable.
+id = "RecompExternalPython_API"
+
+# Version of this mod.
+version = "1.0.1"
+
+# The name that will show up for this mod in the mod menu. This should be human readable.
+display_name = "Python for BanjoRecompiled"
+
+# The description that will show up when this mod is displayed in the mod menu. This should be human readable.
+description =  """
+A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.
+"""
+
+# A short description that will show up in this mod's entry in the mod list. This should be human readable and kept short
+# to prevent it from being cut off due to the limited space.
+short_description = "A resource for modders. Allows running Python code from mods."
+
+# Authors of this mod.
+authors = [ "LT_Schmiddy" ]
+
+# ID of the target recomp game.
+game_id = "bk"
+
+# Minimum version of the target recomp (e.g. Zelda 64: Recompiled) that this mod can run on.
+minimum_recomp_version = "0.0.1"
+
+# Dependency mods. Each entry is the mod's ID and then an optional minimum version of the dependency mod.
+dependencies = [
+# Example dependency:
+#    "modname:1.0.0"
+]
+
+# Native libraries (e.g. DLLs) and the functions they export.
+native_libraries = [
+# Example native library:
+    { name = "RecompPythonNative", funcs = [
+        # Preinit
+        "PythonNative_Preinit_RegisterNrmInModuleSearchPath",
+
+        # General
+        "PythonNative_Init",
+        "PythonNative_Object_Release",
+        "PythonNative_Object_MakeSUH",
+        "PythonNative_Object_IsValidHandle",
+        "PythonNative_Object_GetSUH",
+        "PythonNative_Object_SetSUH",
+        "PythonNative_Object_CopyHandle",
+
+        
+        # Modules
+        "PythonNative_LoadModule",
+        "PythonNative_LoadModuleN",
+        "PythonNative_ImportModule",
+
+        # Primatives
+        "PythonNative_Object_CreateBool",
+        "PythonNative_Object_CastBool",
+        "PythonNative_Object_CreateU8",
+        "PythonNative_Object_CastU8",
+        "PythonNative_Object_CreateS8",
+        "PythonNative_Object_CastS8",
+        "PythonNative_Object_CreateU16",
+        "PythonNative_Object_CastU16",
+        "PythonNative_Object_CreateS16",
+        "PythonNative_Object_CastS16",
+        "PythonNative_Object_CreateU32",
+        "PythonNative_Object_CastU32",
+        "PythonNative_Object_CreateS32",
+        "PythonNative_Object_CastS32",
+        "PythonNative_Object_CreateF32",
+        "PythonNative_Object_CastF32",
+
+        # 64-bit Primatives
+        "PythonNative_Object_U64Operation",
+        "PythonNative_Object_S64Operation",
+        "PythonNative_Object_F64Operation",
+        
+        # Strings
+        "PythonNative_Object_CreateStr",
+        "PythonNative_Object_CreateStrN",
+        "PythonNative_Object_CastStr_Prepare",
+        "PythonNative_Object_CastStr_Copy",
+        "PythonNative_Object_CreateByteStr",
+        "PythonNative_Object_CreateByteStrN",
+        "PythonNative_Object_CastByteStr_Prepare",
+        "PythonNative_Object_CastByteStr_Copy",
+
+        # Memcpy:
+        "PythonNative_Memcpy_ToBytes",
+        "PythonNative_Memcpy_FromBytes",
+        "PythonNative_Memcpy_ToByteArray",
+        "PythonNative_Memcpy_FromByteArray",
+
+        # Indexing and Slicing
+        "PythonNative_Object_Len",
+
+
+        # Iteration
+        "PythonNative_Object_Iter",
+        "PythonNative_Object_Next",
+        
+        # Tuple
+        "PythonNative_Tuple_Create",
+        "PythonNative_Object_TupleGetIndexS32",
+        
+        # Dicts    
+        "PythonNative_Dict_Create",
+        "PythonNative_Dict_Get",
+        "PythonNative_Dict_Get_CStr",
+        "PythonNative_Dict_Set",
+        "PythonNative_Dict_Set_CStr",
+        "PythonNative_Dict_Has",
+        "PythonNative_Dict_Has_CStr",
+        "PythonNative_Dict_Remove",
+        "PythonNative_Dict_Remove_CStr",
+
+        # Object Attributes
+        "PythonNative_Object_GetAttr",
+        "PythonNative_Object_GetAttr_CStr",
+        "PythonNative_Object_SetAttr",
+        "PythonNative_Object_SetAttr_CStr",
+        "PythonNative_Object_HasAttr",
+        "PythonNative_Object_HasAttr_CStr",
+        "PythonNative_Object_DelAttr",
+        "PythonNative_Object_DelAttr_CStr",
+        
+        # Execution
+        "PythonNative_Compile",
+        "PythonNative_CompileCStr",
+        "PythonNative_CompileCStrN",
+        "PythonNative_Exec",
+        "PythonNative_ExecCStr",
+        "PythonNative_ExecCStrN",
+        "PythonNative_Eval",
+        "PythonNative_EvalCStr",
+        "PythonNative_EvalCStrN",
+
+        # Python Function Calls
+        "PythonNative_Call",
+        "PythonNative_Call_Return",
+        "PythonNative_CallAttr",
+        "PythonNative_CallAttr_CStr",
+        "PythonNative_CallAttr_Return",
+        "PythonNative_CallAttr_CStr_Return",
+        
+        # Exception Handling
+        "PythonNative_IsErrorSet",
+        "PythonNative_GetErrorType",
+        "PythonNative_GetErrorTrace",
+        "PythonNative_GetErrorValue",
+        "PythonNative_ClearError",
+
+        # Logging
+        "PythonNative_SetLogMetaData",
+        "PythonNative_CommitLogMessage"
+    ] }
+]
+
+# Inputs to the mod tool.
+[inputs]
+
+# Input elf file to generate a mod from.
+elf_path = "../build/mod/mod.elf"
+
+# Output mod filename.
+mod_filename = "BK_RecompExternalPython_API"
+
+# Reference symbol files.
+func_reference_syms_file = "../syms/BanjoRecompSyms/bk.us.rev0.syms.toml"
+data_reference_syms_files = [ "../syms/BanjoRecompSyms/bk.us.rev0.datasyms.toml" ]
+
+# Additional files to include in the mod.
+additional_files = [ 
+    "../thumb.dds",
+    "../src/repy_api" # The repy_api module
+]
+
+# Mod config options
+[[manifest.config_options]]
+id = "log_level"
+name = "Log Level"
+description = """Log information about RecompExternalPython to console, and to REPY.log. 
+
+Only applied on game startup. Relaunch the game to change the value."""
+type = "Enum"
+options = [ "NONE", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG", "VERBOSE"]
+default = "ERROR"

@@ -84,7 +84,6 @@ add_library(${TARGET_NAME} SHARED)
 add_subdirectory("./src/extlib")
 target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
 target_link_libraries(${TARGET_NAME} PRIVATE plog::plog)
-# target_sources(${TARGET_NAME} PUBLIC ./extern/incbin/incbin.c)
 
 link_python_standalone(${TARGET_NAME})
 

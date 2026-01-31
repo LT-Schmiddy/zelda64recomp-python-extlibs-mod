@@ -5,7 +5,7 @@
 
 # Unique ID of this mod. Pick something long enough that it'll never be the same as any other mod.
 # The name displayed in the mod management menu is separate from this so this doesn't need to be human readable.
-id = "MM_RecompExternalPython_API"
+id = "RecompExternalPython_API"
 
 # Version of this mod.
 version = "1.0.1"
@@ -167,19 +167,19 @@ native_libraries = [
 [inputs]
 
 # Input elf file to generate a mod from.
-elf_path = "build/mod/mod.elf"
+elf_path = "../build/mod/mod.elf"
 
 # Output mod filename.
 mod_filename = "MM_RecompExternalPython_API"
 
 # Reference symbol files.
-func_reference_syms_file = "Zelda64RecompSyms/mm.us.rev1.syms.toml"
-data_reference_syms_files = [ "Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml" ]
+func_reference_syms_file = "../syms/Zelda64RecompSyms/mm.us.rev1.syms.toml"
+data_reference_syms_files = [ "../syms/Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "../syms/Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml" ]
 
 # Additional files to include in the mod.
 additional_files = [ 
-    "thumb.dds",
-    "./src/repy_api" # The repy_api module
+    "../thumb.dds",
+    "../src/repy_api" # The repy_api module
 ]
 
 # Mod config options

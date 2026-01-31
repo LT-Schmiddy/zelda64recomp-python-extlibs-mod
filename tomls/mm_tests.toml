@@ -36,7 +36,7 @@ minimum_recomp_version = "1.2.1"
 # Dependency mods. Each entry is the mod's ID and then an optional minimum version of the dependency mod.
 dependencies = [
 # Example dependency:
-   "MM_RecompExternalPython_API:1.0.0"
+   "RecompExternalPython_API:1.0.0"
 ]
 
 # Native libraries (e.g. DLLs) and the functions they export.
@@ -48,14 +48,14 @@ native_libraries = [
 [inputs]
 
 # Input elf file to generate a mod from.
-elf_path = "build/tests/mod.elf"
+elf_path = "../build/tests/mod.elf"
 
 # Output mod filename.
 mod_filename = "MM_Recomp_External_Python_API_Tests"
 
 # Reference symbol files.
-func_reference_syms_file = "Zelda64RecompSyms/mm.us.rev1.syms.toml"
-data_reference_syms_files = [ "Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml" ]
+func_reference_syms_file = "../syms/Zelda64RecompSyms/mm.us.rev1.syms.toml"
+data_reference_syms_files = [ "../syms/Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "../syms/Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml" ]
 
 # Additional files to include in the mod.
 additional_files = [ ]

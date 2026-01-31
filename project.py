@@ -134,35 +134,43 @@ def prepend_to_env_path(to_append: Path) -> str:
 # Registering mod toml files to build
 # Main API NRM
 
-main_toml = ModTomlJob(mod_tool_path, root_dir.joinpath("mod.toml"))
-mod_tomls['mod'] = main_toml
+mm_main_toml = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/mm_mod.toml"))
+mod_tomls['mm_mod'] = mm_main_toml
+
+bk_main_toml = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/bk_mod.toml"))
+mod_tomls['bk_mod'] = bk_main_toml
+
 makefiles['mod'] = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
     {
-        "_ELF_PATH": str(mod_tomls['mod'].get_elf_path()),
-        "_BUILD_DIR": str(mod_tomls['mod'].get_elf_path().parent),
+        "_ELF_PATH": str(root_dir.joinpath("build/mod/mod.elf")),
+        "_BUILD_DIR": str(root_dir.joinpath("build/mod")),
         "_MIPS_CC": str(make_mips_compiler_path),
         "_MIPS_LD": str(make_mips_linker_path),
         "_SRC_DIR": "src/mod",
         "_PY_BUILD_FLAGS": "-DRECOMP_PY_BUILD_MODE"
     }
 )
-main_toml.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
+mm_main_toml.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
+bk_main_toml.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 
 # Tests NRM
-mod_tomls['tests'] = ModTomlJob(mod_tool_path, root_dir.joinpath("tests.toml"))
+mod_tomls['mm_tests'] = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/mm_tests.toml"))
+mod_tomls['bk_tests'] = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/bk_tests.toml"))
+
 makefiles['tests'] = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
     {
-        "_ELF_PATH": str(mod_tomls['tests'].get_elf_path()),
-        "_BUILD_DIR": str(mod_tomls['tests'].get_elf_path().parent),
+        "_ELF_PATH": str(root_dir.joinpath("build/tests/mod.elf")),
+        "_BUILD_DIR": str(root_dir.joinpath("build/tests")),
         "_MIPS_CC": str(make_mips_compiler_path),
         "_MIPS_LD": str(make_mips_linker_path),
         "_SRC_DIR": "src/tests",
         "_PY_BUILD_FLAGS": ""
     }
 )
-mod_tomls['tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
+mod_tomls['mm_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
+mod_tomls['bk_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
 
 extlib_name = "RecompPythonNative"
 extlib = CMakeProjectConfig(
@@ -342,8 +350,8 @@ for group_key, group in cmake_build_groups.items():
 
 debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/mods"))
 debug_test_dir.depends_on([
-    mod_tomls['mod'],
-    mod_tomls['tests']
+    mod_tomls['mm_mod'],
+    mod_tomls['mm_tests']
 ] + [i for i in cmake_build_groups["Debug"].values()])
 
 build_outputs["debug"] = debug_test_dir
@@ -371,7 +379,7 @@ main_package = ThunderstorePackageJob(
     root_dir.joinpath(f"{thunderstore_package_name}.thunderstore.zip"),
     {
         "name": thunderstore_package_name,
-        "version_number": main_toml.data["manifest"]["version"],
+        "version_number": mm_main_toml.data["manifest"]["version"],
         "website_url": package_url_from_git(),
         "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
         "dependencies": []
@@ -381,7 +389,7 @@ main_package = ThunderstorePackageJob(
     root_dir.joinpath("thumb.png")
 )
 main_package.depends_on([
-    mod_tomls['mod']
+    mod_tomls['mm_mod']
 ] + [i for i in cmake_build_groups["Release"].values()])
 thunderstore_packages['package'] = main_package
 
