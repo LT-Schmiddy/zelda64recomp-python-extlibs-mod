@@ -1,12 +1,17 @@
 import platform, shutil, enum, os, subprocess
 from pathlib import Path
 from modbuildcore.jobs import *
+import toml
+from deep_dict_update import deep_dict_update
 
 root_dir: Path = Path(__file__).parent
 
 archive_downloads_dir: Path = root_dir.joinpath("downloads")
 build_dir: Path = root_dir.joinpath("build")
 binaries_dir: Path = root_dir.joinpath("binaries")
+
+mod_build_dir = build_dir.joinpath("mod")
+tests_build_dir = build_dir.joinpath("tests")
 
 make_mips_compiler_path: Path = None
 make_mips_linker_path: Path = None
@@ -17,12 +22,83 @@ llvm_path: Path = None
 downloads: dict[str, DownloadJob] = {}
 archive_extractions: dict[str, ArchiveExtractJob] = {}
 makefiles: dict[str, MakefileJob] = {}
-mod_tomls: dict[str, ModTomlJob] = {}
+nrms: dict[str, ModToNRMJob] = {}
 cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
 build_outputs: dict[str, BuildOutputJob] = {}
 thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
 nrm_path_fix_by_default = True
+project_name = "RecompExternalPython_API"
+project_version_string = "2.0.0"
+
+mod_elf_path = mod_build_dir.joinpath("mod.elf")
+tests_elf_path = tests_build_dir.joinpath("tests.elf")
+
+mm_mod_build_dir = mod_build_dir.joinpath("mm")
+mm_mod_toml_path = mm_mod_build_dir.joinpath("mm_mod.toml")
+mm_test_toml_path = mm_mod_build_dir.joinpath("mm_test.toml")
+
+bk_mod_build_dir = mod_build_dir.joinpath("bk")
+bk_mod_toml_path = bk_mod_build_dir.joinpath("bk_mod.toml")
+bk_test_toml_path = bk_mod_build_dir.joinpath("bk_test.toml")
+
+mm_toml_data = {
+    "manifest": {
+        "id": project_name,
+        "version": project_version_string,
+        "game_id": "mm",
+        "minimum_recomp_version": "1.2.1"
+    },
+    "inputs": {
+        "mod_filename": "MM_" + project_name,
+        "func_reference_syms_file": str(root_dir.joinpath("./syms/Zelda64RecompSyms/mm.us.rev1.syms.toml")),
+        "data_reference_syms_files": [ 
+            str(root_dir.joinpath("./syms/Zelda64RecompSyms/mm.us.rev1.datasyms.toml")),
+            str(root_dir.joinpath("./syms/Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml")),
+        ]
+    }
+}
+
+bk_toml_data = {
+    "manifest": {
+        "id": project_name,
+        "version": project_version_string,
+        "game_id": "bk",
+        "minimum_recomp_version": "0.0.1"
+    },
+    "inputs": {
+        "mod_filename": "BK_" + project_name,
+        "func_reference_syms_file": str(root_dir.joinpath("./syms/BanjoRecompSyms/bk.us.rev0.syms.toml")),
+        "data_reference_syms_files": [ 
+            str(root_dir.joinpath("./syms/BanjoRecompSyms/bk.us.rev0.datasyms.toml"))
+        ]
+    }
+}
+
+mod_toml_data = {
+    "manifest": {
+        "dependencies": []
+    },
+    "inputs": {
+        "elf_path": str(mod_elf_path),
+        "additional_files": [ 
+            str(root_dir.joinpath("thumb.dds")),
+            str(root_dir.joinpath("./src/repy_api")) # The repy_api module
+        ]
+    }
+}
+
+tests_toml_data = {
+    "manifest": {
+        "dependencies": [
+            f"{project_name}:{project_version_string}"
+        ]
+    },
+    "inputs": {
+        "elf_path": str(tests_elf_path),
+        "additional_files": []
+    }
+}
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
 # Convienience function for downloading compiler artifacts.
@@ -131,46 +207,52 @@ def prepend_to_env_path(to_append: Path) -> str:
         env_path = str(i) + PATH_DELIMITER + env_path
     return env_path
 
-# Registering mod toml files to build
-# Main API NRM
+# Loading TOML Data:
+mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
+tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
 
-mm_main_toml = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/mm_mod.toml"))
-mod_tomls['mm_mod'] = mm_main_toml
 
-bk_main_toml = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/bk_mod.toml"))
-mod_tomls['bk_mod'] = bk_main_toml
+mm_mod_toml = GenerateTomlJob.from_merged_dicts(mm_mod_toml_path, [mod_common_data, mm_toml_data, mod_toml_data])
+mm_mod_nrm = ModToNRMJob(mod_tool_path, mm_mod_toml_path, mm_mod_build_dir, delay_read=True)
+mm_mod_nrm.depends_on([mm_mod_toml])
+nrms['mm_mod'] = mm_mod_nrm
+
+bk_mod_toml = GenerateTomlJob.from_merged_dicts(bk_mod_toml_path, [mod_common_data, bk_toml_data, mod_toml_data])
+bk_mod_nrm = ModToNRMJob(mod_tool_path, bk_mod_toml_path, bk_mod_build_dir, delay_read=True)
+bk_mod_nrm.depends_on([bk_mod_toml])
+nrms['bk_mod'] = bk_mod_nrm
 
 makefiles['mod'] = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
     {
-        "_ELF_PATH": str(root_dir.joinpath("build/mod/mod.elf")),
-        "_BUILD_DIR": str(root_dir.joinpath("build/mod")),
+        "_ELF_PATH": str(mod_elf_path),
+        "_BUILD_DIR": str(mod_build_dir),
         "_MIPS_CC": str(make_mips_compiler_path),
         "_MIPS_LD": str(make_mips_linker_path),
         "_SRC_DIR": "src/mod",
         "_PY_BUILD_FLAGS": "-DRECOMP_PY_BUILD_MODE"
     }
 )
-mm_main_toml.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
-bk_main_toml.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
+mm_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
+bk_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 
 # Tests NRM
-mod_tomls['mm_tests'] = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/mm_tests.toml"))
-mod_tomls['bk_tests'] = ModTomlJob(mod_tool_path, root_dir.joinpath("tomls/bk_tests.toml"))
+nrms['mm_tests'] = ModToNRMJob(mod_tool_path, root_dir.joinpath("tomls/mm_tests.toml"), delay_read=True)
+nrms['bk_tests'] = ModToNRMJob(mod_tool_path, root_dir.joinpath("tomls/bk_tests.toml"), delay_read=True)
 
 makefiles['tests'] = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
     {
-        "_ELF_PATH": str(root_dir.joinpath("build/tests/mod.elf")),
-        "_BUILD_DIR": str(root_dir.joinpath("build/tests")),
+        "_ELF_PATH": str(tests_elf_path),
+        "_BUILD_DIR": str(tests_build_dir),
         "_MIPS_CC": str(make_mips_compiler_path),
         "_MIPS_LD": str(make_mips_linker_path),
         "_SRC_DIR": "src/tests",
         "_PY_BUILD_FLAGS": ""
     }
 )
-mod_tomls['mm_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
-mod_tomls['bk_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
+nrms['mm_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
+nrms['bk_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
 
 extlib_name = "RecompPythonNative"
 extlib = CMakeProjectConfig(
@@ -350,8 +432,8 @@ for group_key, group in cmake_build_groups.items():
 
 debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/mods"))
 debug_test_dir.depends_on([
-    mod_tomls['mm_mod'],
-    mod_tomls['mm_tests']
+    nrms['mm_mod'],
+    nrms['mm_tests']
 ] + [i for i in cmake_build_groups["Debug"].values()])
 
 build_outputs["debug"] = debug_test_dir
@@ -374,12 +456,12 @@ def package_url_from_git() -> str:
     else:
         return None
 
-thunderstore_package_name = "RecompExternalPython_for_Zelda64Recompiled"
+
 main_package = ThunderstorePackageJob(
-    root_dir.joinpath(f"{thunderstore_package_name}.thunderstore.zip"),
+    root_dir.joinpath(f"{project_name}.thunderstore.zip"),
     {
-        "name": thunderstore_package_name,
-        "version_number": mm_main_toml.data["manifest"]["version"],
+        "name": project_name,
+        "version_number": project_version_string,
         "website_url": package_url_from_git(),
         "description": "A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
         "dependencies": []
@@ -389,7 +471,8 @@ main_package = ThunderstorePackageJob(
     root_dir.joinpath("thumb.png")
 )
 main_package.depends_on([
-    mod_tomls['mm_mod']
+    nrms['mm_mod'],
+    nrms['bk_mod']
 ] + [i for i in cmake_build_groups["Release"].values()])
 thunderstore_packages['package'] = main_package
 

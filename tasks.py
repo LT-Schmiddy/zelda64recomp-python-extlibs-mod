@@ -18,7 +18,7 @@ except ImportError as e:
 
 ARG_SPLIT_CHAR = ","
 
-_built_tomls: list[ModTomlJob] = []
+_built_tomls: list[ModToNRMJob] = []
 _built_cmake_handlers: list[CMakeBuildJob] = []
 
 def print_task_header(*args, **kwargs): 
@@ -109,16 +109,16 @@ def makefile(c: Context, skip_dependencies: bool = False, name: str = None):
 def nrm(c: Context, skip_dependencies: bool = False, name: str = None, path_fix: bool = p.nrm_path_fix_by_default):
     """
     Builds .nrm files from .toml files, as specified in `project.mod_tomls`. The resultant .nrms are counted as 'mod_output_files'.
-    Entries in `project.mod_tomls` should be instances of `modbuildcore.makefiles.ModTomlJob`. 
+    Entries in `project.mod_tomls` should be instances of `modbuildcore.makefiles.ModToNRMJob`. 
     """
     print_task_header("Building NRM files...")
     
     global _built_tomls
-    toml_list : list[ModTomlJob] = None
+    toml_list : list[ModToNRMJob] = None
     if name is None:
-        toml_list = p.mod_tomls.values()
+        toml_list = p.nrms.values()
     else:
-        toml_list = [p.mod_tomls[i] for i in name.split(ARG_SPLIT_CHAR)]
+        toml_list = [p.nrms[i] for i in name.split(ARG_SPLIT_CHAR)]
     
     for mod in toml_list:
         mod.run_nrm_path_fix = path_fix

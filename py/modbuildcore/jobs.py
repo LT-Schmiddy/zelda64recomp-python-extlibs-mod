@@ -4,7 +4,7 @@ from .downloads import DownloadJob
 from .makefiles import MakefileJob
 from .build_output import BuildOutputJob
 from .thunderstore import ThunderstorePackageJob
-from .tomls import ModTomlJob
+from .tomls import ModToNRMJob, GenerateTomlJob
 
 __all__ = [
     'ArchiveExtractJob',
@@ -14,5 +14,6 @@ __all__ = [
     'MakefileJob',
     'BuildOutputJob',
     'ThunderstorePackageJob',
-    'ModTomlJob',
+    'ModToNRMJob',
+    'GenerateTomlJob',
 ]

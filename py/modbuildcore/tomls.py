@@ -1,29 +1,60 @@
-import tomllib, pathlib, zipfile, os
+import toml, pathlib, zipfile, os
 from pathlib import Path
 
 from invoke import Context
 from .job_base import JobBase
 from .utils import invoke_subprocess_run, print_job_header
+from deep_dict_update import deep_dict_update
 
-class ModTomlJob(JobBase):
+class GenerateTomlJob(JobBase):
+    toml_path: Path
+    data: dict
+    
+    @classmethod
+    def from_merged_dicts(cls, toml_path: Path, data_list: list[dict]):
+        final_dict = {}
+        for i in data_list:
+            final_dict = deep_dict_update(final_dict, i)
+            
+        return cls(toml_path, final_dict)
+        
+    def __init__(self, toml_path: Path, data: dict):
+        super().__init__()
+        self.toml_path = toml_path
+        self.data = data
+    
+    def run(self, c: Context):
+        print_job_header(f"Generate Toml Job: {self.toml_path}")
+        os.makedirs(self.toml_path.parent, exist_ok=True)
+        self.toml_path.write_text(toml.dumps(self.data))
+
+class ModToNRMJob(JobBase):
     mod_tool_path: Path
     toml_path: Path
-    run_nrm_path_fix: bool
     build_dir: Path
+    delay_read: bool
     
-    def __init__(self, mod_tool_path: Path, toml_path: Path, build_dir: Path = None):
+    run_nrm_path_fix: bool
+    
+    def __init__(self, mod_tool_path: Path, toml_path: Path, build_dir: Path = None, *, delay_read: bool = False):
         super().__init__()
         self.mod_tool_path = mod_tool_path    
         self.toml_path = toml_path
         self.build_dir = build_dir
-        self.data = tomllib.loads(self.toml_path.read_text())
+        self.data = None
+        self.delay_read = delay_read
+        if not delay_read:
+            self.read_toml()
+            
+        self.run_nrm_path_fix = False
+    
+    def read_toml(self):
+        self.data = toml.loads(self.toml_path.read_text())
         
         if self.build_dir is None:
             self.build_dir = self.get_elf_path().parent
         
         self.mod_output_files[Path(self.get_output_path().name)] = self.get_output_path()
-        
-        self.run_nrm_path_fix = False
     
     def get_path_from_toml(self, rel_path: str | Path) -> Path:
         return self.toml_path.parent.joinpath(rel_path).resolve()
@@ -50,7 +81,11 @@ class ModTomlJob(JobBase):
         os.rename(out_file_path, self.get_output_path())
         
     def run(self, c: Context):
-        print_job_header(f"Mod Toml Job: {self.toml_path}")
+        print_job_header(f"Mod To NRM Job: {self.toml_path}")
+        
+        if self.delay_read and self.data is None:
+            self.read_toml()
+        
         invoke_subprocess_run(c, True,
             [self.mod_tool_path, self.toml_path, self.build_dir]
         )
