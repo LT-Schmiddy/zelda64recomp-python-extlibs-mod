@@ -21,6 +21,7 @@ llvm_path: Path = None
 downloads: dict[str, DownloadJob] = {}
 archive_extractions: dict[str, ArchiveExtractJob] = {}
 makefiles: dict[str, MakefileJob] = {}
+tomls: dict[str, GenerateTomlJob] = {}
 nrms: dict[str, ModToNRMJob] = {}
 cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
 build_outputs: dict[str, BuildOutputJob] = {}
@@ -195,11 +196,6 @@ else:
     )
     llvm_path = binaries_dir.joinpath("llvm_linux/LLVM-19.1.7-Linux-X64")
 
-# Registering asset_archive extraction
-assets_archive_path = root_dir.joinpath("assets_archive.zip")
-assets_extracted_path = root_dir.joinpath("assets_extracted/assets")
-archive_extractions['assets'] = ArchiveExtractJob(assets_archive_path, assets_extracted_path)
-
 def prepend_to_env_path(to_append: Path) -> str:
     global llvm_path
     PATH_DELIMITER = ";" if os.name == 'nt' else ":"
@@ -212,11 +208,11 @@ def prepend_to_env_path(to_append: Path) -> str:
 mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
 tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
 
-mm_mod_toml = GenerateTomlJob.from_merged_dicts(mm_mod_toml_path, [mod_common_data, mm_toml_data, mod_toml_data, {"inputs": {"mod_filename": "MM_" + project_name}}])
+tomls['mm_mod'] = mm_mod_toml = GenerateTomlJob.from_merged_dicts(mm_mod_toml_path, [mod_common_data, mm_toml_data, mod_toml_data, {"inputs": {"mod_filename": "MM_" + project_name}}])
 nrms['mm_mod'] = mm_mod_nrm = ModToNRMJob(mod_tool_path, mm_mod_toml_path, mm_mod_build_dir, delay_read=True)
 mm_mod_nrm.depends_on([mm_mod_toml])
 
-bk_mod_toml = GenerateTomlJob.from_merged_dicts(bk_mod_toml_path, [mod_common_data, bk_toml_data, mod_toml_data, {"inputs": {"mod_filename": "BK_" + project_name}}])
+tomls['bk_mod'] = bk_mod_toml = GenerateTomlJob.from_merged_dicts(bk_mod_toml_path, [mod_common_data, bk_toml_data, mod_toml_data, {"inputs": {"mod_filename": "BK_" + project_name}}])
 nrms['bk_mod'] = bk_mod_nrm = ModToNRMJob(mod_tool_path, bk_mod_toml_path, bk_mod_build_dir, delay_read=True)
 bk_mod_nrm.depends_on([bk_mod_toml])
 
@@ -236,11 +232,11 @@ mm_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 bk_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 
 # Tests NRM
-mm_tests_toml =  GenerateTomlJob.from_merged_dicts(mm_tests_toml_path, [tests_common_data, mm_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_MM_" + project_name}}])
+tomls['mm_tests'] = mm_tests_toml =  GenerateTomlJob.from_merged_dicts(mm_tests_toml_path, [tests_common_data, mm_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_MM_" + project_name}}])
 nrms['mm_tests'] = mm_tests_nrm = ModToNRMJob(mod_tool_path, mm_tests_toml_path, mm_tests_build_dir, delay_read=True)
 mm_tests_nrm.depends_on([mm_tests_toml])
 
-bk_tests_toml =  GenerateTomlJob.from_merged_dicts(bk_tests_toml_path, [tests_common_data, bk_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_BK_" + project_name}}])
+tomls['bk_tests'] = bk_tests_toml =  GenerateTomlJob.from_merged_dicts(bk_tests_toml_path, [tests_common_data, bk_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_BK_" + project_name}}])
 nrms['bk_tests'] = bk_tests_nrm = ModToNRMJob(mod_tool_path, bk_tests_toml_path, bk_tests_build_dir, delay_read=True)
 bk_tests_nrm.depends_on([bk_tests_toml])
 
@@ -491,5 +487,4 @@ clean_paths: list[Path] = [
 distclean_paths: list[Path] = [
     binaries_dir,
     archive_downloads_dir,
-    assets_extracted_path.parent
 ]

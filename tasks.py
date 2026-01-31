@@ -18,9 +18,6 @@ except ImportError as e:
 
 ARG_SPLIT_CHAR = ","
 
-_built_tomls: list[ModToNRMJob] = []
-_built_cmake_handlers: list[CMakeBuildJob] = []
-
 def print_task_header(*args, **kwargs): 
     print_color('green', "\n-> ", *args, **kwargs)
     
@@ -100,20 +97,42 @@ def makefile(c: Context, skip_dependencies: bool = False, name: str = None):
 @task(
     help={
         'skip_dependencies': "Do not try to resolve dependency jobs.",
-        'name': f"Only build .nrm files from specific registered .toml files. " \
-            f"Names should be the keys used in `project.mod_tomls`, separated by '{ARG_SPLIT_CHAR}'.",
+        'name': f"Only generate specific registered .toml files. " \
+            f"Names should be the keys used in `project.tomls`, separated by '{ARG_SPLIT_CHAR}'."
+    }
+)
+def toml(c: Context, skip_dependencies: bool = False, name: str = None):
+    """
+    Generate .toml files, as specified in `project.tomls`.
+    Entries in `project.tomls` should be instances of `modbuildcore.tomls.GenerateTomlJob`. 
+    """
+    print_task_header("Generating .toml files...")
+    
+    toml_list : list[GenerateTomlJob] = None
+    if name is None:
+        toml_list = p.tomls.values()
+    else:
+        toml_list = [p.tomls[i] for i in name.split(ARG_SPLIT_CHAR)]
+    
+    for mod in toml_list:
+        mod.resolve(c, skip_dependencies)
+
+@task(
+    help={
+        'skip_dependencies': "Do not try to resolve dependency jobs.",
+        'name': f"Only build specific registered .nrm files. " \
+            f"Names should be the keys used in `project.nrms`, separated by '{ARG_SPLIT_CHAR}'.",
         'path_fix': "EXPERIMENTAL (AND NOT ENDORSED BY WISEGUY)! Reconstructs the .nrm file " \
             "after RecompModTool finishes in order to eliminate backslashes from filepaths."
     }
 )
 def nrm(c: Context, skip_dependencies: bool = False, name: str = None, path_fix: bool = p.nrm_path_fix_by_default):
     """
-    Builds .nrm files from .toml files, as specified in `project.mod_tomls`. The resultant .nrms are counted as 'mod_output_files'.
-    Entries in `project.mod_tomls` should be instances of `modbuildcore.makefiles.ModToNRMJob`. 
+    Builds .nrm files, as specified in `project.nrms`. The resultant .nrm files are counted as 'mod_output_files'.
+    Entries in `project.nrms` should be instances of `modbuildcore.tomls.ModToNRMJob`. 
     """
-    print_task_header("Building NRM files...")
+    print_task_header("Building .nrm files...")
     
-    global _built_tomls
     toml_list : list[ModToNRMJob] = None
     if name is None:
         toml_list = p.nrms.values()
@@ -138,7 +157,6 @@ def cmake(c: Context, skip_dependencies: bool = False, group_name: str = None, b
     CMakeBuildJobs have 'mod_output_files' specified on creation.
     """
     print_task_header("Running CMake builds...")
-    global _built_cmake_handlers
     
     selected_groups: dict[str, dict[str, CMakeBuildJob]] = {}
 
