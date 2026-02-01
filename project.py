@@ -1,6 +1,7 @@
 import platform, shutil, enum, os, subprocess
 from pathlib import Path
 from modbuildcore.jobs import *
+from modbuildcore.job_base import JobBase
 import toml
 
 root_dir: Path = Path(__file__).parent
@@ -29,27 +30,15 @@ thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
 nrm_path_fix_by_default = True
 project_name = "RecompExternalPython_API"
+project_tests_name = "Test_" + project_name
 project_version_string = "2.0.0"
 
 mod_elf_path = mod_build_dir.joinpath("mod.elf")
 tests_elf_path = tests_build_dir.joinpath("tests.elf")
 
-mm_mod_build_dir = mod_build_dir.joinpath("mm")
-mm_mod_toml_path = mm_mod_build_dir.joinpath("mm_mod.toml")
-
-mm_tests_build_dir = tests_build_dir.joinpath("mm")
-mm_tests_toml_path = mm_tests_build_dir.joinpath("mm_tests.toml")
-
-bk_mod_build_dir = mod_build_dir.joinpath("bk")
-bk_mod_toml_path = bk_mod_build_dir.joinpath("bk_mod.toml")
-
-bk_tests_build_dir = tests_build_dir.joinpath("bk")
-bk_tests_toml_path = bk_tests_build_dir.joinpath("bk_tests.toml")
-
 mm_toml_data = {
     "manifest": {
         "version": project_version_string,
-        "game_id": "mm",
         "minimum_recomp_version": "1.2.1"
     },
     "inputs": {
@@ -64,7 +53,6 @@ mm_toml_data = {
 bk_toml_data = {
     "manifest": {
         "version": project_version_string,
-        "game_id": "bk",
         "minimum_recomp_version": "0.0.1"
     },
     "inputs": {
@@ -91,7 +79,7 @@ mod_toml_data = {
 
 tests_toml_data = {
     "manifest": {
-        "id": "Test_" + project_name,
+        "id": project_tests_name,
         "dependencies": [
             f"{project_name}:{project_version_string}"
         ]
@@ -101,6 +89,10 @@ tests_toml_data = {
         "additional_files": []
     }
 }
+
+manifest_id_dict = lambda mod_id: {"manifest": {"id": mod_id}}
+manifest_gameid_dict = lambda game_id: {"manifest": {"game_id": game_id}}
+inputs_modname_dict = lambda name: {"inputs": {"mod_filename": name}}
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
 # Convienience function for downloading compiler artifacts.
@@ -204,20 +196,8 @@ def prepend_to_env_path(to_append: Path) -> str:
         env_path = str(i) + PATH_DELIMITER + env_path
     return env_path
 
-# Loading TOML Data:
-mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
-tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
-
-tomls['mm_mod'] = mm_mod_toml = GenerateTomlJob.from_merged_dicts(mm_mod_toml_path, [mod_common_data, mm_toml_data, mod_toml_data, {"inputs": {"mod_filename": "MM_" + project_name}}])
-nrms['mm_mod'] = mm_mod_nrm = ModToNRMJob(mod_tool_path, mm_mod_toml_path, mm_mod_build_dir, delay_read=True)
-mm_mod_nrm.depends_on([mm_mod_toml])
-
-tomls['bk_mod'] = bk_mod_toml = GenerateTomlJob.from_merged_dicts(bk_mod_toml_path, [mod_common_data, bk_toml_data, mod_toml_data, {"inputs": {"mod_filename": "BK_" + project_name}}])
-nrms['bk_mod'] = bk_mod_nrm = ModToNRMJob(mod_tool_path, bk_mod_toml_path, bk_mod_build_dir, delay_read=True)
-bk_mod_nrm.depends_on([bk_mod_toml])
-
-
-makefiles['mod'] = MakefileJob(
+# ELF Binaries:
+makefiles['mod'] = mod_makefile = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": str(mod_elf_path),
@@ -228,19 +208,8 @@ makefiles['mod'] = MakefileJob(
         "_PY_BUILD_FLAGS": "-DRECOMP_PY_BUILD_MODE"
     }
 )
-mm_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
-bk_mod_nrm.depends_on([archive_extractions["llvmmips"], makefiles['mod']])
 
-# Tests NRM
-tomls['mm_tests'] = mm_tests_toml =  GenerateTomlJob.from_merged_dicts(mm_tests_toml_path, [tests_common_data, mm_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_MM_" + project_name}}])
-nrms['mm_tests'] = mm_tests_nrm = ModToNRMJob(mod_tool_path, mm_tests_toml_path, mm_tests_build_dir, delay_read=True)
-mm_tests_nrm.depends_on([mm_tests_toml])
-
-tomls['bk_tests'] = bk_tests_toml =  GenerateTomlJob.from_merged_dicts(bk_tests_toml_path, [tests_common_data, bk_toml_data, tests_toml_data, {"inputs": {"mod_filename": "Test_BK_" + project_name}}])
-nrms['bk_tests'] = bk_tests_nrm = ModToNRMJob(mod_tool_path, bk_tests_toml_path, bk_tests_build_dir, delay_read=True)
-bk_tests_nrm.depends_on([bk_tests_toml])
-
-makefiles['tests'] = MakefileJob(
+makefiles['tests'] = tests_makefile = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
     {
         "_ELF_PATH": str(tests_elf_path),
@@ -251,9 +220,29 @@ makefiles['tests'] = MakefileJob(
         "_PY_BUILD_FLAGS": ""
     }
 )
-nrms['mm_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
-nrms['bk_tests'].depends_on([archive_extractions["llvmmips"], makefiles['tests']])
 
+def add_toml_and_nrm_job(game_id: str, toml_type: str, nrm_base_name: str, build_dir: Path, data_dicts: list[dict], nrm_dependencies: list[JobBase]) -> tuple[GenerateTomlJob, ModToNRMJob]:
+    global tomls, nrms
+    
+    mod_key = f"{game_id}_{toml_type}"
+    
+    nrm_build_dir = build_dir.joinpath(game_id)
+    toml_path = nrm_build_dir.joinpath(f"{mod_key}.toml")
+    
+    tomls[mod_key] = mod_toml = GenerateTomlJob.from_merged_dicts(toml_path, data_dicts + [inputs_modname_dict(f"{game_id}_{nrm_base_name}"), manifest_gameid_dict(game_id)])
+    nrms[mod_key] = mod_nrm = ModToNRMJob(mod_tool_path, toml_path, nrm_build_dir, delay_read=True)
+    mod_nrm.depends_on([mod_toml] + nrm_dependencies)
+
+# Loading TOML Data:
+mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
+tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
+
+add_toml_and_nrm_job("mm", "mod", project_name, mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+add_toml_and_nrm_job("bk", "mod", project_name, mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+add_toml_and_nrm_job("mm", "tests", project_tests_name, tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+add_toml_and_nrm_job("bk", "tests", project_tests_name, tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+
+# Extlib Compilation
 extlib_name = "RecompPythonNative"
 extlib = CMakeProjectConfig(
     root_dir,
@@ -263,6 +252,7 @@ extlib = CMakeProjectConfig(
         "LIB_NAME": extlib_name
     }
 )
+
 def get_preset_lib_path(preset_name: str) -> Path:
     global root_dir
     return root_dir.joinpath(f"build/{preset_name}/lib")
