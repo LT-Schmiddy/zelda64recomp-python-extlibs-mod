@@ -38,7 +38,6 @@ tests_elf_path = tests_build_dir.joinpath("tests.elf")
 
 mm_toml_data = {
     "manifest": {
-        "version": project_version_string,
         "minimum_recomp_version": "1.2.1"
     },
     "inputs": {
@@ -52,7 +51,6 @@ mm_toml_data = {
 
 bk_toml_data = {
     "manifest": {
-        "version": project_version_string,
         "minimum_recomp_version": "0.0.1"
     },
     "inputs": {
@@ -66,6 +64,7 @@ bk_toml_data = {
 mod_toml_data = {
     "manifest": {
         "id": project_name,
+        "version": project_version_string,
         "dependencies": []
     },
     "inputs": {
@@ -80,6 +79,7 @@ mod_toml_data = {
 tests_toml_data = {
     "manifest": {
         "id": project_tests_name,
+        "version": project_version_string,
         "dependencies": [
             f"{project_name}:{project_version_string}"
         ]
@@ -232,15 +232,17 @@ def add_toml_and_nrm_job(game_id: str, toml_type: str, nrm_base_name: str, build
     tomls[mod_key] = mod_toml = GenerateTomlJob.from_merged_dicts(toml_path, data_dicts + [inputs_modname_dict(f"{game_id}_{nrm_base_name}"), manifest_gameid_dict(game_id)])
     nrms[mod_key] = mod_nrm = ModToNRMJob(mod_tool_path, toml_path, nrm_build_dir, delay_read=True)
     mod_nrm.depends_on([mod_toml] + nrm_dependencies)
+    
+    return mod_toml, mod_nrm
 
 # Loading TOML Data:
 mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
 tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
 
-add_toml_and_nrm_job("mm", "mod", project_name, mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
-add_toml_and_nrm_job("bk", "mod", project_name, mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
-add_toml_and_nrm_job("mm", "tests", project_tests_name, tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
-add_toml_and_nrm_job("bk", "tests", project_tests_name, tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+mm_mod_toml, mm_mod_nrm = add_toml_and_nrm_job("mm", "mod", project_name, mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", project_name, mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+mm_tests_toml, mm_tests_nrm = add_toml_and_nrm_job("mm", "tests", project_tests_name, tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+bk_tests_toml, bk_tests_nrm = add_toml_and_nrm_job("bk", "tests", project_tests_name, tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 
 # Extlib Compilation
 extlib_name = "RecompPythonNative"
@@ -422,14 +424,14 @@ for group_key, group in cmake_build_groups.items():
 
 build_outputs["zelda_debug"] = zelda_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/zelda/mods"))
 zelda_debug_test_dir.depends_on([
-    nrms['mm_mod'],
-    nrms['mm_tests']
+    mm_mod_nrm,
+    mm_tests_nrm
 ] + [i for i in cmake_build_groups["Debug"].values()])
 
 build_outputs["bk_debug"] = zelda_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/bk/mods"))
 zelda_debug_test_dir.depends_on([
-    nrms['bk_mod'],
-    nrms['bk_tests']
+    bk_mod_nrm,
+    bk_tests_nrm
 ] + [i for i in cmake_build_groups["Debug"].values()])
 
 def package_url_from_git() -> str:
@@ -450,7 +452,6 @@ def package_url_from_git() -> str:
     else:
         return None
 
-
 main_package = ThunderstorePackageJob(
     root_dir.joinpath(f"{project_name}.thunderstore.zip"),
     {
@@ -464,9 +465,10 @@ main_package = ThunderstorePackageJob(
     root_dir.joinpath("thunderstore_info/CHANGELOG.md").read_text(),
     root_dir.joinpath("thumb.png")
 )
+
 main_package.depends_on([
-    nrms['mm_mod'],
-    nrms['bk_mod']
+    mm_mod_nrm,
+    bk_mod_nrm
 ] + [i for i in cmake_build_groups["Release"].values()])
 thunderstore_packages['package'] = main_package
 
