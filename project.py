@@ -13,6 +13,8 @@ binaries_dir: Path = root_dir.joinpath("binaries")
 mod_build_dir = build_dir.joinpath("mod")
 tests_build_dir = build_dir.joinpath("tests")
 
+package_dir = root_dir.joinpath("thunderstore_packages")
+
 make_mips_compiler_path: Path = None
 make_mips_linker_path: Path = None
 mod_tool_path: Path = None
@@ -28,7 +30,7 @@ cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
 build_outputs: dict[str, BuildOutputJob] = {}
 thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
-project_name = "N64RecompExternalPython_API"
+project_name = "RecompExternalPython_API"
 project_tests_name = "Test_" + project_name
 project_version_string = "2.0.0"
 
@@ -473,23 +475,15 @@ for group_key, group in cmake_build_groups.items():
         build.depends_on([archive_extractions["llvm"]])
         
 
-build_outputs["zelda_debug"] = zelda_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/zelda/mods"))
-zelda_debug_test_dir.depends_on([
-    mm_mod_nrm,
-    mm_tests_nrm
-] + [i for i in cmake_build_groups["Debug"].values()])
+def add_build_output(job_name: str, output_path: Path, dependencies: list[JobBase]) -> BuildOutputJob:
+    build_outputs[job_name] = build_job = BuildOutputJob(root_dir.joinpath(output_path))
+    build_job.depends_on(dependencies)
+    return build_job
 
-build_outputs["bk_debug"] = zelda_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/bk/mods"))
-zelda_debug_test_dir.depends_on([
-    bk_mod_nrm,
-    bk_tests_nrm
-] + [i for i in cmake_build_groups["Debug"].values()])
-
-build_outputs["sf64_debug"] = sf64_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/sf64/mods"))
-sf64_debug_test_dir.depends_on([
-    sf64_mod_nrm,
-    sf64_tests_nrm
-] + [i for i in cmake_build_groups["Debug"].values()])
+cmake_debug_builds = [i for i in cmake_build_groups["Debug"].values()]
+add_build_output("zelda_debug", "test_env/zelda/mods", [mm_mod_nrm, mm_tests_nrm] + cmake_debug_builds)
+add_build_output("bk_debug", "test_env/bk/mods", [bk_mod_nrm, bk_tests_nrm] + cmake_debug_builds)
+add_build_output("sf64_debug", "test_env/sf64/mods", [sf64_mod_nrm, sf64_tests_nrm] + cmake_debug_builds)
 
 def package_url_from_git() -> str:
     result = subprocess.run(
@@ -509,25 +503,28 @@ def package_url_from_git() -> str:
     else:
         return None
 
-thunderstore_project_name = "RecompExternalPython_for_Zelda64Recompiled"
-main_package = ThunderstorePackageJob(
-    root_dir.joinpath(f"{thunderstore_project_name}.thunderstore.zip"),
-    {
-        "name": thunderstore_project_name,
-        "version_number": project_version_string,
-        "website_url": package_url_from_git(),
-        "description": "A resource for modders. Enables use of Python code and the Python Standard Library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
-        "dependencies": []
-    },
-    root_dir.joinpath("thunderstore_info/README.md").read_text(),
-    root_dir.joinpath("thunderstore_info/CHANGELOG.md").read_text(),
-    root_dir.joinpath("thumb.png")
-)
+def add_thunderstore_package(job_name: str, package_name: str, version_str: str, dependencies: list[JobBase]) -> ThunderstorePackageJob:
+    thunderstore_packages[job_name] = package = ThunderstorePackageJob(
+        package_dir.joinpath(f"{package_name}.thunderstore.zip"),
+        {
+            "name": package_name,
+            "version_number": version_str,
+            "website_url": package_url_from_git(),
+            "description": "A resource for modders. Enables use of Python code and the Python Standard Library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
+            "dependencies": []
+        },
+        root_dir.joinpath("thunderstore_info/README.md").read_text(),
+        root_dir.joinpath("thunderstore_info/CHANGELOG.md").read_text(),
+        root_dir.joinpath("thumb.png")
+    )
+    package.depends_on(dependencies)
+    
+    return package
 
-main_package.depends_on([
-    mm_mod_nrm,
-] + [i for i in cmake_build_groups["Release"].values()])
-thunderstore_packages['zelda'] = main_package
+cmake_release_builds = [i for i in cmake_build_groups["Release"].values()]
+add_thunderstore_package("mm", "RecompExternalPython_for_Zelda64Recompiled", project_version_string, [mm_mod_nrm] + cmake_release_builds)
+add_thunderstore_package("bk", "RecompExternalPython_for_BanjoRecompiled", project_version_string, [bk_mod_nrm] + cmake_release_builds)
+add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled", project_version_string, [sf64_mod_nrm] + cmake_release_builds)
 
 clean_paths: list[Path] = [
     build_dir

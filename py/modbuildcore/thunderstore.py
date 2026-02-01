@@ -28,6 +28,7 @@ class ThunderstorePackageJob(JobBase):
         
     def run(self, c: Context):
         print_job_header(f"Thunderstore Package Job: {self.manifest['name']}")
+        os.makedirs(self.package_file.parent, exist_ok=True)
         # Thunderstore Metadata:
         output_file = zipfile.ZipFile(self.package_file, 'w', zipfile.ZIP_DEFLATED)
         output_file.writestr("manifest.json", json.dumps(self.manifest, indent=4))
