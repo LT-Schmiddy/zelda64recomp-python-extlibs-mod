@@ -33,7 +33,7 @@ void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 // ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
     // Initialize Logging
-    fs::path file_appender_path = fs::path(mod_dir).append("REPY.log");
+    fs::path file_appender_path = fs::path(mod_dir).parent_path().append("REPY.log");
     file_appender = new plog::RollingFileAppender<plog::TxtFormatter>(path_to_string_utf8(file_appender_path).c_str());
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
     log = &plog::init((plog::Severity)severity);
