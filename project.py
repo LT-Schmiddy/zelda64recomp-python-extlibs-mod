@@ -29,7 +29,7 @@ build_outputs: dict[str, BuildOutputJob] = {}
 thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
 nrm_path_fix_by_default = True
-project_name = "RecompExternalPython_API"
+project_name = "N64RecompExternalPython_API"
 project_tests_name = "Test_" + project_name
 project_version_string = "2.0.0"
 

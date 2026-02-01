@@ -32,6 +32,7 @@ void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 
 // ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
+    // Initialize Logging
     fs::path file_appender_path = fs::path(mod_dir).append("REPY.log");
     file_appender = new plog::RollingFileAppender<plog::TxtFormatter>(path_to_string_utf8(file_appender_path).c_str());
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
@@ -39,11 +40,13 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     log->addAppender(file_appender);
     log->addAppender(console_appender);
 
-    fs::path mod_dir_Lib = fs::path(mod_dir).append("python313.zip");
-    fs::path mod_dir_DLLs = fs::path(mod_dir).append("PyDLLs");
-    extract_python_stdlib(mod_dir_Lib);
-    setup_python_stdlib_dlls(mod_dir, mod_dir_DLLs);
+    // Setting up Stdlib
+    fs::path stdlib_dir = fs::path(mod_dir).append(PYTHON_VERSION_STR "_DLLs");
+    fs::path stdlib_archive = fs::path(mod_dir).append(PYTHON_VERSION_STR ".zip");
+    extract_python_stdlib(stdlib_archive);
+    setup_python_stdlib_dlls(mod_dir, stdlib_dir);
 
+    // Configuring and Initializing the Interpreter
     PyPreConfig preconfig;
     PyPreConfig_InitPythonConfig(&preconfig);
     Py_PreInitialize(&preconfig);
@@ -51,10 +54,10 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
 
-    PyConfig_SetBytesString(&config, &config.program_name, "Zelda64Recompiled");
+    PyConfig_SetBytesString(&config, &config.program_name, PYTHON_PROGRAM_NAME);
     
-    py_preinit_add_search_path(&config, mod_dir_Lib);
-    py_preinit_add_search_path(&config, mod_dir_DLLs);
+    py_preinit_add_search_path(&config, stdlib_archive);
+    py_preinit_add_search_path(&config, stdlib_dir);
     py_preinit_add_search_path(&config, mod_dir);
     if (registered_nrms != NULL) {
         while (!registered_nrms->empty()) {
@@ -69,11 +72,6 @@ PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::pa
 
     py::initialize_interpreter(&config); 
     PLOGI << "-> Python interpreter initialized";
-
-    // py_none = py::eval("None");
-    // last_error_type = py_none;
-    // last_error_trace = py_none;
-    // last_error_value = py_none;
 
     auto builtins = py::module_::import("builtins");
     py_compile = builtins.attr("compile");
