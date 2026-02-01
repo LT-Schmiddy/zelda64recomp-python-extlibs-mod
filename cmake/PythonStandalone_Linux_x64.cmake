@@ -3,17 +3,9 @@ project(UsePythonStandalone)
 
 include(FetchContent)
 
-# URL and output directories
-set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz")
-# set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-x86_64-unknown-linux-gnu-install_only.tar.gz")
-set(PYTHON_ARCHIVE "${CMAKE_BINARY_DIR}/cpython.tar.gz")
+# Get the artifact downloaded by Python
+set(PYTHON_ARCHIVE "$ENV{PYTHON_LINUX_ARCHIVE}")
 set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
-
-# Download the artifact
-if(NOT EXISTS "${PYTHON_ARCHIVE}")
-    message(STATUS "Downloading Python artifact...")
-    file(DOWNLOAD "${PYTHON_URL}" "${PYTHON_ARCHIVE}" SHOW_PROGRESS)
-endif()
 
 # Extract it
 if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
@@ -26,8 +18,6 @@ if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
 endif()
 
 # Find the real root of the extracted directory (the archive contains a folder)
-# file(GLOB EXTRACTED_DIRS LIST_DIRECTORIES true "${PYTHON_EXTRACT_DIR}/*")
-# list(GET EXTRACTED_DIRS 0 PYTHON_ROOT)
 set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/lib/libpython3.13.so.1.0" "${PYTHON_ROOT}/lib/libpython3.13.so")
@@ -42,7 +32,6 @@ target_link_libraries(python_standalone INTERFACE libpython3.13.so)
 ## Seems to be a problem linking if we don't remove the `1.0` from the library extension.
 # execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/lib/libpython3.13.so.1.0" "${PYTHON_ROOT}/lib/libpython3.13.so")
 
-
 function(link_python_standalone TARGET_NAME)
     target_link_libraries(${TARGET_NAME} PRIVATE python_standalone)
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
@@ -55,8 +44,6 @@ function(link_python_standalone TARGET_NAME)
                 "${PYTHON_ROOT}/lib/libpython3.13.so.1.0"
                 "$<TARGET_FILE_DIR:${TARGET_NAME}>/libpython3.13.so.1.0"
     )
-
-    # set(CMAKE_INSTALL_RPATH "\\$ORIGIN")
 endfunction()
 
 set(PYTHON_EXE "${PYTHON_ROOT}/bin/python3.13" CACHE PATH "Python executable")

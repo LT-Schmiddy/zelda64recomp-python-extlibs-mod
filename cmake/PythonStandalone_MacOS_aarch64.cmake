@@ -3,30 +3,20 @@ project(UsePythonStandalone)
 
 include(FetchContent)
 
-# URL and output directories
-set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-aarch64-apple-darwin-install_only_stripped.tar.gz")
-# set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-aarch64-apple-darwin-install_only.tar.gz")
-set(PYTHON_ARCHIVE "${CMAKE_BINARY_DIR}/cpython.tar.gz")
+# Get the artifact downloaded by Python
+set(PYTHON_ARCHIVE "$ENV{PYTHON_MACOS_ARCHIVE}")
 set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
 
 # Handling the install_name change for the dylib:
-# if(NOT DEFINED INSTALL_NAME_TOOL_COMMAND)
-    if (CMAKE_HOST_SYSTEM MATCHES "Darwin")
-        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
-    elseif(CMAKE_HOST_SYSTEM MATCHES "Windows")
-        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
-    elseif(CMAKE_HOST_SYSTEM MATCHES "Linux")
-        set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
-    endif()
-# endif()
-
-# Download the artifact
-if(NOT EXISTS "${PYTHON_ARCHIVE}")
-    message(STATUS "Downloading Python artifact...")
-    file(DOWNLOAD "${PYTHON_URL}" "${PYTHON_ARCHIVE}" SHOW_PROGRESS)
+if (CMAKE_HOST_SYSTEM MATCHES "Darwin")
+    set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
+elseif(CMAKE_HOST_SYSTEM MATCHES "Windows")
+    set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
+elseif(CMAKE_HOST_SYSTEM MATCHES "Linux")
+    set(INSTALL_NAME_TOOL_COMMAND llvm-install-name-tool)
 endif()
 
-# Extract it
+# Extract the artifact
 if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
     message(STATUS "Extracting Python artifact...")
     file(MAKE_DIRECTORY "${PYTHON_EXTRACT_DIR}")
@@ -37,10 +27,7 @@ if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
 endif()
 
 # Find the real root of the extracted directory (the archive contains a folder)
-# file(GLOB EXTRACTED_DIRS LIST_DIRECTORIES true "${PYTHON_EXTRACT_DIR}/*")
-# list(GET EXTRACTED_DIRS 0 PYTHON_ROOT)
 set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
-
 
 function(log_target_property P_TARGET_NAME P_PROP_NAME)
     get_target_property(PRINT_VAR ${P_TARGET_NAME} ${P_PROP_NAME})
@@ -86,5 +73,4 @@ file(ARCHIVE_CREATE
     PATHS ${PYTHON_STDLIB}
     WORKING_DIRECTORY "${PYTHON_STANDALONE_ROOT}/lib/python3.13"
     FORMAT "zip"
-
 )

@@ -3,17 +3,9 @@ project(UsePythonStandalone)
 
 include(FetchContent)
 
-# URL and output directories
-# set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-x86_64-pc-windows-msvc-install_only_stripped.tar.gz")
-set(PYTHON_URL "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-x86_64-pc-windows-msvc-install_only.tar.gz")
-set(PYTHON_ARCHIVE "${CMAKE_BINARY_DIR}/cpython.tar.gz")
+# Get the artifact downloaded by Python
+set(PYTHON_ARCHIVE "$ENV{PYTHON_WIN_ARCHIVE}")
 set(PYTHON_EXTRACT_DIR "${CMAKE_BINARY_DIR}/python-standalone")
-
-# Download the artifact
-if(NOT EXISTS "${PYTHON_ARCHIVE}")
-    message(STATUS "Downloading Python artifact...")
-    file(DOWNLOAD "${PYTHON_URL}" "${PYTHON_ARCHIVE}" SHOW_PROGRESS)
-endif()
 
 # Extract it
 if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
@@ -26,8 +18,6 @@ if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
 endif()
 
 # Find the real root of the extracted directory (the archive contains a folder)
-# file(GLOB EXTRACTED_DIRS LIST_DIRECTORIES true "${PYTHON_EXTRACT_DIR}/*")
-# list(GET EXTRACTED_DIRS 0 PYTHON_ROOT)
 set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
 
 # Create imported interface target
@@ -62,5 +52,4 @@ file(ARCHIVE_CREATE
     PATHS ${PYTHON_STDLIB}
     WORKING_DIRECTORY "${PYTHON_STANDALONE_ROOT}/Lib"
     FORMAT "zip"
-
 )

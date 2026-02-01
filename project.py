@@ -33,11 +33,17 @@ project_name = "N64RecompExternalPython_API"
 project_tests_name = "Test_" + project_name
 project_version_string = "2.0.0"
 
+game_id_project_name = lambda game_id: f"{project_name}"
+# game_id_project_name = lambda game_id: f"{game_id}_{project_name}"
+game_id_project_tests_name = lambda game_id: f"{project_tests_name}"
+# game_id_project_tests_name = lambda game_id: f"{game_id}_{project_tests_name}"
+
 mod_elf_path = mod_build_dir.joinpath("mod.elf")
 tests_elf_path = tests_build_dir.joinpath("tests.elf")
 
 mm_toml_data = {
     "manifest": {
+        "game_id": "mm",
         "minimum_recomp_version": "1.2.1"
     },
     "inputs": {
@@ -51,6 +57,7 @@ mm_toml_data = {
 
 bk_toml_data = {
     "manifest": {
+        "game_id": "bk",
         "minimum_recomp_version": "0.0.1"
     },
     "inputs": {
@@ -63,6 +70,7 @@ bk_toml_data = {
 
 sf64_toml_data = {
     "manifest": {
+        "game_id": "sf64",
         "minimum_recomp_version": "1.0.0"
     },
     "inputs": {
@@ -84,7 +92,8 @@ mod_toml_data = {
         "additional_files": [ 
             str(root_dir.joinpath("thumb.dds")),
             str(root_dir.joinpath("./src/repy_api")) # The repy_api module
-        ]
+        ],
+        "mod_filename": project_name
     }
 }
 
@@ -98,13 +107,10 @@ tests_toml_data = {
     },
     "inputs": {
         "elf_path": str(tests_elf_path),
-        "additional_files": []
+        "additional_files": [],
+        "mod_filename": project_tests_name
     }
 }
-
-manifest_id_dict = lambda mod_id: {"manifest": {"id": mod_id}}
-manifest_gameid_dict = lambda game_id: {"manifest": {"game_id": game_id}}
-inputs_modname_dict = lambda name: {"inputs": {"mod_filename": name}}
 
 # If you need this enabled, you should probably rethink whatever it is you're doing:
 # Convienience function for downloading compiler artifacts.
@@ -200,6 +206,21 @@ else:
     )
     llvm_path = binaries_dir.joinpath("llvm_linux/LLVM-19.1.7-Linux-X64")
 
+downloads["python_win"] = python_windows_download = DownloadJob(
+    "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-x86_64-pc-windows-msvc-install_only.tar.gz",
+    archive_downloads_dir
+)
+
+downloads["python_macos"] = python_macos_download = DownloadJob(
+    "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-aarch64-apple-darwin-install_only_stripped.tar.gz",
+    archive_downloads_dir
+)
+
+downloads["python_linux"] = python_linux_download = DownloadJob(
+    "https://github.com/astral-sh/python-build-standalone/releases/download/20250702/cpython-3.13.5+20250702-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+    archive_downloads_dir
+)
+
 def prepend_to_env_path(to_append: Path) -> str:
     global llvm_path
     PATH_DELIMITER = ";" if os.name == 'nt' else ":"
@@ -241,7 +262,7 @@ def add_toml_and_nrm_job(game_id: str, toml_type: str, nrm_base_name: str, build
     nrm_build_dir = build_dir.joinpath(game_id)
     toml_path = nrm_build_dir.joinpath(f"{mod_key}.toml")
     
-    tomls[mod_key] = mod_toml = GenerateTomlJob.from_merged_dicts(toml_path, data_dicts + [inputs_modname_dict(f"{game_id}_{nrm_base_name}"), manifest_gameid_dict(game_id)])
+    tomls[mod_key] = mod_toml = GenerateTomlJob.from_merged_dicts(toml_path, data_dicts)
     nrms[mod_key] = mod_nrm = ModToNRMJob(mod_tool_path, toml_path, nrm_build_dir, delay_read=True)
     mod_nrm.depends_on([mod_toml] + nrm_dependencies)
     
@@ -265,7 +286,10 @@ extlib = CMakeProjectConfig(
     {
         # Unlike with clangmips, we're gonna prepend the LLVM and ZIG directories to the PATH that CMake recieves.
         "PATH": prepend_to_env_path([llvm_path.joinpath("bin"), zig_dir_path]),
-        "LIB_NAME": extlib_name
+        "LIB_NAME": extlib_name,
+        "PYTHON_WIN_ARCHIVE": str(python_windows_download.download_path),
+        "PYTHON_MACOS_ARCHIVE": str(python_macos_download.download_path),
+        "PYTHON_LINUX_ARCHIVE": str(python_linux_download.download_path)
     }
 )
 
@@ -333,6 +357,14 @@ def native_preset_name(build_type: str):
         return f"native-macos-aarch64-{build_type}"
     if platform.system() == "Linux":
         return f"native-linux-x64-{build_type}"
+    
+def native_python_download():
+    if platform.system() == "Windows":
+        return python_windows_download
+    if platform.system() == "Darwin":
+        return python_macos_download
+    if platform.system() == "Linux":
+        return python_linux_download
 
 def native_output_files(build_type: str) -> dict[Path, Path]:
     preset_name = native_preset_name(build_type)
@@ -433,8 +465,17 @@ for group_key, group in cmake_build_groups.items():
     for build_key, build in group.items():
         if not group_key.startswith("native-"):
             build.depends_on([archive_extractions["zig"]])
+            if build_key == "Windows":
+                build.depends_on([python_windows_download])
+            elif build_key == "Darwin":
+                build.depends_on([python_macos_download])
+            elif build_key == "Linux":
+                build.depends_on([python_linux_download])
+        else:
+            build.depends_on([native_python_download()])
+            
         build.depends_on([archive_extractions["llvm"]])
-
+        
 
 build_outputs["zelda_debug"] = zelda_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/zelda/mods"))
 zelda_debug_test_dir.depends_on([
