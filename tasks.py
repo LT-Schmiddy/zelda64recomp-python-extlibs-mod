@@ -153,12 +153,12 @@ def toml(c: Context, skip_dependencies: bool = False, name: str = None, list: bo
         'skip_dependencies': "Do not try to resolve dependency jobs.",
         'name': f"Only generate specific registered .nrm files. " \
             f"Names should be the keys used in `project.nrms`, separated by '{ARG_SPLIT_CHAR}'.",
-        'path_fix': "EXPERIMENTAL (AND NOT ENDORSED BY WISEGUY)! Reconstructs the .nrm file " \
+        'path_fix_force': "EXPERIMENTAL (AND NOT ENDORSED BY WISEGUY)! Reconstructs the .nrm file " \
             "after RecompModTool finishes in order to eliminate backslashes from filepaths.",
         'list': f"List all ModTomlJob names in `project.nrms`, then exit."
     }
 )
-def nrm(c: Context, skip_dependencies: bool = False, name: str = None, path_fix: bool = p.nrm_path_fix_by_default, list: bool = False):
+def nrm(c: Context, skip_dependencies: bool = False, name: str = None, path_fix_force: bool = False, list: bool = False):
     """
     Builds .nrm files, as specified in `project.nrms`. The resultant .nrms are counted as 'mod_output_files'.
     Entries in `project.nrms` should be instances of `modbuildcore.tomls.ModToNRMJob`. 
@@ -178,7 +178,8 @@ def nrm(c: Context, skip_dependencies: bool = False, name: str = None, path_fix:
         nrm_list = [p.nrms[i] for i in name.split(ARG_SPLIT_CHAR)]
     
     for mod in nrm_list:
-        mod.run_nrm_path_fix = path_fix
+        if path_fix_force:
+            mod.nrm_path_fix = True
         mod.resolve(c, skip_dependencies)
 
 @task(help={
@@ -259,7 +260,6 @@ def build(c: Context, skip_dependencies: bool = False, unresolved_jobs: bool = F
         test_dir.include_unresolved_jobs = unresolved_jobs
         test_dir.include_all_resolved_jobs = all_resolved_jobs
         test_dir.resolve(c, skip_dependencies)
-
 
 @task(
     help={

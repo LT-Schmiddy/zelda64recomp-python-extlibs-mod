@@ -28,15 +28,9 @@ cmake_build_groups: dict[str, dict[str, CMakeBuildJob]] = {}
 build_outputs: dict[str, BuildOutputJob] = {}
 thunderstore_packages: dict[str, ThunderstorePackageJob] = {}
 
-nrm_path_fix_by_default = True
 project_name = "N64RecompExternalPython_API"
 project_tests_name = "Test_" + project_name
 project_version_string = "2.0.0"
-
-game_id_project_name = lambda game_id: f"{project_name}"
-# game_id_project_name = lambda game_id: f"{game_id}_{project_name}"
-game_id_project_tests_name = lambda game_id: f"{project_tests_name}"
-# game_id_project_tests_name = lambda game_id: f"{game_id}_{project_tests_name}"
 
 mod_elf_path = mod_build_dir.joinpath("mod.elf")
 tests_elf_path = tests_build_dir.joinpath("tests.elf")
@@ -127,7 +121,7 @@ def add_archive_download_and_extract(name: str, url: str, extract_dir: Path) -> 
 
 # Deciding with compiler/tool archive to download for your platform:
 if platform.system() == "Windows":
-    add_archive_download_and_extract(
+    llvmmips_download, llvmmips_extraction = add_archive_download_and_extract(
         "llvmmips",
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Windows-AMD64.zip",
         binaries_dir.joinpath("llvmmips_win")
@@ -136,7 +130,7 @@ if platform.system() == "Windows":
     make_mips_linker_path = binaries_dir.joinpath("llvmmips_win/nrs_bin/ld.lld.exe")
     mod_tool_path = binaries_dir.joinpath("llvmmips_win/nrs_bin/RecompModTool.exe")
     
-    add_archive_download_and_extract(
+    zig_download, zig_extraction = add_archive_download_and_extract(
         "zig",
         "https://ziglang.org/download/0.14.1/zig-x86_64-windows-0.14.1.zip",
         binaries_dir.joinpath("zig_win")
@@ -145,7 +139,7 @@ if platform.system() == "Windows":
     zig_bin_path = zig_dir_path.joinpath("zig.exe")
     
 
-    add_archive_download_and_extract(
+    llvm_download, llvm_extraction = add_archive_download_and_extract(
         "llvm",
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/clang+llvm-19.1.7-x86_64-pc-windows-msvc.tar.xz",
         binaries_dir.joinpath("llvm_win")
@@ -155,7 +149,7 @@ if platform.system() == "Windows":
         
     
 elif platform.system() == "Darwin":
-    add_archive_download_and_extract(
+    llvmmips_download, llvmmips_extraction = add_archive_download_and_extract(
         "llvmmips",
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Darwin-arm64.tar.xz",
         binaries_dir.joinpath("llvmmips_macos")
@@ -164,7 +158,7 @@ elif platform.system() == "Darwin":
     make_mips_linker_path = binaries_dir.joinpath("llvmmips_macos/nrs_bin/ld.lld")
     mod_tool_path = binaries_dir.joinpath("llvmmips_macos/nrs_bin/RecompModTool")
     
-    add_archive_download_and_extract(
+    zig_download, zig_extraction = add_archive_download_and_extract(
         "zig",
         "https://ziglang.org/download/0.14.1/zig-aarch64-macos-0.14.1.tar.xz",
         binaries_dir.joinpath("zig_macos")
@@ -173,7 +167,7 @@ elif platform.system() == "Darwin":
     zig_bin_path = zig_dir_path.joinpath("zig")
     
     
-    add_archive_download_and_extract(
+    llvm_download, llvm_extraction = add_archive_download_and_extract(
         "llvm",
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/LLVM-19.1.7-macOS-ARM64.tar.xz",
         binaries_dir.joinpath("llvm_macos")
@@ -181,7 +175,7 @@ elif platform.system() == "Darwin":
     llvm_path = binaries_dir.joinpath("llvm_macos/LLVM-19.1.7-macOS-ARM64")
     
 else:
-    add_archive_download_and_extract(
+    llvmmips_download, llvmmips_extraction = add_archive_download_and_extract(
         "llvmmips",
         "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Linux-x86_64.tar.xz",
         binaries_dir.joinpath("llvmmips_linux")
@@ -191,7 +185,7 @@ else:
     make_mips_linker_path = binaries_dir.joinpath("llvmmips_linux/nrs_bin/ld.lld")
     mod_tool_path = binaries_dir.joinpath("llvmmips_linux/nrs_bin/RecompModTool")
     
-    add_archive_download_and_extract(
+    zig_download, zig_extraction = add_archive_download_and_extract(
         "zig",
         "https://ziglang.org/download/0.14.1/zig-x86_64-linux-0.14.1.tar.xz",
          binaries_dir.joinpath("zig_linux")
@@ -199,7 +193,7 @@ else:
     zig_dir_path = binaries_dir.joinpath("zig_linux/zig-x86_64-linux-0.14.1")
     zig_bin_path = binaries_dir.joinpath("zig")
     
-    add_archive_download_and_extract(
+    llvm_download, llvm_extraction = add_archive_download_and_extract(
         "llvm",
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.7/LLVM-19.1.7-Linux-X64.tar.xz",
         binaries_dir.joinpath("llvm_linux")
@@ -241,6 +235,7 @@ makefiles['mod'] = mod_makefile = MakefileJob(
         "_PY_BUILD_FLAGS": "-DRECOMP_PY_BUILD_MODE"
     }
 )
+mod_makefile.depends_on([llvmmips_extraction])
 
 makefiles['tests'] = tests_makefile = MakefileJob(
     root_dir.joinpath("mod_elf.mk"),
@@ -253,8 +248,9 @@ makefiles['tests'] = tests_makefile = MakefileJob(
         "_PY_BUILD_FLAGS": ""
     }
 )
+tests_makefile.depends_on([llvmmips_extraction])
 
-def add_toml_and_nrm_job(game_id: str, toml_type: str, nrm_base_name: str, build_dir: Path, data_dicts: list[dict], nrm_dependencies: list[JobBase]) -> tuple[GenerateTomlJob, ModToNRMJob]:
+def add_toml_and_nrm_job(game_id: str, toml_type: str, build_dir: Path, data_dicts: list[dict], nrm_dependencies: list[JobBase]) -> tuple[GenerateTomlJob, ModToNRMJob]:
     global tomls, nrms
     
     mod_key = f"{game_id}_{toml_type}"
@@ -263,7 +259,7 @@ def add_toml_and_nrm_job(game_id: str, toml_type: str, nrm_base_name: str, build
     toml_path = nrm_build_dir.joinpath(f"{mod_key}.toml")
     
     tomls[mod_key] = mod_toml = GenerateTomlJob.from_merged_dicts(toml_path, data_dicts)
-    nrms[mod_key] = mod_nrm = ModToNRMJob(mod_tool_path, toml_path, nrm_build_dir, delay_read=True)
+    nrms[mod_key] = mod_nrm = ModToNRMJob(mod_tool_path, toml_path, nrm_build_dir, delay_read=True, nrm_path_fix=True)
     mod_nrm.depends_on([mod_toml] + nrm_dependencies)
     
     return mod_toml, mod_nrm
@@ -272,12 +268,12 @@ def add_toml_and_nrm_job(game_id: str, toml_type: str, nrm_base_name: str, build
 mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
 tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
 
-mm_mod_toml, mm_mod_nrm = add_toml_and_nrm_job("mm", "mod", project_name, mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
-bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", project_name, mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
-sf64_mod_toml, sf64_mod_nrm = add_toml_and_nrm_job("sf64", "mod", project_name, mod_build_dir, [mod_common_data, sf64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
-mm_tests_toml, mm_tests_nrm = add_toml_and_nrm_job("mm", "tests", project_tests_name, tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
-bk_tests_toml, bk_tests_nrm = add_toml_and_nrm_job("bk", "tests", project_tests_name, tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
-sf64_tests_toml, sf64_tests_nrm = add_toml_and_nrm_job("sf64", "tests", project_tests_name, tests_build_dir, [tests_common_data, sf64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+mm_mod_toml, mm_mod_nrm = add_toml_and_nrm_job("mm", "mod", mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+sf64_mod_toml, sf64_mod_nrm = add_toml_and_nrm_job("sf64", "mod", mod_build_dir, [mod_common_data, sf64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+mm_tests_toml, mm_tests_nrm = add_toml_and_nrm_job("mm", "tests", tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+bk_tests_toml, bk_tests_nrm = add_toml_and_nrm_job("bk", "tests", tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+sf64_tests_toml, sf64_tests_nrm = add_toml_and_nrm_job("sf64", "tests", tests_build_dir, [tests_common_data, sf64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 
 # Extlib Compilation
 extlib_name = "RecompPythonNative"
@@ -513,10 +509,11 @@ def package_url_from_git() -> str:
     else:
         return None
 
+thunderstore_project_name = "RecompExternalPython_for_Zelda64Recompiled"
 main_package = ThunderstorePackageJob(
-    root_dir.joinpath(f"{project_name}.thunderstore.zip"),
+    root_dir.joinpath(f"{thunderstore_project_name}.thunderstore.zip"),
     {
-        "name": project_name,
+        "name": thunderstore_project_name,
         "version_number": project_version_string,
         "website_url": package_url_from_git(),
         "description": "A resource for modders. Enables use of Python code and the Python Standard Library within mods, enabling many behaviors that would otherwise require an external library to be compiled.",
@@ -529,10 +526,8 @@ main_package = ThunderstorePackageJob(
 
 main_package.depends_on([
     mm_mod_nrm,
-    bk_mod_nrm,
-    sf64_mod_nrm
 ] + [i for i in cmake_build_groups["Release"].values()])
-thunderstore_packages['package'] = main_package
+thunderstore_packages['zelda'] = main_package
 
 clean_paths: list[Path] = [
     build_dir

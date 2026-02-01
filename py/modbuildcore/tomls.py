@@ -34,9 +34,9 @@ class ModToNRMJob(JobBase):
     build_dir: Path
     delay_read: bool
     
-    run_nrm_path_fix: bool
+    nrm_path_fix: bool
     
-    def __init__(self, mod_tool_path: Path, toml_path: Path, build_dir: Path = None, *, delay_read: bool = False):
+    def __init__(self, mod_tool_path: Path, toml_path: Path, build_dir: Path = None, *, delay_read: bool = False, nrm_path_fix: bool = False):
         super().__init__()
         self.mod_tool_path = mod_tool_path    
         self.toml_path = toml_path
@@ -46,7 +46,7 @@ class ModToNRMJob(JobBase):
         if not delay_read:
             self.read_toml()
             
-        self.run_nrm_path_fix = False
+        self.nrm_path_fix = nrm_path_fix
     
     def read_toml(self):
         self.data = toml.loads(self.toml_path.read_text())
@@ -65,7 +65,7 @@ class ModToNRMJob(JobBase):
     def get_output_path(self) -> Path:
         return self.build_dir.joinpath(self.data["inputs"]["mod_filename"]).with_suffix(".nrm")
     
-    def nrm_path_fix(self):
+    def run_nrm_path_fix(self):
         in_zip = zipfile.ZipFile(self.get_output_path(), 'r')
         out_file_path = self.get_output_path().with_suffix(".nrm_temp")        
         out_zip = zipfile.ZipFile(out_file_path, 'w', in_zip.compression)        
@@ -81,7 +81,7 @@ class ModToNRMJob(JobBase):
         os.rename(out_file_path, self.get_output_path())
         
     def run(self, c: Context):
-        print_job_header(f"Mod To NRM Job: {self.toml_path}")
+        print_job_header(f"Mod To NRM Job{' with Path Fix' if self.nrm_path_fix else ''}: {self.toml_path}")
         
         if self.delay_read and self.data is None:
             self.read_toml()
@@ -89,3 +89,6 @@ class ModToNRMJob(JobBase):
         invoke_subprocess_run(c, True,
             [self.mod_tool_path, self.toml_path, self.build_dir]
         )
+        
+        if self.nrm_path_fix:
+            self.run_nrm_path_fix()
