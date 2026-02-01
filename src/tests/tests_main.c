@@ -605,6 +605,21 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(py_globals);
     REPY_Release(py_locals);
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
+
+    
+    {
+        REPY_FN_SETUP;
+        REPY_FN_SET_S32("test_cases", _test_cases);
+        REPY_FN_SET_S32("test_cases_passed", _test_cases_passed);
+        REPY_FN_EXEC_CSTR(
+            "from pathlib import Path\n"
+            "Path('./test_results.txt').write_text(f'Passed {test_cases_passed} of {test_cases} test cases.')\n"
+        );
+
+        REPY_FN_CLEANUP;
+    }
+    
+
     // recomp_printf("Starting Interavtive Shell. Call `exit()` to continue to game...\n");
     // REPY_Handle code_module = REPY_ImportModule("code");
     // REPY_CallAttrCStr(code_module, "interact", 0, 0);
