@@ -61,6 +61,18 @@ bk_toml_data = {
     }
 }
 
+sf64_toml_data = {
+    "manifest": {
+        "minimum_recomp_version": "1.0.0"
+    },
+    "inputs": {
+        "func_reference_syms_file": str(root_dir.joinpath("./syms/Starfox64RecompSyms/sf64.us.rev1.syms.toml")),
+        "data_reference_syms_files": [ 
+            str(root_dir.joinpath("./syms/Starfox64RecompSyms/sf64.us.rev1.datasyms.toml"))
+        ]
+    }
+}
+
 mod_toml_data = {
     "manifest": {
         "id": project_name,
@@ -241,8 +253,10 @@ tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text(
 
 mm_mod_toml, mm_mod_nrm = add_toml_and_nrm_job("mm", "mod", project_name, mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
 bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", project_name, mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+sf64_mod_toml, sf64_mod_nrm = add_toml_and_nrm_job("sf64", "mod", project_name, mod_build_dir, [mod_common_data, sf64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
 mm_tests_toml, mm_tests_nrm = add_toml_and_nrm_job("mm", "tests", project_tests_name, tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 bk_tests_toml, bk_tests_nrm = add_toml_and_nrm_job("bk", "tests", project_tests_name, tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+sf64_tests_toml, sf64_tests_nrm = add_toml_and_nrm_job("sf64", "tests", project_tests_name, tests_build_dir, [tests_common_data, sf64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 
 # Extlib Compilation
 extlib_name = "RecompPythonNative"
@@ -434,6 +448,12 @@ zelda_debug_test_dir.depends_on([
     bk_tests_nrm
 ] + [i for i in cmake_build_groups["Debug"].values()])
 
+build_outputs["sf64_debug"] = sf64_debug_test_dir = BuildOutputJob(root_dir.joinpath("test_env/sf64/mods"))
+sf64_debug_test_dir.depends_on([
+    sf64_mod_nrm,
+    sf64_tests_nrm
+] + [i for i in cmake_build_groups["Debug"].values()])
+
 def package_url_from_git() -> str:
     result = subprocess.run(
         [
@@ -468,7 +488,8 @@ main_package = ThunderstorePackageJob(
 
 main_package.depends_on([
     mm_mod_nrm,
-    bk_mod_nrm
+    bk_mod_nrm,
+    sf64_mod_nrm
 ] + [i for i in cmake_build_groups["Release"].values()])
 thunderstore_packages['package'] = main_package
 

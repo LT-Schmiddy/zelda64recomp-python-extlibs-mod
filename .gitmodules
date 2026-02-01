@@ -15,3 +15,6 @@
 [submodule "syms/Zelda64RecompSyms"]
 	path = syms/Zelda64RecompSyms
 	url = https://github.com/Zelda64Recomp/Zelda64RecompSyms.git
+[submodule "syms/Starfox64RecompSyms"]
+	path = syms/Starfox64RecompSyms
+	url = https://github.com/sonicdcer/Starfox64RecompSyms.git
