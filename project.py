@@ -528,7 +528,11 @@ add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled",
 
 clean_paths: list[Path] = [
     build_dir
-] + [i.test_path for i in build_outputs.values()]
+] + [
+    i.test_path for i in build_outputs.values()
+] + [
+    i.package_file for i in thunderstore_packages.values()
+]
 
 distclean_paths: list[Path] = [
     binaries_dir,
