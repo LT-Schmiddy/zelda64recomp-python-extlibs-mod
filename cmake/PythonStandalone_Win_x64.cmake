@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.31)
 project(UsePythonStandalone)
 
-include(FetchContent)
+set(PYTHON_LIB_VERSION_STR "$ENV{PYTHON_ARCHIVE_VSTR_NT}")
 
 # Get the artifact downloaded by Python
 set(PYTHON_ARCHIVE "$ENV{PYTHON_WIN_ARCHIVE}")
@@ -24,17 +24,17 @@ set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
 add_library(python_standalone INTERFACE)
 target_include_directories(python_standalone INTERFACE "${PYTHON_ROOT}/include")
 target_link_directories(python_standalone INTERFACE "${PYTHON_ROOT}/libs")
-target_link_libraries(python_standalone INTERFACE python313)
+target_link_libraries(python_standalone INTERFACE ${PYTHON_LIB_VERSION_STR})
 
 # When making debug builds, CMake may still look for the python lib under this name.
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/libs/python313.lib" "${PYTHON_ROOT}/libs/python313_d.lib")
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/libs/${PYTHON_LIB_VERSION_STR}.lib" "${PYTHON_ROOT}/libs/${PYTHON_LIB_VERSION_STR}_d.lib")
 
 function(link_python_standalone TARGET_NAME)
     target_link_libraries(${TARGET_NAME} PRIVATE python_standalone)
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${PYTHON_ROOT}/python313.dll"
-                "$<TARGET_FILE_DIR:${TARGET_NAME}>/python313.dll"
+                "${PYTHON_ROOT}/${PYTHON_LIB_VERSION_STR}.dll"
+                "$<TARGET_FILE_DIR:${TARGET_NAME}>/${PYTHON_LIB_VERSION_STR}.dll"
     )
 endfunction()
 
@@ -48,7 +48,7 @@ include_directories("${PYTHON_INCBIN_DIR}")
 
 file(GLOB_RECURSE PYTHON_STDLIB "${PYTHON_STANDALONE_ROOT}/Lib/**")
 file(ARCHIVE_CREATE 
-    OUTPUT "${PYTHON_INCBIN_DIR}/python313_stdlib.zip" 
+    OUTPUT "${PYTHON_INCBIN_DIR}/python_stdlib.zip" 
     PATHS ${PYTHON_STDLIB}
     WORKING_DIRECTORY "${PYTHON_STANDALONE_ROOT}/Lib"
     FORMAT "zip"

@@ -1,7 +1,7 @@
 #include <fstream>
 #include "embed_handler.hpp"
 
-INCBIN(python_stdlib, "python313_stdlib.zip");
+INCBIN(python_stdlib, "python_stdlib.zip");
 
 void extract_python_stdlib(fs::path output_file) {
     if (fs::exists(output_file)) {

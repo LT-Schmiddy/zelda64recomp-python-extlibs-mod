@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.31)
 project(UsePythonStandalone)
 
-include(FetchContent)
+set(PYTHON_LIB_VERSION_STR "$ENV{PYTHON_ARCHIVE_VSTR_POSIX}")
 
 # Get the artifact downloaded by Python
 set(PYTHON_ARCHIVE "$ENV{PYTHON_MACOS_ARCHIVE}")
@@ -37,9 +37,9 @@ endfunction()
 
 # Create imported interface target
 add_library(python_standalone INTERFACE)
-target_include_directories(python_standalone INTERFACE "${PYTHON_ROOT}/include/python3.13")
+target_include_directories(python_standalone INTERFACE "${PYTHON_ROOT}/include/${PYTHON_LIB_VERSION_STR}")
 target_link_directories(python_standalone INTERFACE "${PYTHON_ROOT}/lib")
-target_link_libraries(python_standalone INTERFACE libpython3.13.dylib)
+target_link_libraries(python_standalone INTERFACE lib${PYTHON_LIB_VERSION_STR}.dylib)
 
 function(link_python_standalone P_TARGET_NAME)
     string(CONCAT DYLIB_FILE $<TARGET_FILE_DIR:${P_TARGET_NAME}> "/lib" ${P_TARGET_NAME} ".dylib")
@@ -47,19 +47,19 @@ function(link_python_standalone P_TARGET_NAME)
     target_link_libraries(${P_TARGET_NAME} PRIVATE python_standalone)
     add_custom_command(TARGET ${P_TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${PYTHON_ROOT}/lib/libpython3.13.dylib"
-                "$<TARGET_FILE_DIR:${P_TARGET_NAME}>/libpython3.13.dylib"
+                "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.dylib"
+                "$<TARGET_FILE_DIR:${P_TARGET_NAME}>/lib${PYTHON_LIB_VERSION_STR}.dylib"
     )
 
     message("CMAKE_HOST_SYSTEM = ${CMAKE_HOST_SYSTEM}")
     message("INSTALL_NAME_TOOL_COMMAND = ${INSTALL_NAME_TOOL_COMMAND}")
 
     add_custom_command(TARGET ${P_TARGET_NAME} POST_BUILD
-        COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change /install/lib/libpython3.13.dylib @loader_path/libpython3.13.dylib ${DYLIB_FILE}
+        COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change /install/lib/lib${PYTHON_LIB_VERSION_STR}.dylib @loader_path/lib${PYTHON_LIB_VERSION_STR}.dylib ${DYLIB_FILE}
     )
 endfunction()
 
-set(PYTHON_EXE "${PYTHON_ROOT}/bin/python3.13" CACHE PATH "Python executable")
+set(PYTHON_EXE "${PYTHON_ROOT}/bin/${PYTHON_LIB_VERSION_STR}" CACHE PATH "Python executable")
 set(PYTHON_STANDALONE_ROOT "${PYTHON_ROOT}" CACHE PATH "Root of extracted Python standalone distribution")
 
 # Create Standard Library Archive:
@@ -67,10 +67,10 @@ set(PYTHON_INCBIN_DIR "${CMAKE_CURRENT_BINARY_DIR}/incbin/" CACHE PATH "Any data
 make_directory("${PYTHON_INCBIN_DIR}")
 include_directories("${PYTHON_INCBIN_DIR}")
 
-file(GLOB_RECURSE PYTHON_STDLIB "${PYTHON_STANDALONE_ROOT}/lib/python3.13/**")
+file(GLOB_RECURSE PYTHON_STDLIB "${PYTHON_STANDALONE_ROOT}/lib/${PYTHON_LIB_VERSION_STR}/**")
 file(ARCHIVE_CREATE 
-    OUTPUT "${PYTHON_INCBIN_DIR}/python313_stdlib.zip" 
+    OUTPUT "${PYTHON_INCBIN_DIR}/python_stdlib.zip" 
     PATHS ${PYTHON_STDLIB}
-    WORKING_DIRECTORY "${PYTHON_STANDALONE_ROOT}/lib/python3.13"
+    WORKING_DIRECTORY "${PYTHON_STANDALONE_ROOT}/lib/${PYTHON_LIB_VERSION_STR}"
     FORMAT "zip"
 )

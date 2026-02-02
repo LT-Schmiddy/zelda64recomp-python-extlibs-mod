@@ -26,7 +26,7 @@
             // "compilerPath": "clang",
             "cStandard": "c99",
             "cppStandard": "c++23",
-            // "intelliSenseMode": "clang-x86"
+            "intelliSenseMode": "clang-x86"
         },
         {
             "name": "Mod_Only",
@@ -41,14 +41,12 @@
                 "MIPS"
             ],
             "compilerPath": "clang",
-            "cStandard": "c99",
-
+            "cStandard": "c99"
         },
         {
             "name": "Lib_Win32_Only",
             "cppStandard": "c++23",
             "includePath": [
-                "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
                 "${workspaceFolder}/build/zig-windows-x64-Debug/python-standalone/python/include",
@@ -61,7 +59,6 @@
             "name": "Lib_Mac_Only",
             "cppStandard": "c++23",
             "includePath": [
-                "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
                 "${workspaceFolder}/build/zig-macos-aarch64-Debug/python-standalone/python/include",
@@ -73,7 +70,6 @@
             "name": "Lib_Linux_Only",
             "cppStandard": "c++23",
             "includePath": [
-                "${workspaceFolder}/include/shared/",
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
                 "${workspaceFolder}/build/zig-linux-x64-Debug/python-standalone/python/include",

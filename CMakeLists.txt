@@ -62,7 +62,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_Linux_x64.cmake)
 endif()
 
-set(PYBIND11_PYTHON_VERSION 3.13)
+set(PYBIND11_PYTHON_VERSION 3.14)
 set(PYTHON_EXECUTABLE ${PYTHON_EXE})
 set(PYTHON_IS_DEBUG OFF)
 
