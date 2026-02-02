@@ -49,7 +49,7 @@ jobs:
       with:
         name: ThunderstorePackage
         path: |
-          ./*.thunderstore.zip
+          ./thunderstore_packages/*thunderstore.zip
 
     - name: Read Thunderstore Manifest
       id: read_thunderstore_manifest
