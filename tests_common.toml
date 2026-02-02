@@ -21,3 +21,26 @@ authors = [ "LT_Schmiddy" ]
 native_libraries = [
 # Example native library:
 ]
+
+[[manifest.config_options]]
+id = "save_case_count"
+name = "Save Test Case Count"
+description = """
+Save the number of test cases, and the number of successes, to a text file in the current working directory.
+"""
+type = "Enum"
+options = [ "Off", "On"]
+default = "Off"
+
+
+[[manifest.config_options]]
+id = "load_repl"
+name = "Enter REPL"
+description = """
+Enter the interactive shell after tests finish.
+
+Be advised that this will pause game execution until `exit()` is called.
+"""
+type = "Enum"
+options = [ "Off", "On"]
+default = "Off"
