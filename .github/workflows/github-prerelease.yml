@@ -21,7 +21,12 @@ jobs:
     - name: Get Apt Packages
       id: get_apt_packages
       run: |-
-        sudo apt install -y ninja-build jq python3
+        sudo apt install -y ninja-build jq
+
+    - name: setup-python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.14' 
 
     - name: Get Snap Packages
       id: get_snap_packages
@@ -36,7 +41,7 @@ jobs:
     - name: Run Buildscript
       id: run_buildscript
       run: |-
-        python3 ./modbuild.py thunderstore -n package
+        python3 ./modbuild.py thunderstore
 
     - name: Upload Build Artifacts
       id: upload_build_artifacts
@@ -49,7 +54,7 @@ jobs:
     - name: Read Thunderstore Manifest
       id: read_thunderstore_manifest
       run: |
-        python3 ./modbuild.py manifest -n package >> ${{ github.workspace }}/manifest.json
+        python3 ./modbuild.py manifest -n mm >> ${{ github.workspace }}/manifest.json
         NAME=$(jq -r '.name' ${{ github.workspace }}/manifest.json)
         VERSION=$(jq -r '.version_number' ${{ github.workspace }}/manifest.json)
         DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/manifest.json)
@@ -66,6 +71,6 @@ jobs:
         name: Release ${{ steps.read_thunderstore_manifest.outputs.version }}
         body_path: ./thunderstore_package/CHANGELOG.md
         files: |
-          ./*thunderstore.zip
+          ./thunderstore_packages/*thunderstore.zip
           ./include_in_dependents/*
         prerelease: true
