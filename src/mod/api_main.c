@@ -65,12 +65,12 @@ RECOMP_EXPORT REPY_Handle REPY_CopyHandle(REPY_Handle py_object) {
 }
 
 // Modules:
-RECOMP_EXPORT void REPY_LoadModule(const char* identifier, const char* code) {
-    PythonNative_LoadModule(identifier, code);
+RECOMP_EXPORT void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys) {
+    PythonNative_ConstructModuleFromCStr(identifier, code, (u32)add_to_sys);
 }
 
-RECOMP_EXPORT void REPY_LoadModuleN(const char* identifier, const char* code, u32 len) {
-    PythonNative_LoadModuleN(identifier, code, len);
+RECOMP_EXPORT void REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, bool add_to_sys) {
+    PythonNative_ConstructModuleFromCStrN(identifier, code, len, (u32)add_to_sys);
 }
 
 RECOMP_EXPORT REPY_Handle REPY_ImportModule(const char* identifier) {

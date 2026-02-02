@@ -15,8 +15,8 @@ static const char* code_type_strs[] = {
     "single"
 };
 
-static std::u8string cached_return_u8string;
-static std::string cached_return_string;
+thread_local static std::u8string cached_return_u8string;
+thread_local static std::string cached_return_string;
 
 static std::queue<fs::path> preinit_module_nrms;
 
@@ -102,23 +102,25 @@ RECOMP_DLL_FUNC(PythonNative_Object_CopyHandle) {
 }
 
 // ======================================  Modules: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_LoadModule) {
+RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::string module_name = RECOMP_ARG_STR(0);
     std::string code_string = RECOMP_ARG_STR(1);
+    uint32_t add_to_sys = RECOMP_ARG(uint32_t, 2);
 
-    controller->construct_module(module_name, code_string, true);
+    controller->construct_module(module_name, code_string, (bool)add_to_sys);
 }
 
-RECOMP_DLL_FUNC(PythonNative_LoadModuleN) {
+RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::string module_name = RECOMP_ARG_STR(0);
     int32_t code_len = RECOMP_ARG(int32_t, 2);
     std::string code_string = RECOMP_ARG_STR_N(1, code_len);
+    uint32_t add_to_sys = RECOMP_ARG(uint32_t, 2);
 
-    controller->construct_module(module_name, code_string, true);
+    controller->construct_module(module_name, code_string, (bool)add_to_sys);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ImportModule) {

@@ -17,8 +17,8 @@ RECOMP_IMPORT(".", void PythonNative_Object_SetSUH(REPY_Handle py_object, u32 su
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_CopyHandle(REPY_Handle py_object));
 
 // Modules:
-RECOMP_IMPORT(".", void PythonNative_LoadModule(const char* identifier, const char* code));
-RECOMP_IMPORT(".", void PythonNative_LoadModuleN(const char* identifier, const char* code, u32 len));
+RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStr(const char* identifier, const char* code, u32 add_to_sys));
+RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, u32 add_to_sys));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_ImportModule(const char* identifier));
 
 // Casting Primatives:

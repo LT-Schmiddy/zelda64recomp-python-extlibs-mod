@@ -34,10 +34,9 @@ native_libraries = [
         "PythonNative_Object_SetSUH",
         "PythonNative_Object_CopyHandle",
 
-        
         # Modules
-        "PythonNative_LoadModule",
-        "PythonNative_LoadModuleN",
+        "PythonNative_ConstructModuleFromCStr",
+        "PythonNative_ConstructModuleFromCStrN",
         "PythonNative_ImportModule",
 
         # Primatives

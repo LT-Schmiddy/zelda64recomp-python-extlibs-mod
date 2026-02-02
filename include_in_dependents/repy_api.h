@@ -1900,7 +1900,7 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_handle));
  * @param identifier The name of the new module. Should be NULL-terminated.
  * @param code The Python code for the module. Should be NULL-terminated.
  */
-// REPY_IMPORT(void REPY_LoadModule(const char* identifier, const char* code));
+REPY_IMPORT(void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, REPY_bool add_to_sys));
 
 /**
  * @brief Construct a new Python module from a `char` array, importable by name.
@@ -1914,7 +1914,7 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_handle));
  * @param code The Python code for the module. Does not need to be null terminated.
  * @param len The length of the Python code, in bytes.
  */
-// REPY_IMPORT(void REPY_LoadModuleN(const char* identifier, const char* code, u32 len));
+REPY_IMPORT(void REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, REPY_u32 len, REPY_bool add_to_sys));
 
 /**
  * @brief Imports a Python module by name and returns a handle to it.
