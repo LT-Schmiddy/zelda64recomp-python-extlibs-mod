@@ -180,22 +180,13 @@ typedef struct REPY_IfStmtHelper {
 #define REPY_ON_PRE_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnPreInit) 
 
 /**
- * @brief Event used for initializing Python modules from code strings on startup.
- * 
- * Runs immediately after the interpreter is initialized.
- * 
- * Takes a single int `success` argument, indicating whether the interpreter was started correctly. Return should void.
- */
-#define REPY_ON_LOAD_MODULES RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnLoadModules)
-
-/**
  * @brief Event used for compiling Python bytecode from code strings on startup.
  * 
  * Runs immediately after `REPY_ON_LOAD_MODULES`.
  * 
  * Takes a single int `success` argument, indicating whether the interpreter was started correctly. Should return void.
  */
-#define REPY_ON_MAKE_GLOBAL_CACHES RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnMakeGlobalCaches)
+#define REPY_ON_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInit)
 
 /**
  * @brief Generic initialization event. Use for your own mod's initialization code.
@@ -204,7 +195,7 @@ typedef struct REPY_IfStmtHelper {
  * 
  * Takes a single int `success` argument, indicating whether the interpreter was started correctly. Should return void.
  */
-#define REPY_ON_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInit)
+#define REPY_ON_POST_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnPostInit)
 
 /** @}*/
 
@@ -277,27 +268,9 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
         "\t.globl " #identifier "_end\n"              \
         #identifier "_end:\n"                         \
         "\t.popsection\n");                           \
-    extern REPY_u8 identifier[];                           \
+    extern REPY_u8 identifier[];                      \
     extern REPY_u8 identifier##_end[]
 #endif
-
-/**
- * @brief On startup, construct a Python module from an INCBINed file. Use outside of any functions.
- * 
- * Note that in general, the preferred method of including Python modules in your mod is to include them in your
- * .nrm under the `additional files` section. This interface will likely be deprecated in a future update.
- * 
- * @param module_name The name for your module as it would be used in import statements. Remember that modules are shared across 
- * all mods using REPY, so be sure to make the name unique.
- * @param filename The path to the module file to INCBIN. The file needs to be in your include path. 
- */
-#define REPY_INCBIN_MODULE(module_name, filename) \
-REPY_INCBIN(module_name ## _code, filename); \
-REPY_ON_LOAD_MODULES void _construct_module_ ## module_name (int success) { \
-    if (success) { \
-        REPY_LoadModuleN(#module_name, (const char*)module_name ## _code, (u32) (module_name ## _code_end - module_name ## _code)); \
-    } \
-}
 
 /**
  * @brief On startup, compiles a Python code string into bytecode with a global handle. Use outside of any functions.
@@ -311,7 +284,7 @@ REPY_ON_LOAD_MODULES void _construct_module_ ## module_name (int success) { \
  */
 #define REPY_GLOBAL_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
     if (success && bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_GLOBAL_COMPILE_CACHE", __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
@@ -330,7 +303,7 @@ REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success
  */
 #define REPY_STATIC_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
 static REPY_Handle bytecode_identifier = 0; \
-REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
     if (success && bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_CACHE", __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
@@ -352,7 +325,7 @@ REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success
 #define REPY_GLOBAL_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
 REPY_INCBIN(bytecode_identifier ## _code_str, filename); \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
     if (success && bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_GLOBAL_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
@@ -374,7 +347,7 @@ REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success
 #define REPY_STATIC_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
 REPY_INCBIN(bytecode_identifier ## _code_str, filename); \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_MAKE_GLOBAL_CACHES void _cache_code_ ## bytecode_identifier (int success) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
     if (success && bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \

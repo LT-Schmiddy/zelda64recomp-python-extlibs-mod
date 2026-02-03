@@ -3,7 +3,7 @@
 
 // This allows for multiple zips to be copied, but only one ended up being used.
 // There may be a use case for multiple zips in the future.
-std::string path_to_string_utf8(const std::filesystem::path& path) {
+static std::string path_to_string_utf8(const std::filesystem::path& path) {
     std::u8string path_u8string = path.u8string();
     std::string to_escape{ reinterpret_cast<const char*>(path_u8string.c_str()), path_u8string.size() };
 
@@ -19,7 +19,7 @@ std::string path_to_string_utf8(const std::filesystem::path& path) {
     return ret;
 }
 
-void py_preinit_add_search_path(PyConfig* config, fs::path path) {
+static void py_preinit_add_search_path(PyConfig* config, fs::path path) {
     PyStatus status;
 
     wchar_t* pathstr = nullptr;
@@ -31,13 +31,17 @@ void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 }
 
 // ======================================  Handle Control: ====================================== 
-PyInterpreterController::PyInterpreterController(plog::Severity severity, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
+PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
     // Initialize Logging
     fs::path file_appender_path = fs::path(mod_dir).parent_path().append("REPY.log");
-    file_appender = new plog::RollingFileAppender<plog::TxtFormatter>(path_to_string_utf8(file_appender_path).c_str());
+    log = &plog::init((plog::Severity)log_severity);
+
+    if (log_to_file) {
+        file_appender = new plog::RollingFileAppender<plog::TxtFormatter>(path_to_string_utf8(file_appender_path).c_str());
+        log->addAppender(file_appender);
+    }
+    
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
-    log = &plog::init((plog::Severity)severity);
-    log->addAppender(file_appender);
     log->addAppender(console_appender);
 
     // Setting up Stdlib
@@ -92,20 +96,6 @@ PyInterpreterController::~PyInterpreterController() {
     py_objects_smap.del_all();
 
     PLOGI << "-> Python interpreter shutdown";
-}
-
-REPY_Handle PyInterpreterController::create_handle_and_steal(py::object* obj) {
-    py::gil_scoped_acquire gil;
-    REPY_Handle new_handle;
-    new_handle = py_objects_smap.add_and_steal(obj);
-
-    PLOGD.printf("-> REPY_Handle 0x%08X Created", new_handle);
-    IF_PLOG(plog::verbose) {
-        std::u8string repr_str = py::repr(*obj).cast<std::u8string>();
-        PLOGV.printf("-> Handle %08X: %s", new_handle, repr_str.c_str());
-    }
-
-    return new_handle;
 }
 
 REPY_Handle PyInterpreterController::create_handle(py::object* obj) {

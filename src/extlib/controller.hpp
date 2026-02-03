@@ -38,11 +38,10 @@ public:
     uint8_t* rdram;
     // bool use_slotmap = false;
 
-    PyInterpreterController(plog::Severity severity, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
+    PyInterpreterController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
 
     // Handle Operations:
-    REPY_Handle create_handle_and_steal(py::object* obj);
     REPY_Handle create_handle(py::object* obj);
     py::object* get_py_object(REPY_Handle handle);
     bool is_valid_handle(REPY_Handle handle);
