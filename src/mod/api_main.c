@@ -353,26 +353,29 @@ RECOMP_EXPORT REPY_Handle REPY_CreateTuple_SUH(u32 size, ...) {
 }
 
 RECOMP_EXPORT REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value) {
-    return REPY_CreateTuple(2, key, value);
+    REPY_Handle entries[2] = { key, value };
+    return PythonNative_CreateTuple(2, (va_list)&entries);
 }
 
 RECOMP_EXPORT REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value) {
-    return REPY_CreateTuple_SUH(2, key, value);
+    REPY_Handle entries[2] = { key, value };
+    return PythonNative_MakeSUH(PythonNative_CreateTuple(2, (va_list)&entries));
+}
+
+RECOMP_EXPORT REPY_Handle REPY_CreatePairCStr(char* key, REPY_Handle value) {
+    return PythonNative_CreatePairCStr(key, value);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_CreatePairCStr_SUH(char* key, REPY_Handle value) {
+    return PythonNative_MakeSUH(PythonNative_CreatePairCStr(key, value));
 }
 
 RECOMP_EXPORT REPY_Handle REPY_TupleGetIndexS32(REPY_Handle object, int index) {
     return PythonNative_TupleGetIndexS32(object, index);
 }
 
-// Dict Operations:
-RECOMP_EXPORT REPY_Handle REPY_CreateEmptyDict() {
-    return PythonNative_CreateDict(0, NULL);
-}
 
-RECOMP_EXPORT REPY_Handle REPY_CreateEmptyDict_SUH() {
-    return PythonNative_MakeSUH(PythonNative_CreateDict(0, NULL));
-}
-
+// Dict Operations
 RECOMP_EXPORT REPY_Handle REPY_CreateDict(u32 size, ...) {
     va_list va;
     va_start(va, size);
