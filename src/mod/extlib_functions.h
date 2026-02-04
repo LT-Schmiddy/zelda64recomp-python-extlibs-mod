@@ -119,6 +119,8 @@ RECOMP_IMPORT(".", REPY_Handle PythonNative_GetErrorTrace());
 RECOMP_IMPORT(".", REPY_Handle PythonNative_GetErrorValue());
 RECOMP_IMPORT(".", void PythonNative_ClearError());
 
+RECOMP_IMPORT(".", REPY_Handle PythonNative_GetZipFile_CStr(const char* filepath));
+
 // Logging
 RECOMP_IMPORT(".", void PythonNative_SetLogMetaData(u32 log_level, const char* func, u32 line_number, const char* file_name));
 RECOMP_IMPORT(".", void PythonNative_CommitLogMessage(const char* message));

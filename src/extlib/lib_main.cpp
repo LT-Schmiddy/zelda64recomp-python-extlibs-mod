@@ -1268,6 +1268,17 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
     controller->clear_py_error();
 }
 
+// ====================================== Zipfile: ====================================== 
+// Quickly generates ZipFile
+RECOMP_DLL_FUNC(PythonNative_GetZipFile_CStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+    std::u8string filepath = RECOMP_ARG_U8STR(0);
+    REPY_Handle retVal = controller->get_zipfile_from_path(filepath);
+
+    RECOMP_RETURN(REPY_Handle, retVal);
+}
+
 // ====================================== Logging: ====================================== 
 // The following enable the mod-code of this library to use PLOG for logging.
 static plog::Severity py_log_severity;

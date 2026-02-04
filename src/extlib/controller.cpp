@@ -83,6 +83,9 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     py_eval = builtins.attr("eval");
     py_next = builtins.attr("next");
 
+    py_zipfile_module = py::module_::import("zipfile");
+    py_zipfile_class = py_zipfile_module.attr("ZipFile");
+
     py_stop_iteration_type = py::eval("StopIteration");
 
     // Allow other threads to have the GIL.
@@ -248,6 +251,11 @@ void PyInterpreterController::clear_py_error() {
     last_error_type = py::none();
     last_error_trace = py::none();
     last_error_value = py::none();
+}
+
+REPY_Handle PyInterpreterController::get_zipfile_from_path(std::u8string filepath) {
+    py::object retVal = py_zipfile_class(py::str(filepath));
+    return create_handle(&retVal);
 }
 
 void PyInterpreterController::set_rdram(uint8_t* p_rdram) {

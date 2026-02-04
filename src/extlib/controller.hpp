@@ -6,10 +6,8 @@
 #include <plog/Appenders/ColorConsoleAppender.h>// Step1: include the headers
 #include <plog/Initializers/RollingFileInitializer.h>
 
-
 #include "lib_recomp.hpp"
 #include "pyobject_slotmap.hpp"
-
 
 class PyInterpreterController {
 public:
@@ -20,8 +18,6 @@ public:
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
     plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
     plog::Logger<0>* log = NULL;
-
-    // py::object py_none;
     
     bool is_py_error_set = false;
     py::object last_error_type = py::none();
@@ -33,10 +29,12 @@ public:
     py::function py_eval;
     py::function py_next;
 
+    py::module_ py_zipfile_module;
+    py::object py_zipfile_class;
+
     py::object py_stop_iteration_type;
 
     uint8_t* rdram;
-    // bool use_slotmap = false;
 
     PyInterpreterController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
@@ -57,6 +55,8 @@ public:
     REPY_Handle get_py_error_trace_handle();
     REPY_Handle get_py_error_value_handle();
     void clear_py_error();
+
+    REPY_Handle get_zipfile_from_path(std::u8string filepath);
 
     py::module_ construct_module(std::string module_name, std::string module_code, bool add_to_sys); 
 

@@ -623,7 +623,17 @@ REPY_ON_INIT void REPY_API_Tests() {
     if (recomp_get_config_u32("load_repl")) {
         recomp_printf("Starting Interavtive Shell. Call `exit()` to continue to game...\n");
         REPY_Handle code_module = REPY_ImportModule("code");
-        REPY_CallAttrCStr(code_module, "interact", 0, 0);
+
+        REPY_Handle local = REPY_CreateDict(0);
+        REPY_DictSetCStr(local, "nrm_zip", REPY_MakeSUH(REPY_GetNrmZip()));
+
+        REPY_Handle kwargs = REPY_CreateDict(0);
+        REPY_DictSetCStr(kwargs, "local", local);
+        REPY_Release(local);
+        
+        REPY_CallAttrCStr(code_module, "interact", 0, kwargs);
+        REPY_Release(kwargs);
+
         REPY_ClearError();
         REPY_Release(code_module);
     }

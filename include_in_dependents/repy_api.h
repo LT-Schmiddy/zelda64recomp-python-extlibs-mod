@@ -3146,6 +3146,22 @@ REPY_IMPORT(void REPY_ClearError());
 
 /** @}*/
 
+/** \defgroup repy_zipfile_funcs Nrm ZipFile Functions
+ * \brief Functions to access nrm files read-only as ZipFile objects.
+ *  @{
+ */
+
+REPY_IMPORT(REPY_Handle REPY_GetNrmZipForFile(const char* filepath));
+
+inline REPY_Handle REPY_GetNrmZip() {
+    const char* filepath = (const char*) recomp_get_mod_file_path();
+    REPY_Handle retVal = REPY_GetNrmZipForFile(filepath);
+    recomp_free((void*) filepath);
+    return retVal;
+}
+
+/** @}*/
+
 /** \defgroup repy_helper_funcs Helper Functions
  * \brief Various helper functions, primarily used by API macros.
  * 
