@@ -22,26 +22,26 @@ RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_obj
     REPY_IteratorHelper* helper = recomp_alloc(sizeof(REPY_IteratorHelper));
     helper->_first_update = true;
     helper->index = 0;
-    helper->iter = PythonNative_Object_Iter(py_object);
+    helper->iter = PythonNative_Iter(py_object);
     helper->curr = 0;
-    helper->py_scope = PythonNative_Object_CopyHandle(py_scope);
+    helper->py_scope = PythonNative_CopyHandle(py_scope);
     if (py_scope != 0) {
-        helper->var_name = PythonNative_Object_CreateStr(var_name);
+        helper->var_name = PythonNative_CreateStr(var_name);
     }
 
     return helper;
 }
 
 RECOMP_EXPORT void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper) {
-    PythonNative_Object_Release(helper->iter);
-    if (PythonNative_Object_IsValidHandle(helper->curr)) {
+    PythonNative_Release(helper->iter);
+    if (PythonNative_IsValidHandle(helper->curr)) {
         // Checking this is important, since curr valid until after the first update, and the iterator COULD be destroyed before then.
-        PythonNative_Object_Release(helper->curr);
+        PythonNative_Release(helper->curr);
     }
 
     if (helper->py_scope != 0) {
-        PythonNative_Object_Release(helper->py_scope);
-        PythonNative_Object_Release(helper->var_name);
+        PythonNative_Release(helper->py_scope);
+        PythonNative_Release(helper->var_name);
     }
 
     recomp_free(helper);
@@ -53,17 +53,17 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool 
     } else {
         helper->index++;
         if (helper->curr != 0) {
-            PythonNative_Object_Release(helper->curr);
+            PythonNative_Release(helper->curr);
         } else {
             LOGW("Warning: helper->curr should not be 0. You may be trying to update an REPY_IteratorHelper after the iterator is finished.\n");
         }
     }
 
-    helper->curr = PythonNative_Object_Next(helper->iter, 0, true);
+    helper->curr = PythonNative_Next(helper->iter, 0, true);
     if (helper->curr) {
         if (helper->py_scope) {
             // If given a python scope, add current to the scope under the given variable name:
-            PythonNative_Dict_Set(helper->py_scope, helper->var_name, helper->curr);
+            PythonNative_DictSet(helper->py_scope, helper->var_name, helper->curr);
         }
 
         return true;
@@ -94,7 +94,7 @@ RECOMP_EXPORT void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain) {
     if (chain->next != NULL) {
         REPY_IfStmtChain_Destroy(chain->next);
     }
-    PythonNative_Object_Release(chain->eval_expression_bytecode);
+    PythonNative_Release(chain->eval_expression_bytecode);
     recomp_free(chain);
 }
 
@@ -124,7 +124,7 @@ RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle
         helper->curr = helper->curr->next;
         helper->index++;
     }
-    return PythonNative_Object_CastBool(PythonNative_Object_MakeSUH(PythonNative_Eval(helper->curr->eval_expression_bytecode, global_scope, local_scope)));
+    return PythonNative_CastBool(PythonNative_MakeSUH(PythonNative_Eval(helper->curr->eval_expression_bytecode, global_scope, local_scope)));
 };
 
 

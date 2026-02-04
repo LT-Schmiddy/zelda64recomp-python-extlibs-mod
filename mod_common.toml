@@ -27,12 +27,12 @@ native_libraries = [
 
         # General
         "PythonNative_Init",
-        "PythonNative_Object_Release",
-        "PythonNative_Object_MakeSUH",
-        "PythonNative_Object_IsValidHandle",
-        "PythonNative_Object_GetSUH",
-        "PythonNative_Object_SetSUH",
-        "PythonNative_Object_CopyHandle",
+        "PythonNative_Release",
+        "PythonNative_MakeSUH",
+        "PythonNative_IsValidHandle",
+        "PythonNative_GetSUH",
+        "PythonNative_SetSUH",
+        "PythonNative_CopyHandle",
 
         # Modules
         "PythonNative_ConstructModuleFromCStr",
@@ -40,76 +40,76 @@ native_libraries = [
         "PythonNative_ImportModule",
 
         # Primatives
-        "PythonNative_Object_CreateBool",
-        "PythonNative_Object_CastBool",
-        "PythonNative_Object_CreateU8",
-        "PythonNative_Object_CastU8",
-        "PythonNative_Object_CreateS8",
-        "PythonNative_Object_CastS8",
-        "PythonNative_Object_CreateU16",
-        "PythonNative_Object_CastU16",
-        "PythonNative_Object_CreateS16",
-        "PythonNative_Object_CastS16",
-        "PythonNative_Object_CreateU32",
-        "PythonNative_Object_CastU32",
-        "PythonNative_Object_CreateS32",
-        "PythonNative_Object_CastS32",
-        "PythonNative_Object_CreateF32",
-        "PythonNative_Object_CastF32",
+        "PythonNative_CreateBool",
+        "PythonNative_CastBool",
+        "PythonNative_CreateU8",
+        "PythonNative_CastU8",
+        "PythonNative_CreateS8",
+        "PythonNative_CastS8",
+        "PythonNative_CreateU16",
+        "PythonNative_CastU16",
+        "PythonNative_CreateS16",
+        "PythonNative_CastS16",
+        "PythonNative_CreateU32",
+        "PythonNative_CastU32",
+        "PythonNative_CreateS32",
+        "PythonNative_CastS32",
+        "PythonNative_CreateF32",
+        "PythonNative_CastF32",
 
         # 64-bit Primatives
-        "PythonNative_Object_U64Operation",
-        "PythonNative_Object_S64Operation",
-        "PythonNative_Object_F64Operation",
+        "PythonNative_U64Operation",
+        "PythonNative_S64Operation",
+        "PythonNative_F64Operation",
         
         # Strings
-        "PythonNative_Object_CreateStr",
-        "PythonNative_Object_CreateStrN",
-        "PythonNative_Object_CastStr_Prepare",
-        "PythonNative_Object_CastStr_Copy",
-        "PythonNative_Object_CreateByteStr",
-        "PythonNative_Object_CreateByteStrN",
-        "PythonNative_Object_CastByteStr_Prepare",
-        "PythonNative_Object_CastByteStr_Copy",
+        "PythonNative_CreateStr",
+        "PythonNative_CreateStrN",
+        "PythonNative_CastStr_Prepare",
+        "PythonNative_CastStr_Copy",
+        "PythonNative_CreateByteStr",
+        "PythonNative_CreateByteStrN",
+        "PythonNative_CastByteStr_Prepare",
+        "PythonNative_CastByteStr_Copy",
 
         # Memcpy:
-        "PythonNative_Memcpy_ToBytes",
-        "PythonNative_Memcpy_FromBytes",
-        "PythonNative_Memcpy_ToByteArray",
-        "PythonNative_Memcpy_FromByteArray",
+        "PythonNative_MemcpyToBytes",
+        "PythonNative_MemcpyFromBytes",
+        "PythonNative_MemcpyToByteArray",
+        "PythonNative_MemcpyFromByteArray",
 
         # Indexing and Slicing
-        "PythonNative_Object_Len",
-
-
-        # Iteration
-        "PythonNative_Object_Iter",
-        "PythonNative_Object_Next",
-        
-        # Tuple
-        "PythonNative_Tuple_Create",
-        "PythonNative_Object_TupleGetIndexS32",
-        
-        # Dicts    
-        "PythonNative_Dict_Create",
-        "PythonNative_Dict_Get",
-        "PythonNative_Dict_Get_CStr",
-        "PythonNative_Dict_Set",
-        "PythonNative_Dict_Set_CStr",
-        "PythonNative_Dict_Has",
-        "PythonNative_Dict_Has_CStr",
-        "PythonNative_Dict_Remove",
-        "PythonNative_Dict_Remove_CStr",
+        "PythonNative_Len",
 
         # Object Attributes
-        "PythonNative_Object_GetAttr",
-        "PythonNative_Object_GetAttr_CStr",
-        "PythonNative_Object_SetAttr",
-        "PythonNative_Object_SetAttr_CStr",
-        "PythonNative_Object_HasAttr",
-        "PythonNative_Object_HasAttr_CStr",
-        "PythonNative_Object_DelAttr",
-        "PythonNative_Object_DelAttr_CStr",
+        "PythonNative_GetAttr",
+        "PythonNative_GetAttrCStr",
+        "PythonNative_SetAttr",
+        "PythonNative_SetAttrCStr",
+        "PythonNative_HasAttr",
+        "PythonNative_HasAttrCStr",
+        "PythonNative_DelAttr",
+        "PythonNative_DelAttrCStr",
+
+        # Iteration
+        "PythonNative_Iter",
+        "PythonNative_Next",
+        
+        # Tuple
+        "PythonNative_CreateTuple",
+        "PythonNative_TupleGetIndexS32",
+        "PythonNative_CreatePairCStr",
+        
+        # Dicts    
+        "PythonNative_CreateDict",
+        "PythonNative_GetDict",
+        "PythonNative_DictGetCStr",
+        "PythonNative_DictSet",
+        "PythonNative_DictSetCStr",
+        "PythonNative_DictHas",
+        "PythonNative_DictHasCStr",
+        "PythonNative_DictDel",
+        "PythonNative_DictDelCStr",
         
         # Execution
         "PythonNative_Compile",
@@ -124,11 +124,11 @@ native_libraries = [
 
         # Python Function Calls
         "PythonNative_Call",
-        "PythonNative_Call_Return",
+        "PythonNative_CallReturn",
         "PythonNative_CallAttr",
-        "PythonNative_CallAttr_CStr",
-        "PythonNative_CallAttr_Return",
-        "PythonNative_CallAttr_CStr_Return",
+        "PythonNative_CallAttrCStr",
+        "PythonNative_CallAttrReturn",
+        "PythonNative_CallAttrCStrReturn",
         
         # Exception Handling
         "PythonNative_IsErrorSet",
@@ -138,7 +138,7 @@ native_libraries = [
         "PythonNative_ClearError",
 
         # ZipFile Access
-        "PythonNative_GetZipFileFromPath_CStr",
+        "PythonNative_GetZipFileFromPathCStr",
 
         # Logging
         "PythonNative_SetLogMetaData",

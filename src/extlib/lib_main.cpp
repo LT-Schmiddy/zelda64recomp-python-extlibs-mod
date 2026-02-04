@@ -45,7 +45,7 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     RECOMP_RETURN(int, 1);
 }
 // ======================================  General: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_Object_Release) {
+RECOMP_DLL_FUNC(PythonNative_Release) {
     controller->set_rdram(rdram);
 
     py::gil_scoped_acquire gil;
@@ -54,7 +54,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_Release) {
     controller->release_handle(handle);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_MakeSUH) {
+RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
     controller->set_rdram(rdram);
 
     py::gil_scoped_acquire gil;
@@ -65,7 +65,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_MakeSUH) {
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_IsValidHandle) {
+RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
     controller->set_rdram(rdram);
     // Don't need the GIL for this.
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
@@ -73,7 +73,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_IsValidHandle) {
     RECOMP_RETURN(uint32_t, (uint32_t) controller->is_valid_handle(handle));
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_GetSUH) {
+RECOMP_DLL_FUNC(PythonNative_GetSUH) {
     controller->set_rdram(rdram);
 
     py::gil_scoped_acquire gil;
@@ -83,7 +83,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_GetSUH) {
 }
 
 
-RECOMP_DLL_FUNC(PythonNative_Object_SetSUH) {
+RECOMP_DLL_FUNC(PythonNative_SetSUH) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
@@ -93,7 +93,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_SetSUH) {
 }
 
 
-RECOMP_DLL_FUNC(PythonNative_Object_CopyHandle) {
+RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* object = RECOMP_ARG_PYOBJECT(0);
@@ -162,8 +162,8 @@ RECOMP_DLL_FUNC(fname) { \
 }
 
 #define PYTHON_OBJECT_CREATECAST(fname, c_type, py_type) \
-PYTHON_OBJECT_CREATE(PythonNative_Object_Create ## fname, c_type, py_type); \
-PYTHON_OBJECT_CAST(PythonNative_Object_Cast ## fname, c_type, py_type); \
+PYTHON_OBJECT_CREATE(PythonNative_Create ## fname, c_type, py_type); \
+PYTHON_OBJECT_CAST(PythonNative_Cast ## fname, c_type, py_type); \
 
 PYTHON_OBJECT_CREATECAST(Bool, uint32_t, py::bool_);
 PYTHON_OBJECT_CREATECAST(U8, uint8_t, py::int_);
@@ -201,13 +201,13 @@ RECOMP_DLL_FUNC(name) { \
     } \
 }
 
-NUMBER64_OPERATION(PythonNative_Object_U64Operation, uint64_t, py::int_);
-NUMBER64_OPERATION(PythonNative_Object_S64Operation, int64_t, py::int_);
-NUMBER64_OPERATION(PythonNative_Object_F64Operation, double, py::float_);
+NUMBER64_OPERATION(PythonNative_U64Operation, uint64_t, py::int_);
+NUMBER64_OPERATION(PythonNative_S64Operation, int64_t, py::int_);
+NUMBER64_OPERATION(PythonNative_F64Operation, double, py::float_);
 
 
 // ======================================  String Casting: ======================================
-RECOMP_DLL_FUNC(PythonNative_Object_CreateStr) {
+RECOMP_DLL_FUNC(PythonNative_CreateStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::u8string value = RECOMP_ARG_U8STR(0);
@@ -217,7 +217,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateStr) {
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CreateStrN) {
+RECOMP_DLL_FUNC(PythonNative_CreateStrN) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     int32_t str_len = RECOMP_ARG(int32_t, 1);
@@ -228,7 +228,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateStrN) {
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Prepare) {
+RECOMP_DLL_FUNC(PythonNative_CastStr_Prepare) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
@@ -237,7 +237,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Prepare) {
     RECOMP_RETURN(int32_t, cached_return_u8string.size());
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Copy) {
+RECOMP_DLL_FUNC(PythonNative_CastStr_Copy) {
     controller->set_rdram(rdram);
     // Don't need the GIL for this step.
     int str_len = RECOMP_ARG(int, 0);
@@ -248,7 +248,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastStr_Copy) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CreateByteStr) {
+RECOMP_DLL_FUNC(PythonNative_CreateByteStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::string value = RECOMP_ARG_STR(0);
@@ -258,7 +258,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateByteStr) {
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CreateByteStrN) {
+RECOMP_DLL_FUNC(PythonNative_CreateByteStrN) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     int32_t str_len = RECOMP_ARG(int32_t, 1);
@@ -269,7 +269,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreateByteStrN) {
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Prepare) {
+RECOMP_DLL_FUNC(PythonNative_CastByteStr_Prepare) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::bytes* str = (py::bytes*)RECOMP_ARG_PYOBJECT(0);
@@ -278,7 +278,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Prepare) {
     RECOMP_RETURN(int32_t, cached_return_string.size());
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Copy) {
+RECOMP_DLL_FUNC(PythonNative_CastByteStr_Copy) {
     controller->set_rdram(rdram);
     // Don't actually need the GIL for this one.
     int str_len = RECOMP_ARG(int, 0);
@@ -290,7 +290,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CastByteStr_Copy) {
 }
 
 // ====================================== Memcpy: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_Memcpy_ToBytes) {
+RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
@@ -311,7 +311,7 @@ RECOMP_DLL_FUNC(PythonNative_Memcpy_ToBytes) {
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Memcpy_FromBytes) {
+RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
@@ -342,7 +342,7 @@ RECOMP_DLL_FUNC(PythonNative_Memcpy_FromBytes) {
     RECOMP_RETURN(uint32_t, iter);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Memcpy_ToByteArray) {
+RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
@@ -364,7 +364,7 @@ RECOMP_DLL_FUNC(PythonNative_Memcpy_ToByteArray) {
 }
 
 
-RECOMP_DLL_FUNC(PythonNative_Memcpy_FromByteArray) {
+RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
@@ -396,7 +396,7 @@ RECOMP_DLL_FUNC(PythonNative_Memcpy_FromByteArray) {
 
 // ====================================== Indexing and Slicing Operations: ====================================== 
 
-RECOMP_DLL_FUNC(PythonNative_Object_Len) {
+RECOMP_DLL_FUNC(PythonNative_Len) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* object = RECOMP_ARG_PYOBJECT(0);
@@ -407,7 +407,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_Len) {
 }
 
 // ====================================== Iteration: ======================================
-RECOMP_DLL_FUNC(PythonNative_Object_Iter) {
+RECOMP_DLL_FUNC(PythonNative_Iter) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
@@ -418,7 +418,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_Iter) {
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_Next) {
+RECOMP_DLL_FUNC(PythonNative_Next) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
@@ -451,7 +451,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_Next) {
 }
 
 // ====================================== Tuple: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
+RECOMP_DLL_FUNC(PythonNative_CreateTuple) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     int32_t size = RECOMP_ARG(int32_t, 0);
@@ -476,7 +476,7 @@ RECOMP_DLL_FUNC(PythonNative_Tuple_Create) {
 
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_TupleGetIndexS32) {
+RECOMP_DLL_FUNC(PythonNative_TupleGetIndexS32) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -497,7 +497,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_TupleGetIndexS32) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_CreatePairCStr) {
+RECOMP_DLL_FUNC(PythonNative_CreatePairCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -519,7 +519,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_CreatePairCStr) {
 
 
 // ======================================  Dicts: ======================================  
-RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
+RECOMP_DLL_FUNC(PythonNative_CreateDict) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::dict new_dict = py::dict();
@@ -543,7 +543,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Create) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Get) {
+RECOMP_DLL_FUNC(PythonNative_GetDict) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     try {
@@ -563,7 +563,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Get) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Get_CStr) {
+RECOMP_DLL_FUNC(PythonNative_DictGetCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -584,7 +584,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Get_CStr) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Set) {
+RECOMP_DLL_FUNC(PythonNative_DictSet) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     try {
@@ -600,7 +600,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Set) {
     controller->release_suh_handles();
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Set_CStr) {
+RECOMP_DLL_FUNC(PythonNative_DictSetCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     try {
@@ -616,7 +616,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Set_CStr) {
     controller->release_suh_handles();
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
+RECOMP_DLL_FUNC(PythonNative_DictHas) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     uint32_t retVal = 0;
@@ -635,7 +635,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Has) {
     RECOMP_RETURN(uint32_t, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Has_CStr) {
+RECOMP_DLL_FUNC(PythonNative_DictHasCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     uint32_t retVal = 0;
@@ -654,7 +654,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Has_CStr) {
     RECOMP_RETURN(uint32_t, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
+RECOMP_DLL_FUNC(PythonNative_DictDel) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -670,7 +670,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Remove) {
     controller->release_suh_handles();
 }
 
-RECOMP_DLL_FUNC(PythonNative_Dict_Remove_CStr) {
+RECOMP_DLL_FUNC(PythonNative_DictDelCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -688,7 +688,7 @@ RECOMP_DLL_FUNC(PythonNative_Dict_Remove_CStr) {
 }
 
 // ====================================== Object Attributes: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_Object_GetAttr) {
+RECOMP_DLL_FUNC(PythonNative_GetAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     try {
@@ -714,7 +714,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_GetAttr) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_GetAttr_CStr) {
+RECOMP_DLL_FUNC(PythonNative_GetAttrCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     
@@ -741,7 +741,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_GetAttr_CStr) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_SetAttr) {
+RECOMP_DLL_FUNC(PythonNative_SetAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -758,7 +758,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_SetAttr) {
     controller->release_suh_handles();
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_SetAttr_CStr) {
+RECOMP_DLL_FUNC(PythonNative_SetAttrCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -775,7 +775,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_SetAttr_CStr) {
     controller->release_suh_handles();
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_HasAttr) {
+RECOMP_DLL_FUNC(PythonNative_HasAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     uint32_t retVal = 0;
@@ -792,7 +792,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_HasAttr) {
     RECOMP_RETURN(uint32_t, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_HasAttr_CStr) {
+RECOMP_DLL_FUNC(PythonNative_HasAttrCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     uint32_t retVal = 0;
@@ -809,7 +809,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_HasAttr_CStr) {
     RECOMP_RETURN(uint32_t, retVal);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_DelAttr) {
+RECOMP_DLL_FUNC(PythonNative_DelAttr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -825,7 +825,7 @@ RECOMP_DLL_FUNC(PythonNative_Object_DelAttr) {
     controller->release_suh_handles();
 }
 
-RECOMP_DLL_FUNC(PythonNative_Object_DelAttr_CStr) {
+RECOMP_DLL_FUNC(PythonNative_DelAttrCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
@@ -1111,7 +1111,7 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
     RECOMP_RETURN(uint32_t, 1);
 }
 
-RECOMP_DLL_FUNC(PythonNative_Call_Return) {
+RECOMP_DLL_FUNC(PythonNative_CallReturn) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
@@ -1169,7 +1169,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     RECOMP_RETURN(uint32_t, 1);
 }
 
-RECOMP_DLL_FUNC(PythonNative_CallAttr_CStr) {
+RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -1197,7 +1197,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr_CStr) {
     RECOMP_RETURN(uint32_t, 1);
 }
 
-RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
+RECOMP_DLL_FUNC(PythonNative_CallAttrReturn) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -1226,7 +1226,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr_Return) {
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
-RECOMP_DLL_FUNC(PythonNative_CallAttr_CStr_Return) {
+RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -1292,7 +1292,7 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
 
 // ====================================== Zipfile: ====================================== 
 // Quickly generates ZipFile
-RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPath_CStr) {
+RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPathCStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::u8string filepath = RECOMP_ARG_U8STR(0);
