@@ -540,6 +540,6 @@ RECOMP_EXPORT void REPY_ClearError() {
     PythonNative_ClearError();
 }
 
-
-
-
+RECOMP_EXPORT REPY_Handle REPY_GetNrmZipFileFromPath(const char* filepath) {
+    return PythonNative_GetZipFileFromPath_CStr(filepath);
+}

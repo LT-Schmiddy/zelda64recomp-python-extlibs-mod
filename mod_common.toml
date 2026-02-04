@@ -138,7 +138,7 @@ native_libraries = [
         "PythonNative_ClearError",
 
         # ZipFile Access
-        "PythonNative_GetZipFile_CStr",
+        "PythonNative_GetZipFileFromPath_CStr",
 
         # Logging
         "PythonNative_SetLogMetaData",

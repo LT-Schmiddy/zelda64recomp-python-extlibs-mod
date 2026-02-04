@@ -625,7 +625,7 @@ REPY_ON_INIT void REPY_API_Tests() {
         REPY_Handle code_module = REPY_ImportModule("code");
 
         REPY_Handle local = REPY_CreateDict(0);
-        REPY_DictSetCStr(local, "nrm_zip", REPY_MakeSUH(REPY_GetNrmZip()));
+        REPY_DictSetCStr(local, "nrm_zip", REPY_MakeSUH(REPY_GetNrmZipFile()));
 
         REPY_Handle kwargs = REPY_CreateDict(0);
         REPY_DictSetCStr(kwargs, "local", local);

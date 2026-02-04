@@ -3151,11 +3151,11 @@ REPY_IMPORT(void REPY_ClearError());
  *  @{
  */
 
-REPY_IMPORT(REPY_Handle REPY_GetNrmZipForFile(const char* filepath));
+REPY_IMPORT(REPY_Handle REPY_GetNrmZipFileFromPath(const char* filepath));
 
-inline REPY_Handle REPY_GetNrmZip() {
+inline REPY_Handle REPY_GetNrmZipFile() {
     const char* filepath = (const char*) recomp_get_mod_file_path();
-    REPY_Handle retVal = REPY_GetNrmZipForFile(filepath);
+    REPY_Handle retVal = REPY_GetNrmZipFileFromPath(filepath);
     recomp_free((void*) filepath);
     return retVal;
 }

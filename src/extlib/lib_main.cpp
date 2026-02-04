@@ -1270,7 +1270,7 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
 
 // ====================================== Zipfile: ====================================== 
 // Quickly generates ZipFile
-RECOMP_DLL_FUNC(PythonNative_GetZipFile_CStr) {
+RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPath_CStr) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
     std::u8string filepath = RECOMP_ARG_U8STR(0);
