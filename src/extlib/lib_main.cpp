@@ -480,9 +480,10 @@ RECOMP_DLL_FUNC(PythonNative_Object_TupleGetIndexS32) {
     controller->set_rdram(rdram);
     py::gil_scoped_acquire gil;
 
+    py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
+    int index = RECOMP_ARG(int, 1); 
+
     try {
-        py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
-        int index = RECOMP_ARG(int, 1); 
         py::object obj = (*tuple)[index];
         
         REPY_Handle handle = controller->create_handle(&obj);
@@ -495,6 +496,27 @@ RECOMP_DLL_FUNC(PythonNative_Object_TupleGetIndexS32) {
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
+
+RECOMP_DLL_FUNC(PythonNative_Object_CreatePairCStr) {
+    controller->set_rdram(rdram);
+    py::gil_scoped_acquire gil;
+
+    std::u8string key = RECOMP_ARG_U8STR(0); 
+    py::object* value = RECOMP_ARG_PYOBJECT(1); 
+
+    try {
+        py::tuple new_tuple = py::tuple(py::str(key), value);
+        REPY_Handle handle = controller->create_handle(&new_tuple);
+        controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
+    
+    } catch (py::error_already_set &e) {
+        controller->handle_exception(&e);
+        controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
+}
+
 
 // ======================================  Dicts: ======================================  
 RECOMP_DLL_FUNC(PythonNative_Dict_Create) {

@@ -63,7 +63,6 @@ RECOMP_IMPORT(".", u32 PythonNative_Memcpy_FromByteArray(void* src, u32 len, u32
 
 // Indexing and Slicing
 RECOMP_IMPORT(".", u32 PythonNative_Object_Len(REPY_Handle object));
-RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_TupleGetIndexS32(REPY_Handle object, int index));
 
 // Iteration
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_Iter(REPY_Handle object));
@@ -71,6 +70,8 @@ RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_Next(REPY_Handle iter, REPY_H
 
 // Tuple:
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Tuple_Create(u32 size, va_list va));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_TupleGetIndexS32(REPY_Handle object, int index));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_Object_CreatePairCStr(char* key, REPY_Handle value));
 
 // Dict Operations:
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Dict_Create(u32 size, va_list va));
