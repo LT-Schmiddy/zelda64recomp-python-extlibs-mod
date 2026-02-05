@@ -105,6 +105,10 @@ RECOMP_IMPORT(".", u32 PythonNative_ExecCStrN(const char* code, u32 len, REPY_Ha
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Eval(REPY_Handle code, REPY_Handle global_scope, REPY_Handle local_scope));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_ConstructVL(REPY_Handle local_scope, u32 len, va_list va));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalVL(REPY_Handle code, REPY_Handle global_scope));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalVLCStr(const char* code, REPY_Handle global_scope));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalVLCStrN(const char* code, u32 len, REPY_Handle global_scope));
 
 // Function Calling Operations:
 RECOMP_IMPORT(".", u32 PythonNative_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));

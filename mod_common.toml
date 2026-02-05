@@ -121,6 +121,12 @@ native_libraries = [
         "PythonNative_Eval",
         "PythonNative_EvalCStr",
         "PythonNative_EvalCStrN",
+        "PythonNative_ConstructVL",
+        "PythonNative_EvalVL",
+        "PythonNative_EvalVLCStr",
+        "PythonNative_EvalVLCStrN",
+
+        # Varia
 
         # Python Function Calls
         "PythonNative_Call",

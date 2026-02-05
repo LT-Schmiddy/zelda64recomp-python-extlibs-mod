@@ -497,6 +497,31 @@ RECOMP_EXPORT REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle 
     return PythonNative_EvalCStrN(code, len, global_scope, local_scope);
 }
 
+RECOMP_EXPORT REPY_Handle REPY_EvalVL(REPY_Handle code, REPY_Handle global_scope, REPY_Handle local_scope, u32 count, ...) {
+    va_list va;
+    va_start(va, count);
+    PythonNative_ConstructVL(local_scope, count, va);
+    va_end(va);
+    return PythonNative_EvalVL(code, global_scope);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_EvalVLCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope, u32 count, ...) {
+    va_list va;
+    va_start(va, count);
+    PythonNative_ConstructVL(local_scope, count, va);
+    va_end(va);
+    return PythonNative_EvalVLCStr(code, global_scope);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_EvalVLCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope, u32 count, ...) {
+    va_list va;
+    va_start(va, count);
+    PythonNative_ConstructVL(local_scope, count, va);
+    va_end(va);
+    return PythonNative_EvalVLCStrN(code, len, global_scope);
+}
+
+
 // Python Functions
 RECOMP_EXPORT bool REPY_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_Call(func, args, kwargs);

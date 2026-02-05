@@ -2695,6 +2695,36 @@ REPY_IMPORT(REPY_Handle REPY_CreatePair(REPY_Handle key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_CreatePair_SUH(REPY_Handle key, REPY_Handle value));
 
 /**
+ * @brief Create a Python `tuple` with exactly 2 entries and return a `REPY_Handle` for it. The first entry is 
+ * automatically cast to `str`.
+ * 
+ * Used primarily for constucting key/value pairs when calling `REPY_CreateDict`. However, because the `REPY_Handle` 
+ * created by this function requires manual release, it's not recommended to use this nest a call to this function 
+ * inside another.
+ * 
+ * @param key `REPY_Handle` argument for the first entry in the tuple.
+ * @param value `REPY_Handle` argument for the second entry in the tuple.
+ * @return A `REPY_Handle` for the new tuple. Will be `REPY_NO_HANDLE` if an error occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_CreatePairCStr(char* key, REPY_Handle value));
+
+/**
+ * @brief Create a Python `tuple` with exactly 2 entries and return a Single-Use `REPY_Handle` for it. The first entry is 
+ * automatically cast to `str`.
+ * 
+ * Used primarily for constucting key/value pairs when calling `REPY_CreateDict`. Because the returned handle is 
+ * Single-Use, this is the recommended function for nesting inside `REPY_CreateDict` calls.
+ * 
+ * At this time, this function is just shorthand for `REPY_MakeSUH(REPY_CreatePair(key, value))`, and thus will perform similarly.
+ * However, internal performance improvements may make this function more performant in the future.
+ * 
+ * @param key `REPY_Handle` argument for the first entry in the `tuple`.
+ * @param value `REPY_Handle` argument for the second entry in the `tuple`.
+ * @return A `REPY_Handle` for the new tuple. Will be `REPY_NO_HANDLE` if an error occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_CreatePairCStr_SUH(char* key, REPY_Handle value));
+
+/**
  * @brief Returns the Python object at a specific index from a `tuple`
  * 
  * Currently, is a known issue with this interface: Negative index values (which represent the position from the end of 
@@ -2989,6 +3019,62 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope
  * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
+
+/**
+ * @brief Evaluate a Python code expression from a `REPY_Handle`. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `eval` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * As this function can execute precompiled Python bytecode, this is the recommended function for evaluating Python expressions from the API.
+ * 
+ * @param code The Python expression to evaluate. A precompiled bytecode object is recommended for performance reasons, but a Python `str`,
+ * `bytes`, or `bytearray` object will also work.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+ * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_EvalVL(REPY_Handle code, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable, REPY_u32 count, ...));
+
+/**
+ * @brief Evaluate a Python code expression from a NULL-terminated C string. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `eval` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * This function is not recommended for most use-cases, since it must recompile the Python bytecode from the `code` string 
+ * with each run.
+ * 
+ * @param code The Python expression to evaluate. Should be a NULL-terminated C string.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+* @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_EvalVLCStr(const char* code, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable, REPY_u32 count, ...));
+
+/**
+ * @brief Evaluate a Python code expression from a C `char` array. Optionally provide `dict` objects to serve as a scope.
+ * 
+ * This function is generally analogous to Python's `eval` function, with the exception that calling directly from the API
+ * means that there is no Python stack frame to inherit a scope from when executing. Hence, this function will create it's own
+ * if no scope `dict` objects are provided.
+ * 
+ * This function is not recommended for most use-cases, since it must recompile the Python bytecode from the `code` string 
+ * with each run.
+ * 
+ * @param code A pointer to the beginning of the `char` array expression to evaluate.
+ * @param len The length of the `char` array in bytes.
+ * @param global_scope_nullable The global scope to execute code in. Use `REPY_NO_OBJECT` to execute in a new, temporary scope.
+ * @param local_scope_nullable The global scope to execute code in. Using `REPY_NO_OBJECT` will make the global and local scopes
+ * be the same.
+ * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
+ */
+REPY_IMPORT(REPY_Handle REPY_EvalVLCStrN(const char* code, REPY_u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable, REPY_u32 count, ...));
+
 
 /** @}*/
 

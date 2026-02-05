@@ -251,9 +251,29 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("REPY_Exec - exec str 'e = 1000' executed successfully", REPY_Exec(REPY_CreateStr_SUH("e = 1000"), py_globals, py_locals));
     validate("REPY_Exec - eval str 'e == 1000' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("e == 1000"), py_globals, py_locals))));
 
+    // Testing the EvalVL functions.
+    REPY_Handle test_list = REPY_EvalCStr("[0, 1, 2, 3, 4, 5]", 0, 0);
+    bool py_list_match = true;
+    for (int i = 0; i < 6; i++) {
+        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStr("_0[_1]", py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
+    }
+    validate("REPY_EvalVLCStr returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
+
+    py_list_match = true;
+    for (int i = 0; i < 6; i++) {
+        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStrN("_0[_1]", 6, py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
+    }
+    validate("REPY_EvalVLCStrN returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
+
+    py_list_match = true;
+    for (int i = 0; i < 6; i++) {
+        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVL(REPY_CreateStr_SUH("_0[_1]"), py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
+    }
+    validate("REPY_EvalVL returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
+
     // From here on, we'll assume that compiling and executing bytecode, as well as executing python strings works correctly, so long as the Python code is correct.
     // Testing the Memcpy functions:
-    char memcpy_test_cstr[13] = "Hello World!";
+    char memcpy_test_cstr[13] = "Hello World!"; 
     REPY_Handle test_bstr = REPY_CreateByteStr(memcpy_test_cstr);
     REPY_Handle memcpy_test_byte_str = REPY_MemcpyToBytes(memcpy_test_cstr, 12, false); // Don't include the null-terminator for this
     REPY_Handle memcpy_test_byte_array = REPY_MemcpyToByteArray(memcpy_test_cstr, 12, false); // Don't include the null-terminator for this
@@ -287,16 +307,11 @@ REPY_ON_INIT void REPY_API_Tests() {
     // From here on, we'll assume the memcpy functions are working correctly.
     // Testing index lookup:
     REPY_Handle py_tuple1 = REPY_EvalCStr("(0, 1, 2, 3, 4, 5)", 0, 0);
-    bool py_list_match = true;
+    py_list_match = true;
     for (int i = 0; i < 6; i++) {
         py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_TupleGetIndexS32(py_tuple1, i))));
     }
-
-    // validate("REPY_TupleGetIndexS32 returned correct values for (0, 1, 2, 3, 4, 5)", py_list_match);
-    // for (int i = -1; i > -7; i--) {
-    //     py_list_match = py_list_match && ((i + 6) == REPY_CastS32(REPY_MakeSUH(REPY_TupleGetIndexS32(py_tuple1, i))));
-    // }
-    // validate("REPY_TupleGetIndexS32 returned correct values for (0, 1, 2, 3, 4, 5) using negatives", py_list_match);
+    validate("REPY_TupleGetIndexS32 returned correct values for (0, 1, 2, 3, 4, 5)", py_list_match);
 
     REPY_Release(py_tuple1);
     // From here on, we'll assume that REPY_TupleGetIndexS32 is working.
@@ -373,12 +388,6 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Handle py_repy_api = REPY_ImportModule("repy_api");
     validate("Python module from NRM 'repy_api' imported without error", py_repy_api);
     validate("repy_api has member 'version_str'", REPY_HasAttrCStr(py_repy_api, "version_str"));
-
-    // What about incbinned modules:
-    // REPY_Handle py_test_module = REPY_ImportModule("test_module");
-    // validate("INCBIN Python module 'test_module' imported without error", py_test_module);
-    // validate("repy_api has member 'test_string'", REPY_HasAttrCStr(py_test_module, "test_string"));
-    // From here on, we'll assume that all module functionality works.
 
     REPY_Release(py_repy_api);
     // REPY_Release(py_test_module);
@@ -535,11 +544,10 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("Error Handling -> error_type1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_type1 is None", py_globals, py_locals))));
     validate("Error Handling -> error_value1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_value1 is None", py_globals, py_locals))));
     // Handling thrown errors works. We'll test that every potential error thrower works correctly another time.
-
+    
 
     // Let's test the repy_api.mem functions.
     REPY_ExecCStr("from repy_api import mem", py_globals, py_locals);
-
 
     REPY_MEM_TEST(u8, U8, 66);
     REPY_MEM_TEST(u16, U16, 700);
