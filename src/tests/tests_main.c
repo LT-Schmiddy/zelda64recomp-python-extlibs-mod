@@ -615,25 +615,33 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(py_locals);
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 
+    REPY_Handle nrm_zip = REPY_GetNrmZipFile();
+
+    {
+        REPY_FN_SETUP;
+        REPY_FN_EVAL_VL_CACHE(vl_test1, "_0.namelist()[_1]", nrm_namelist, 2, nrm_zip, REPY_CreateS32_SUH(1));
+        REPY_FN_SET("x", nrm_namelist);
+        REPY_FN_EXEC_CACHE(vl_print, "print(_1, x)");
+        REPY_FN_CLEANUP;
+    }
 
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;
         REPY_FN_SET_S32("test_cases", _test_cases);
         REPY_FN_SET_S32("test_cases_passed", _test_cases_passed);
-        REPY_FN_EXEC_CSTR(
+        REPY_FN_EXEC_CACHE(save_count1,
             "from pathlib import Path\n"
             "Path('./test_results.txt').write_text(f'Passed {test_cases_passed} of {test_cases} test cases.')\n"
         );
-
         REPY_FN_CLEANUP;
     }
     
     if (recomp_get_config_u32("load_repl")) {
-        recomp_printf("Starting Interavtive Shell. Call `exit()` to continue to game...\n");
+        recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
         REPY_Handle code_module = REPY_ImportModule("code");
 
         REPY_Handle local = REPY_CreateDict(0);
-        REPY_DictSetCStr(local, "nrm_zip", REPY_MakeSUH(REPY_GetNrmZipFile()));
+        REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
 
         REPY_Handle kwargs = REPY_CreateDict(0);
         REPY_DictSetCStr(kwargs, "local", local);
@@ -645,5 +653,7 @@ REPY_ON_INIT void REPY_API_Tests() {
         REPY_ClearError();
         REPY_Release(code_module);
     }
+
+    REPY_Release(nrm_zip);
 }
 

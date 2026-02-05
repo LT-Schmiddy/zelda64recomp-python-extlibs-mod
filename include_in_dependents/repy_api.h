@@ -1243,6 +1243,645 @@ REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_CACHE_BYTESTR", bytecode_identifie
 char* out_var = REPY_FN_EVAL_BYTESTR(bytecode_identifier)
 
 /**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return a `REPY_Handle` for the resultant Python object. Will be `REPY_NO_OBJECT` if an error has occured.
+ */
+#define REPY_FN_EVAL_VL(code_handle, count, ...) \
+REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__) 
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `bool`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `bool`.
+ */
+#define REPY_FN_EVAL_VL_BOOL(code_handle, count, ...) \
+REPY_CastBool(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `u8`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u8`.
+ */
+#define REPY_FN_EVAL_VL_U8(code_handle, count, ...) \
+REPY_CastU8(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `s8`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s8`.
+ */
+#define REPY_FN_EVAL_VL_S8(code_handle, count, ...) \
+REPY_CastS8(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `u16`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u16`.
+ */
+#define REPY_FN_EVAL_VL_U16(code_handle, count, ...) \
+REPY_CastU16(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `s16`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s16`.
+ */
+#define REPY_FN_EVAL_VL_S16(code_handle, count, ...) \
+REPY_CastS16(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `u32`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u32`.
+ */
+#define REPY_FN_EVAL_VL_U32(code_handle, count, ...) \
+REPY_CastU32(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `s32`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s32`.
+ */
+#define REPY_FN_EVAL_VL_S32(code_handle, count, ...) \
+REPY_CastS32(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `f32`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `f32`.
+ */
+#define REPY_FN_EVAL_VL_F32(code_handle, count, ...) \
+REPY_CastF32(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `u64`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u64`.
+ */
+#define REPY_FN_EVAL_VL_U64(code_handle, count, ...) \
+REPY_CastU64(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `s64`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s64`.
+ */
+#define REPY_FN_EVAL_VL_S64(code_handle, count, ...) \
+REPY_CastS64(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `f64`.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `f64`.
+ */
+#define REPY_FN_EVAL_VL_F64(code_handle, count, ...) \
+REPY_CastF64(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `char*` C string.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * Intended to be used when the result of the evaluation is a Python `str`. 
+ * 
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `char*`.
+ */
+#define REPY_FN_EVAL_VL_STR(code_handle, count, ...) \
+REPY_CastStr(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+
+/**
+ * @brief Evaluates a Python expression code object within the current inline execution scope, and returns the result as a `char*` C string.
+ * 
+ * The expression to evaluate should already be a Python object. A precompiled bytecode object is recommended for performance
+ * reasons, but a Python `str` object will also work.
+ * 
+ * Intended to be used when the result of the evaluation is a Python `bytes` object. 
+ * 
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * 
+ * @param code_handle The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `char*`.
+ */
+#define REPY_FN_EVAL_VL_BYTESTR(code_handle, count, ...) \
+REPY_CastBytes(REPY_MakeSUH(REPY_EvalVL(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return a `REPY_Handle` for the resultant Python object. Will be `REPY_NO_OBJECT` if an error has occured.
+ */
+#define REPY_FN_EVAL_VL_CSTR(code_str, count, ...) \
+REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__) 
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `bool`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_BOOL` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `bool`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_BOOL(code_str, count, ...) \
+REPY_CastBool(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `u8`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_U8` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u8`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_U8(code_str, count, ...) \
+REPY_CastU8(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `s8`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_S8` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s8`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_S8(code_str, count, ...) \
+REPY_CastS8(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `u16`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_U16` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u16`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_U16(code_str, count, ...) \
+REPY_CastU16(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `s16`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_S16` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s16`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_S16(code_str, count, ...) \
+REPY_CastS16(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `u32`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_U32` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u32`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_U32(code_str, count, ...) \
+REPY_CastU32(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `s32`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_S32` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s32`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_S32(code_str, count, ...) \
+REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `f32`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_F32` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `f32`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_F32(code_str, count, ...) \
+REPY_CastF32(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `u64`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_U64` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `u64`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_U64(code_str, count, ...) \
+REPY_CastU64(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `s64`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_S64` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `s64`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_S64(code_str, count, ...) \
+REPY_CastS64(REPY_MakeSUH(REPY_EvalVLCStr(code,code_strREPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `f64`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_F64` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `f64`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_F64(code_str, count, ...) \
+REPY_CastF64(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `char*`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_STR` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * Intended to be used when the result of the evaluation is a Python `str`. 
+ * 
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `bool`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_STR(code_str, count, ...) \
+REPY_CastStr(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `char*`.
+ * 
+ * Not generally recommended, since this will require recompiling the Python code string every time it's run, which will result in significant slowdown.
+ * It is technically faster than `REPY_FN_EVAL_VL_CACHE_BYTESTR` for code that is only used once (since one fewer handle lookup is involved),
+ * but the difference is so marginal that it really doesn't matter.
+ * 
+ * Intended to be used when the result of the evaluation is a Python `bytes` object. 
+ * 
+ * The C string returned by this macro will need to be freed with `recomp_free`. Failure to do so will result in a memory leak.
+ * 
+ * @param code_str The Python expression to evaluate. Should be a `REPY_Handle` to a valid code object.
+ * @return The resultant Python object, cast to `char*`.
+ */
+#define REPY_FN_EVAL_VL_CSTR_BYTESTR(code_str, count, ...) \
+REPY_CastBytes(REPY_MakeSUH(REPY_EvalVLCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE, count, __VA_ARGS__)))
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `REPY_Handle`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `REPY_Handle`
+ * variable named using the `out_var` argument. If `out_var` is `REPY_NO_OBJECT`, a Python error has occured.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `REPY_Handle` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_Handle out_var = REPY_FN_EVAL_VL(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `bool`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `bool`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `bool` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_BOOL(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_BOOL", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+bool out_var = REPY_FN_EVAL_VL_BOOL(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `u8`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `u8`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `u8` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_U8(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_U8", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_u32 out_var = REPY_FN_EVAL_VL_U8(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `s8`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `s8`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `s8` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_S8(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_S8", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_s32 out_var = REPY_FN_EVAL_VL_S8(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `u16`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `u16`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `u16` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_U16(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_U16", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_u32 out_var = REPY_FN_EVAL_VL_U16(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `s16`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `s16`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `s16` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_S16(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_S16", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_s32 out_var = REPY_FN_EVAL_VL_S16(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `u32`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `u32`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `u32` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_U32(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_U32", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_u32 out_var = REPY_FN_EVAL_VL_U32(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `s32`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `s32`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `s32` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_S32(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_S32", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_s32 out_var = REPY_FN_EVAL_VL_S32(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `f32`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `f32`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `f32` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_F32(identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_F32", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_f32 out_var = REPY_FN_EVAL_VL_F32(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `u64`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `u64`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `u64` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_U64(identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_U64", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_u64 out_var = REPY_FN_EVAL_VL_U64(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `s64`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `s64`
+ * variable named using the `out_var` argument.
+ * 
+ * @param identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `s64` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_S64(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_S64", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_s64 out_var = REPY_FN_EVAL_VL_S64(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `f64`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `f64`
+ * variable named using the `out_var` argument.
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `f64` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_F64(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_F64", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+REPY_f64 out_var = REPY_FN_EVAL_VL_F64(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `char*`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `char*`
+ * variable named using the `out_var` argument. The C string stored in `out_var` will need to be freed with `recomp_free`.
+ * Failure to do so will result in a memory leak.
+ * 
+ * Intended to be used when the result of the evaluation is a Python `str` object. 
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `char*` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_STR(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_STR", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+char* out_var = REPY_FN_EVAL_VL_STR(bytecode_identifier, count, __VA_ARGS__)
+
+/**
+ * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
+ * the first time it's run and caching the bytecode for subsequent uses, and storing its result as a `char*`.
+ * 
+ * The various `REPY_FN_EVAL_VL_CACHE` macros are the recommended method of inlining Python expression evaluations inside of functions.
+ * The performance difference made by not having to recompile the code strings into bytecode for every run is substantial.
+ * 
+ * Because this macro expands to a block of code, rather than a single funtion call, the evaluation is stored in a `char*`
+ * variable named using the `out_var` argument. The C string stored in `out_var` will need to be freed with `recomp_free`.
+ * Failure to do so will result in a memory leak.
+ * 
+ * Intended to be used when the result of the evaluation is a Python `bytes` object. 
+ * 
+ * @param bytecode_identifier The name for a static variable that will hold the Python bytecode handle once created.
+ * @param code_str The Python expression to evaluate. Should be a NULL-terminated C-string such as a string literal.
+ * This code string will only be parsed and compiled once.
+ * @param out_var The name of a `char*` argument that will hold the expression result.
+ */
+#define REPY_FN_EVAL_VL_CACHE_BYTESTR(bytecode_identifier, code_str, out_var, count, ...) \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_VL_CACHE_BYTESTR", bytecode_identifier, REPY_CODE_EVAL, code_str) \
+char* out_var = REPY_FN_EVAL_VL_BYTESTR(bytecode_identifier, count, __VA_ARGS__)
+
+/**
  * @brief Inserts a Python module into the local scope. 
  * 
  * The variable name for the module will be the same as the module name.
