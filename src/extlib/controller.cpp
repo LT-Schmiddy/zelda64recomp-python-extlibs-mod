@@ -63,8 +63,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
     std::cout << "try this\n";
-    // PyConfig_SetBytesString(&config, &config.program_name, PYTHON_PROGRAM_NAME);
-    // PyConfig_SetBytesString(&config, &config.program_name, "RecompExternalPython");
+    PyConfig_SetBytesString(&config, &config.program_name, "RecompExternalPython");
     std::cout << "and this\n";
 
     py_preinit_add_search_path(&config, stdlib_archive);

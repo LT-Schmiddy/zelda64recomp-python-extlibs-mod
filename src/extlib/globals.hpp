@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <stdio.h>
 
-
+#define Py_GIL_DISABLED 1
 #ifdef _DEBUG
 #undef _DEBUG
 // Need to turn this off for debug builds, otherwise we get an error on shutdown debug builds.
