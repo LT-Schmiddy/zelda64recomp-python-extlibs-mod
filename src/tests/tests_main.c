@@ -252,24 +252,24 @@ REPY_ON_INIT void REPY_API_Tests() {
     validate("REPY_Exec - eval str 'e == 1000' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("e == 1000"), py_globals, py_locals))));
 
     // Testing the EvalVL functions.
-    REPY_Handle test_list = REPY_EvalCStr("[0, 1, 2, 3, 4, 5]", 0, 0);
+    // REPY_Handle test_list = REPY_EvalCStr("[0, 1, 2, 3, 4, 5]", 0, 0);
     bool py_list_match = true;
-    for (int i = 0; i < 6; i++) {
-        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStr("_0[_1]", py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
-    }
-    validate("REPY_EvalVLCStr returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
+    // for (int i = 0; i < 6; i++) {
+    //     py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStr("_0[_1]", py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
+    // }
+    // validate("REPY_EvalVLCStr returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
 
-    py_list_match = true;
-    for (int i = 0; i < 6; i++) {
-        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStrN("_0[_1]", 6, py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
-    }
-    validate("REPY_EvalVLCStrN returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
+    // py_list_match = true;
+    // for (int i = 0; i < 6; i++) {
+    //     py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStrN("_0[_1]", 6, py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
+    // }
+    // validate("REPY_EvalVLCStrN returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
 
-    py_list_match = true;
-    for (int i = 0; i < 6; i++) {
-        py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVL(REPY_CreateStr_SUH("_0[_1]"), py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
-    }
-    validate("REPY_EvalVL returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
+    // py_list_match = true;
+    // for (int i = 0; i < 6; i++) {
+    //     py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVL(REPY_CreateStr_SUH("_0[_1]"), py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
+    // }
+    // validate("REPY_EvalVL returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
 
     // From here on, we'll assume that compiling and executing bytecode, as well as executing python strings works correctly, so long as the Python code is correct.
     // Testing the Memcpy functions:

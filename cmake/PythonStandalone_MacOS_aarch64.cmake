@@ -27,7 +27,7 @@ if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
 endif()
 
 # Find the real root of the extracted directory (the archive contains a folder)
-set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
+set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python/install")
 
 function(log_target_property P_TARGET_NAME P_PROP_NAME)
     get_target_property(PRINT_VAR ${P_TARGET_NAME} ${P_PROP_NAME})

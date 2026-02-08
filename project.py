@@ -202,21 +202,24 @@ else:
     )
     llvm_path = binaries_dir.joinpath("llvm_linux/LLVM-19.1.7-Linux-X64")
 
-python_version_string_nt = "python314"
-python_version_string_posix = "python3.14"
+python_version_string_nt = "python314t"
+python_version_string_posix = "python3.14t"
 
 downloads["python_win"] = python_windows_download = DownloadJob(
-    "https://github.com/astral-sh/python-build-standalone/releases/download/20260127/cpython-3.14.2+20260127-x86_64-pc-windows-msvc-install_only.tar.gz",
+    # "https://github.com/astral-sh/python-build-standalone/releases/download/20260127/cpython-3.14.2+20260127-x86_64-pc-windows-msvc-install_only.tar.gz",
+    "https://github.com/astral-sh/python-build-standalone/releases/download/20260203/cpython-3.14.3+20260203-x86_64-pc-windows-msvc-freethreaded+pgo-full.tar.zst",
     archive_downloads_dir
 )
 
 downloads["python_macos"] = python_macos_download = DownloadJob(
-    "https://github.com/astral-sh/python-build-standalone/releases/download/20260127/cpython-3.14.2+20260127-aarch64-apple-darwin-install_only_stripped.tar.gz",
+    # "https://github.com/astral-sh/python-build-standalone/releases/download/20260127/cpython-3.14.2+20260127-aarch64-apple-darwin-install_only_stripped.tar.gz",
+    "https://github.com/astral-sh/python-build-standalone/releases/download/20260203/cpython-3.14.3+20260203-aarch64-apple-darwin-freethreaded+pgo+lto-full.tar.zst",
     archive_downloads_dir
 )
 
 downloads["python_linux"] = python_linux_download = DownloadJob(
-    "https://github.com/astral-sh/python-build-standalone/releases/download/20260127/cpython-3.14.2+20260127-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+    "https://github.com/astral-sh/python-build-standalone/releases/download/20260203/cpython-3.14.3+20260203-x86_64-unknown-linux-gnu-freethreaded+pgo+lto-full.tar.zst",
+    # "https://github.com/astral-sh/python-build-standalone/releases/download/20260127/cpython-3.14.2+20260127-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
     archive_downloads_dir
 )
 
@@ -343,13 +346,13 @@ def with_windows_dlls(preset_string: str, output_paths: dict[Path, Path]) -> dic
         "_zoneinfo.pyd",
     ]
     
-    python_dll_dir =  root_dir.joinpath(f"build/{preset_string}/python-standalone/python/DLLs")
+    python_dll_dir =  root_dir.joinpath(f"build/{preset_string}/python-standalone/python/install/DLLs")
     
     for file in [python_dll_dir.joinpath(i) for i in windows_dll_names]:
         if file.suffix == ".dll":
             output_paths[Path(file.name)] = file
         elif file.suffix == ".pyd":
-            output_paths[Path(file.with_suffix(".dll").name)] = file
+            output_paths[Path(file.with_suffix(".dll").name)] = file.with_suffix(".cp314t-win_amd64.pyd")
             
     return output_paths
 
@@ -438,7 +441,7 @@ cmake_build_groups = {
     },
     "MinSizeRel": {
         "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-MinSizeRel", {
-                Path("python313.dll"): get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath("python313.dll"),
+                Path(f"{python_version_string_posix}.dll"): get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath(f"{python_version_string_posix}.dll"),
                 Path(f"{extlib_name}.dll"): get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath(f"lib{extlib_name}.dll")
             }), "zig-windows-x64-MinSizeRel"),
         "Darwin": CMakeBuildJob.from_preset_pair(extlib, {

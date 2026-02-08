@@ -2,7 +2,7 @@
 #include "controller.hpp"
 #include "lib_recomp.hpp"
 
-PYBIND11_EMBEDDED_MODULE(_recomp_mem, m) {
+PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used()) {
     m.def("read_u8", [](int32_t ptr){
         uint8_t val;
         memcpy_rev_from_recomp(controller->rdram, &val, ptr, sizeof(uint8_t));

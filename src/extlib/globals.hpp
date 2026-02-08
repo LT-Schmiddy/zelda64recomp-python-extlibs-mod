@@ -29,6 +29,6 @@ namespace fs = std::filesystem;
 #define INCBIN_PREFIX 
 #include <incbin.h>
 
-#define PYTHON_VERSION_STR "python314"
+#define PYTHON_VERSION_STR "python314t"
 #define PYTHON_PROGRAM_NAME "RecompExternalPython"
 

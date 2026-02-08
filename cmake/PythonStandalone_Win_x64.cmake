@@ -18,7 +18,7 @@ if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
 endif()
 
 # Find the real root of the extracted directory (the archive contains a folder)
-set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
+set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python/install")
 
 # Create imported interface target
 add_library(python_standalone INTERFACE)

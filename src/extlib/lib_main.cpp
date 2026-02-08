@@ -508,7 +508,10 @@ RECOMP_DLL_FUNC(PythonNative_CreatePairCStr) {
     py::object* value = RECOMP_ARG_PYOBJECT(1); 
 
     try {
-        py::tuple new_tuple = py::tuple(py::str(key), value);
+        py::list tmp = py::list();
+        tmp.append(py::str(key));
+        tmp.append(*value);
+        py::tuple new_tuple = py::tuple(tmp);
         REPY_Handle handle = controller->create_handle(&new_tuple);
         controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, handle);

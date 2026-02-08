@@ -18,7 +18,7 @@ if(NOT EXISTS "${PYTHON_EXTRACT_DIR}")
 endif()
 
 # Find the real root of the extracted directory (the archive contains a folder)
-set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python")
+set(PYTHON_ROOT "${PYTHON_EXTRACT_DIR}/python/install")
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.so.1.0" "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.so")
 
