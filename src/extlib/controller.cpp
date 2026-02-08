@@ -1,6 +1,11 @@
 #include "controller.hpp"
 #include "embed_handler.hpp"
 
+const char* args[] {
+    "hello",
+    "alex"
+};
+
 // This allows for multiple zips to be copied, but only one ended up being used.
 // There may be a use case for multiple zips in the future.
 static std::string path_to_string_utf8(const std::filesystem::path& path) {
@@ -57,9 +62,11 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
+    std::cout << "try this\n";
+    // PyConfig_SetBytesString(&config, &config.program_name, PYTHON_PROGRAM_NAME);
+    // PyConfig_SetBytesString(&config, &config.program_name, "RecompExternalPython");
+    std::cout << "and this\n";
 
-    PyConfig_SetBytesString(&config, &config.program_name, PYTHON_PROGRAM_NAME);
-    
     py_preinit_add_search_path(&config, stdlib_archive);
     py_preinit_add_search_path(&config, stdlib_dir);
     py_preinit_add_search_path(&config, mod_dir);

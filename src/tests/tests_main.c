@@ -617,14 +617,6 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     REPY_Handle nrm_zip = REPY_GetNrmZipFile();
 
-    {
-        REPY_FN_SETUP;
-        REPY_FN_EVAL_VL_CACHE(vl_test1, "_0.namelist()[_1]", nrm_namelist, 2, nrm_zip, REPY_CreateS32_SUH(1));
-        REPY_FN_SET("x", nrm_namelist);
-        REPY_FN_EXEC_CACHE(vl_print, "print(_1, x)");
-        REPY_FN_CLEANUP;
-    }
-
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;
         REPY_FN_SET_S32("test_cases", _test_cases);
