@@ -69,7 +69,8 @@ static const char* other_dlls[] = {
 };
 
 
-#define PY_NATIVE_EXTENSION ".cp314t-win_amd64.pyd"
+#define PY_NATIVE_EXTENSION ".pyd"
+// #define PY_NATIVE_EXTENSION ".cp314t-win_amd64.pyd"
 #endif
 void setup_python_stdlib_dlls(fs::path mod_dir, fs::path dll_dir) {
 #ifdef _WIN32

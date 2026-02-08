@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <stdio.h>
 
+// This is what allows us to use free-threaded Python
 #define Py_GIL_DISABLED 1
 #ifdef _DEBUG
 #undef _DEBUG
@@ -17,7 +18,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #endif
-
 #include <plog/Log.h>
 
 namespace py = pybind11;
@@ -29,6 +29,6 @@ namespace fs = std::filesystem;
 #define INCBIN_PREFIX 
 #include <incbin.h>
 
-#define PYTHON_VERSION_STR "python314"
+#define PYTHON_VERSION_STR "python314t"
 #define PYTHON_PROGRAM_NAME "RecompExternalPython"
 

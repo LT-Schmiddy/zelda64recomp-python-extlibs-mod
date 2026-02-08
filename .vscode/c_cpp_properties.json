@@ -61,7 +61,7 @@
             "includePath": [
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
-                "${workspaceFolder}/build/zig-macos-aarch64-Debug/python-standalone/python/include",
+                "${workspaceFolder}/build/zig-macos-aarch64-Debug/python-standalone/python/install/include",
                 "${workspaceFolder}/extern/pybind11/include",
                 "${workspaceFolder}/extern/incbin"
             ]
@@ -72,7 +72,7 @@
             "includePath": [
                 "${workspaceFolder}/include/extlib",
                 "${workspaceFolder}/offline_build",
-                "${workspaceFolder}/build/zig-linux-x64-Debug/python-standalone/python/include",
+                "${workspaceFolder}/build/zig-linux-x64-Debug/python-standalone/python/install/include",
                 "${workspaceFolder}/extern/pybind11/include",
                 "${workspaceFolder}/extern/incbin"
             ]
