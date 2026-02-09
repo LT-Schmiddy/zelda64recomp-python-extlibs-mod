@@ -89,6 +89,7 @@ link_python_standalone(${TARGET_NAME})
 
 set_target_properties(${TARGET_NAME}
     PROPERTIES
+    PREFIX ""
     ARCHIVE_OUTPUT_DIRECTORY "./arc/"
     LIBRARY_OUTPUT_DIRECTORY "./lib/"
     RUNTIME_OUTPUT_DIRECTORY "./lib/"

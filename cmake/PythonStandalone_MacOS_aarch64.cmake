@@ -42,7 +42,7 @@ target_link_directories(python_standalone INTERFACE "${PYTHON_ROOT}/lib")
 target_link_libraries(python_standalone INTERFACE lib${PYTHON_LIB_VERSION_STR}.dylib)
 
 function(link_python_standalone P_TARGET_NAME)
-    string(CONCAT DYLIB_FILE $<TARGET_FILE_DIR:${P_TARGET_NAME}> "/lib" ${P_TARGET_NAME} ".dylib")
+    string(CONCAT DYLIB_FILE $<TARGET_FILE_DIR:${P_TARGET_NAME}> "/" ${P_TARGET_NAME} ".dylib")
 
     target_link_libraries(${P_TARGET_NAME} PRIVATE python_standalone)
     add_custom_command(TARGET ${P_TARGET_NAME} POST_BUILD
@@ -55,7 +55,7 @@ function(link_python_standalone P_TARGET_NAME)
     message("INSTALL_NAME_TOOL_COMMAND = ${INSTALL_NAME_TOOL_COMMAND}")
 
     add_custom_command(TARGET ${P_TARGET_NAME} POST_BUILD
-        COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change /install/lib/lib${PYTHON_LIB_VERSION_STR}.dylib @loader_path/lib${PYTHON_LIB_VERSION_STR}.dylib ${DYLIB_FILE}
+        COMMAND ${INSTALL_NAME_TOOL_COMMAND} -change @rpath/lib${PYTHON_LIB_VERSION_STR}.dylib @loader_path/lib${PYTHON_LIB_VERSION_STR}.dylib ${DYLIB_FILE}
     )
 endfunction()
 
