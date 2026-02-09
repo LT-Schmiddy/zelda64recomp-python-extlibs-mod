@@ -30,6 +30,9 @@ void extract_python_stdlib(fs::path output_file) {
 #endif
 }
 
+// Windows builds of Python come with several additional native modules that require special handling
+// and relocation. The packaging process renames the .pyd files to .dll so that recomp will extract them
+// when on windows. Here, we'll reverse that process and move the files to a more suitable location.
 #ifdef _WIN32
 static const char* dll_modules[] = {
     "pyexpat.dll",
