@@ -37,6 +37,8 @@ project_version_string = "2.0.0"
 mod_elf_path = mod_build_dir.joinpath("mod.elf")
 tests_elf_path = tests_build_dir.joinpath("tests.elf")
 
+repy_api_src = root_dir.joinpath("./src/repy_api") # The repy_api module
+
 mm_toml_data = {
     "manifest": {
         "game_id": "mm",
@@ -86,8 +88,7 @@ mod_toml_data = {
     "inputs": {
         "elf_path": str(mod_elf_path),
         "additional_files": [ 
-            str(root_dir.joinpath("thumb.dds")),
-            str(root_dir.joinpath("./src/repy_api")) # The repy_api module
+            str(root_dir.joinpath("thumb.dds"))
         ],
         "mod_filename": project_name
     }
@@ -258,7 +259,7 @@ makefiles['tests'] = tests_makefile = MakefileJob(
 )
 tests_makefile.depends_on([llvmmips_extraction])
 
-def add_toml_and_nrm_job(game_id: str, toml_type: str, build_dir: Path, data_dicts: list[dict], nrm_dependencies: list[JobBase]) -> tuple[GenerateTomlJob, ModToNRMJob]:
+def add_toml_and_nrm_job(game_id: str, toml_type: str, build_dir: Path, data_dicts: list[dict], nrm_dependencies: list[JobBase], inject_files: dict[Path, Path] = None) -> tuple[GenerateTomlJob, ModToNRMJob]:
     global tomls, nrms
     
     mod_key = f"{game_id}_{toml_type}"
@@ -267,7 +268,7 @@ def add_toml_and_nrm_job(game_id: str, toml_type: str, build_dir: Path, data_dic
     toml_path = nrm_build_dir.joinpath(f"{mod_key}.toml")
     
     tomls[mod_key] = mod_toml = GenerateTomlJob.from_merged_dicts(toml_path, data_dicts)
-    nrms[mod_key] = mod_nrm = ModToNRMJob(mod_tool_path, toml_path, nrm_build_dir, delay_read=True, nrm_path_fix=True)
+    nrms[mod_key] = mod_nrm = ModToNRMJob(mod_tool_path, toml_path, nrm_build_dir, delay_read=True, nrm_path_fix=True, inject_files=inject_files)
     mod_nrm.depends_on([mod_toml] + nrm_dependencies)
     
     return mod_toml, mod_nrm
@@ -276,9 +277,19 @@ def add_toml_and_nrm_job(game_id: str, toml_type: str, build_dir: Path, data_dic
 mod_common_data = toml.loads(root_dir.joinpath("mod_common.toml").read_text())
 tests_common_data = toml.loads(root_dir.joinpath("tests_common.toml").read_text())
 
-mm_mod_toml, mm_mod_nrm = add_toml_and_nrm_job("mm", "mod", mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
-bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
-sf64_mod_toml, sf64_mod_nrm = add_toml_and_nrm_job("sf64", "mod", mod_build_dir, [mod_common_data, sf64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']])
+def populate_repy_api_file_injection(injections: dict[Path, Path], search_dir: Path, inject_root: Path):
+    for inject_path, file_path in [(inject_root.joinpath(i), search_dir.joinpath(i)) for i in os.listdir(search_dir)]:
+        if file_path.is_file():
+            injections[inject_path] = file_path
+        elif file_path.is_dir():
+            populate_repy_api_file_injection(injections, file_path, inject_path)
+
+repy_api_files = {}
+populate_repy_api_file_injection(repy_api_files, repy_api_src, Path("repy_api"))
+
+mm_mod_toml, mm_mod_nrm = add_toml_and_nrm_job("mm", "mod", mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
+bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
+sf64_mod_toml, sf64_mod_nrm = add_toml_and_nrm_job("sf64", "mod", mod_build_dir, [mod_common_data, sf64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
 mm_tests_toml, mm_tests_nrm = add_toml_and_nrm_job("mm", "tests", tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 bk_tests_toml, bk_tests_nrm = add_toml_and_nrm_job("bk", "tests", tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 sf64_tests_toml, sf64_tests_nrm = add_toml_and_nrm_job("sf64", "tests", tests_build_dir, [tests_common_data, sf64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])

@@ -21,7 +21,7 @@ jobs:
     - name: Get Apt Packages
       id: get_apt_packages
       run: |-
-        sudo apt install -y ninja-build jq
+        sudo apt install -y ninja-build jq zip
 
     - name: setup-python
       uses: actions/setup-python@v6
