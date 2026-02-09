@@ -12,7 +12,7 @@ void extract_python_stdlib(fs::path output_file) {
 #ifdef _MSC_VER
     PLOGE.printf("Extracting the Python standard library is not supported on this build.");
 #else
-    PLOGI.printf("Extracting the Python standard library...");
+    PLOGI.printf("Extracting the Python standard library to %s...", output_file.string().c_str());
     PLOGD.printf("std::size = %i\n", python_stdlib_size);
 
     std::ofstream outFile(output_file, std::ios::out | std::ios::binary);

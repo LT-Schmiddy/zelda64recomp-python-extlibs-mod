@@ -45,11 +45,15 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     console_appender = new plog::ColorConsoleAppender<plog::TxtFormatter>(plog::OutputStream::streamStdOut);
     log->addAppender(console_appender);
 
-    // Setting up Stdlib
-    fs::path stdlib_dir = fs::path(mod_dir).append(PYTHON_VERSION_STR "_DLLs");
-    fs::path stdlib_archive = fs::path(mod_dir).append(PYTHON_VERSION_STR ".zip");
-    extract_python_stdlib(stdlib_archive);
+    // Setting up python directory:
+    fs::path py_dir = fs::path(mod_dir).parent_path().append(PYTHON_VERSION_STR);
+    fs::path stdlib_dir = fs::path(py_dir).append(PYTHON_VERSION_STR "_DLLs");
+    fs::path stdlib_archive = fs::path(py_dir).append(PYTHON_VERSION_STR ".zip");
+    if (!fs::exists(py_dir)) {
+        fs::create_directories(py_dir);
+    }
     setup_python_stdlib_dlls(mod_dir, stdlib_dir);
+    extract_python_stdlib(stdlib_archive);
 
     // Configuring and Initializing the Interpreter
     PyPreConfig preconfig;
@@ -63,6 +67,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     py_preinit_add_search_path(&config, stdlib_archive);
     py_preinit_add_search_path(&config, stdlib_dir);
     py_preinit_add_search_path(&config, mod_dir);
+    py_preinit_add_search_path(&config, py_dir);
     if (registered_nrms != NULL) {
         while (!registered_nrms->empty()) {
             py_preinit_add_search_path(&config, registered_nrms->front());
@@ -74,7 +79,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     config.parse_argv = 0;
     config.install_signal_handlers = true;
 
-    py::initialize_interpreter(&config); 
+    py::initialize_interpreter(&config, 0, NULL, false); 
     PLOGI << "-> Python interpreter initialized";
 
     auto builtins = py::module_::import("builtins");
