@@ -400,7 +400,7 @@ def native_output_files(build_type: str) -> dict[Path, Path]:
         }
     if platform.system() == "Linux":
         return {
-            Path(f"lib{python_version_string_posix}.so"): get_preset_lib_path(preset_name).joinpath(f"lib{python_version_string_posix}.so"),
+            Path(f"lib{python_version_string_posix}.so.1.0"): get_preset_lib_path(preset_name).joinpath(f"lib{python_version_string_posix}.so.1.0"),
             Path(f"{extlib_name}.so"): get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.so")
         }
     
@@ -417,7 +417,7 @@ cmake_build_groups = {
                 Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-Debug").joinpath(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-Debug"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                Path(f"lib{python_version_string_posix}.so"): get_preset_lib_path("zig-linux-x64-Debug").joinpath(f"lib{python_version_string_posix}.so"),
+                Path(f"lib{python_version_string_posix}.so.1.0"): get_preset_lib_path("zig-linux-x64-Debug").joinpath(f"lib{python_version_string_posix}.so.1.0"),
                 Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-Debug").joinpath(f"{extlib_name}.so")
             }, "zig-linux-x64-Debug"),
     },
@@ -431,7 +431,7 @@ cmake_build_groups = {
                 Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-Release").joinpath(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-Release"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                Path(f"lib{python_version_string_posix}.so"): get_preset_lib_path("zig-linux-x64-Release").joinpath(f"lib{python_version_string_posix}.so"),
+                Path(f"lib{python_version_string_posix}.so.1.0"): get_preset_lib_path("zig-linux-x64-Release").joinpath(f"lib{python_version_string_posix}.so.1.0"),
                 Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-Release").joinpath(f"{extlib_name}.so")
             }, "zig-linux-x64-Release"),
     }, 
@@ -446,7 +446,7 @@ cmake_build_groups = {
                 Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-RelWithDebInfo").joinpath(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-RelWithDebInfo"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                Path(f"lib{python_version_string_posix}.so"): get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"lib{python_version_string_posix}.so"),
+                Path(f"lib{python_version_string_posix}.so.1.0"): get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"lib{python_version_string_posix}.so.1.0"),
                 Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"{extlib_name}.so")
             }, "zig-linux-x64-RelWithDebInfo"),
     },
@@ -460,7 +460,7 @@ cmake_build_groups = {
                 Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-MinSizeRel").joinpath(f"{extlib_name}.dylib")
             }, "zig-macos-aarch64-MinSizeRel"),
         "Linux": CMakeBuildJob.from_preset_pair(extlib, {
-                Path(f"lib{python_version_string_posix}.so"): get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath(f"lib{python_version_string_posix}.so"),
+                Path(f"lib{python_version_string_posix}.so.1.0"): get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath(f"lib{python_version_string_posix}.so.1.0"),
                 Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-MinSizeRel").joinpath(f"{extlib_name}.so")
             }, "zig-linux-x64-MinSizeRel"),
     },

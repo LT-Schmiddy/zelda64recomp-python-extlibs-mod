@@ -26,19 +26,20 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/li
 add_library(python_standalone INTERFACE)
 target_include_directories(python_standalone INTERFACE "${PYTHON_ROOT}/include/${PYTHON_LIB_VERSION_STR}")
 target_link_directories(python_standalone INTERFACE "${PYTHON_ROOT}/lib")
-# target_link_libraries(python_standalone INTERFACE lib${PYTHON_LIB_VERSION_STR}.so.1.0)
-target_link_libraries(python_standalone INTERFACE lib${PYTHON_LIB_VERSION_STR}.so)
+target_link_libraries(python_standalone INTERFACE lib${PYTHON_LIB_VERSION_STR}.so.1.0)
+# target_link_libraries(python_standalone INTERFACE lib${PYTHON_LIB_VERSION_STR}.so)
 
 ## Seems to be a problem linking if we don't remove the `1.0` from the library extension.
 # execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.so.1.0" "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.so")
 
 function(link_python_standalone TARGET_NAME)
     target_link_libraries(${TARGET_NAME} PRIVATE python_standalone)
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.so.1.0"
-                "$<TARGET_FILE_DIR:${TARGET_NAME}>/lib${PYTHON_LIB_VERSION_STR}.so"
-    )
+
+    # add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    #     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    #             "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.so.1.0"
+    #             "$<TARGET_FILE_DIR:${TARGET_NAME}>/lib${PYTHON_LIB_VERSION_STR}.so"
+    # )
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${PYTHON_ROOT}/lib/lib${PYTHON_LIB_VERSION_STR}.so.1.0"
