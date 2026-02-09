@@ -1,9 +1,9 @@
 #include "controller.hpp"
 #include "embed_handler.hpp"
 
-
-// This allows for multiple zips to be copied, but only one ended up being used.
-// There may be a use case for multiple zips in the future.
+// Not entirely certain it makes sense for either of these helper functions to
+// be part of the class definition. They're used in initializing the interpreter 
+// and then never again.
 static std::string path_to_string_utf8(const std::filesystem::path& path) {
     std::u8string path_u8string = path.u8string();
     std::string to_escape{ reinterpret_cast<const char*>(path_u8string.c_str()), path_u8string.size() };
@@ -52,8 +52,11 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     if (!fs::exists(py_dir)) {
         fs::create_directories(py_dir);
     }
-    setup_python_stdlib_dlls(mod_dir, stdlib_dir);
     extract_python_stdlib(stdlib_archive);
+
+#ifdef _WIN32
+    setup_python_stdlib_dlls(mod_dir, stdlib_dir);
+#endif
 
     // Configuring and Initializing the Interpreter
     PyPreConfig preconfig;
@@ -75,13 +78,13 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
         }
     }
     config.module_search_paths_set = 1;
-
     config.parse_argv = 0;
     config.install_signal_handlers = true;
 
     py::initialize_interpreter(&config, 0, NULL, false); 
     PLOGI << "-> Python interpreter initialized";
 
+    // Collecting important Python objects:
     auto builtins = py::module_::import("builtins");
     py_compile = builtins.attr("compile");
     py_exec = builtins.attr("exec");
@@ -90,7 +93,6 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 
     py_zipfile_module = py::module_::import("zipfile");
     py_zipfile_class = py_zipfile_module.attr("ZipFile");
-
     py_stop_iteration_type = py::eval("StopIteration");
 
     // Allow other threads to have the GIL.
@@ -99,7 +101,6 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 
 PyInterpreterController::~PyInterpreterController() {
     // Restores the GIL to this thread.
-
     PyEval_RestoreThread(py_main_thread);
     py_objects_smap.del_all();
 
@@ -147,7 +148,6 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
 bool PyInterpreterController::is_valid_handle(REPY_Handle handle) {
     return py_objects_smap.has(handle);
 }
-
 
 bool PyInterpreterController::get_handle_suh(REPY_Handle handle) {
     if (handle == 0) {

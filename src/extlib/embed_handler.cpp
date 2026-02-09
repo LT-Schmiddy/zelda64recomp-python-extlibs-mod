@@ -1,8 +1,17 @@
 #include <fstream>
 #include "embed_handler.hpp"
 
+// Contains code used to handle the embedding of Python's standard library.
+
+// This zip file is prepared by CMake during the configuration process.
+// It contains all the .py files of the Python standard library.
 INCBIN(python_stdlib, "python_stdlib.zip");
 
+// Interestingly, MSVC has trouble using the incbin macro. And by default, clang
+// Seems to have the same issue when running on windows. Not entirely sure why.
+// However, zig is able to properly compile and include this in windows builds.
+// For that reason, zig is critical for compiling this project on Windows,
+// and stdlib extraction is disabled on non-zig Windows builds.
 void extract_python_stdlib(fs::path output_file) {
     if (fs::exists(output_file)) {
         PLOGI.printf("Python's standard library already exists. No need for extraction.");
@@ -70,10 +79,8 @@ static const char* other_dlls[] = {
 
 
 #define PY_NATIVE_EXTENSION ".pyd"
-// #define PY_NATIVE_EXTENSION ".cp314t-win_amd64.pyd"
-#endif
 void setup_python_stdlib_dlls(fs::path mod_dir, fs::path dll_dir) {
-#ifdef _WIN32
+
     PLOGI.printf("Checking extensions on native modules...");
     if (!fs::exists(dll_dir)) {
         fs::create_directories(dll_dir);
@@ -128,5 +135,5 @@ void setup_python_stdlib_dlls(fs::path mod_dir, fs::path dll_dir) {
         
         PLOGD.printf("Moved native dll from '%s' to '%s'\n", target_module.string().c_str(), renamed_module.string().c_str());
     }
-#endif
 }
+#endif
