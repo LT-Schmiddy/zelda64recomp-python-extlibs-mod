@@ -617,6 +617,21 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     REPY_Handle nrm_zip = REPY_GetNrmZipFile();
 
+    {
+        REPY_FN_SETUP;
+        REPY_FN_EXEC_CACHE(threading_test,
+            "import threading, time, repy_api\n"
+            "def test_func():\n"
+            "    print('thread_started')\n"
+            "    time.sleep(5)\n"
+            "    print('thread_finished')\n"
+            "test_thread = threading.Thread(None, test_func)\n"
+            "test_thread.start()\n"
+        );
+        REPY_FN_CLEANUP;
+    }
+    
+
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;
         REPY_FN_SET_S32("test_cases", _test_cases);
@@ -629,11 +644,14 @@ REPY_ON_INIT void REPY_API_Tests() {
     }
     
     if (recomp_get_config_u32("load_repl")) {
+        char bytes_area[100] = "Hello Alex";
+
         recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
         REPY_Handle code_module = REPY_ImportModule("code");
 
         REPY_Handle local = REPY_CreateDict(0);
         REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
+        REPY_DictSetCStr(local, "bytes_area", REPY_CreatePtr_SUH(bytes_area));
 
         REPY_Handle kwargs = REPY_CreateDict(0);
         REPY_DictSetCStr(kwargs, "local", local);

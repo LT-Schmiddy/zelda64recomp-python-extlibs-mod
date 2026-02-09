@@ -54,7 +54,7 @@ jobs:
     - name: Read Thunderstore Manifest
       id: read_thunderstore_manifest
       run: |
-        python3 ./modbuild.py manifest -n mm >> ${{ github.workspace }}/manifest.json
+        python3 ./modbuild.py manifest -n zelda >> ${{ github.workspace }}/manifest.json
         NAME=$(jq -r '.name' ${{ github.workspace }}/manifest.json)
         VERSION=$(jq -r '.version_number' ${{ github.workspace }}/manifest.json)
         DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/manifest.json)

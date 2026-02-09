@@ -1,7 +1,9 @@
 from . import mem
+from . import utils
 
-version_str = "1.0.0"
+version_str = "2.0.0"
 
 __all__ = [
-    "mem"
+    "mem",
+    "utils"
 ]
