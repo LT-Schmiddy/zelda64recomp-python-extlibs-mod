@@ -32,7 +32,7 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     fs::path mod_dir(mod_dir_text);
 
     // Set up logging:
-    controller = std::make_shared<PyInterpreterController>((plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
+    controller = std::make_unique<PyInterpreterController>((plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
     controller->set_rdram(rdram);
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());

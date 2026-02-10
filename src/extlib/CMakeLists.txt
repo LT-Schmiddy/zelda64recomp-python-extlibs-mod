@@ -4,4 +4,5 @@ target_sources(${TARGET_NAME} PUBLIC
     "lib_main.cpp"
     "pyobject_slotmap.cpp"
     "recomp_mem.cpp"
+    "subinterpreter.cpp"
 )

@@ -86,14 +86,6 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 
     // Collecting important Python objects:
     auto builtins = py::module_::import("builtins");
-    py_compile = builtins.attr("compile");
-    py_exec = builtins.attr("exec");
-    py_eval = builtins.attr("eval");
-    py_next = builtins.attr("next");
-
-    py_zipfile_module = py::module_::import("zipfile");
-    py_zipfile_class = py_zipfile_module.attr("ZipFile");
-    py_stop_iteration_type = py::eval("StopIteration");
 
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
@@ -105,6 +97,11 @@ PyInterpreterController::~PyInterpreterController() {
     py_objects_smap.del_all();
 
     PLOGI << "-> Python interpreter shutdown";
+}
+
+uint32_t PyInterpreterController::create_subinterpreter() {
+    return 0;
+
 }
 
 REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
@@ -263,8 +260,12 @@ REPY_Handle PyInterpreterController::get_zipfile_from_path(std::u8string filepat
     return create_handle(&retVal);
 }
 
+uint8_t* PyInterpreterController::get_rdram() {
+    return rdram;
+}
+
 void PyInterpreterController::set_rdram(uint8_t* p_rdram) {
     rdram = p_rdram;
 }
 
-std::shared_ptr<PyInterpreterController> controller = NULL;
+std::unique_ptr<PyInterpreterController> controller = NULL;

@@ -1,6 +1,9 @@
 #pragma once
 #include <memory>
 #include <queue>
+#include <stack>
+#include <vector>
+
 #include "globals.hpp"
 #include <plog/Formatters/TxtFormatter.h>// Step1: include the headers
 #include <plog/Appenders/ColorConsoleAppender.h>// Step1: include the headers
@@ -8,36 +11,14 @@
 
 #include "lib_recomp.hpp"
 #include "pyobject_slotmap.hpp"
+#include "subinterpreter.hpp"
 
 class PyInterpreterController {
 public:
-    PyThreadState* py_main_thread = NULL;
-    PyObjectSlotMap py_objects_smap;
-    std::queue<REPY_Handle> suh_release_queue;
-
-    plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
-    plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
-    plog::Logger<0>* log = NULL;
-    
-    bool is_py_error_set = false;
-    py::object last_error_type = py::none();
-    py::object last_error_trace = py::none();
-    py::object last_error_value = py::none();
-
-    py::function py_compile;
-    py::function py_exec;
-    py::function py_eval;
-    py::function py_next;
-
-    py::module_ py_zipfile_module;
-    py::object py_zipfile_class;
-
-    py::object py_stop_iteration_type;
-
-    uint8_t* rdram;
-
     PyInterpreterController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
+
+    uint32_t create_subinterpreter();
 
     // Handle Operations:
     REPY_Handle create_handle(py::object* obj);
@@ -60,9 +41,23 @@ public:
 
     py::module_ construct_module(std::string module_name, std::string module_code, bool add_to_sys); 
 
+    uint8_t* get_rdram();
     void set_rdram(uint8_t* p_rdram);
+
+private:
+    PyThreadState* py_main_thread = NULL;
+    PyObjectSlotMap py_objects_smap;
+    std::queue<REPY_Handle> suh_release_queue;
+    std::stack<REPY_SubinterpHandle> subinterp_handle_stack;
+    std::vector<PySubinterpreterController*> subinterpreters;
+
+    plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
+    plog::ColorConsoleAppender<plog::TxtFormatter>* console_appender = NULL;
+    plog::Logger<0>* log = NULL;
+    uint8_t* rdram;
+
 };
 
-extern std::shared_ptr<PyInterpreterController> controller;
+extern std::unique_ptr<PyInterpreterController> controller;
 
 #define RECOMP_ARG_PYOBJECT(pos) controller->get_py_object(RECOMP_ARG(REPY_Handle, pos))

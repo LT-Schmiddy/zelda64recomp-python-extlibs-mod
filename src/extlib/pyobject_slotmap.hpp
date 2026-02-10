@@ -3,11 +3,10 @@
 
 #define PYMAP_LEVEL_SIZE 65536
 
-typedef unsigned int REPY_Handle;
-
 struct REPY_HandleEntry {
     py::object py_object = py::none();
     bool is_single_use = false;
+    REPY_SubinterpHandle subinterp = 0;
 };
 
 #define PY_SPLIT_HANDLE(handle, page_index_name, entry_index_name) \

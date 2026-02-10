@@ -12,11 +12,13 @@
 #include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#include <pybind11/subinterpreter.h>
 #define _DEBUG
 #else 
 #include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#include <pybind11/subinterpreter.h>
 #endif
 #include <plog/Log.h>
 
@@ -31,4 +33,7 @@ namespace fs = std::filesystem;
 
 #define PYTHON_VERSION_STR "python314t"
 #define PYTHON_PROGRAM_NAME "RecompExternalPython"
+
+typedef unsigned int REPY_SubinterpHandle;
+typedef unsigned int REPY_Handle;
 
