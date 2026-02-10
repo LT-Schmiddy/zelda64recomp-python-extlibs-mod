@@ -602,6 +602,26 @@ void interpreter_test_suite() {
     REPY_Release(py_locals);
 }
 
+void load_repl() {
+        recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
+        REPY_Handle nrm_zip = REPY_GetNrmZipFile();
+        REPY_Handle code_module = REPY_ImportModule("code");
+
+        REPY_Handle local = REPY_CreateDict(0);
+        REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
+        
+        REPY_Handle kwargs = REPY_CreateDict(0);
+        REPY_DictSetCStr(kwargs, "local", local);
+        REPY_Release(local);
+        
+        REPY_CallAttrCStr(code_module, "interact", 0, kwargs);
+        REPY_Release(kwargs);
+
+        REPY_ClearError();
+        REPY_Release(code_module);
+        REPY_Release(nrm_zip);
+}
+
 REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_PushInterpreter(REPY_MAIN_INTERPRETER);
     // Testing Handle Operations:
@@ -648,7 +668,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     //     REPY_FN_CLEANUP;
     // }
     
-    REPY_Handle nrm_zip = REPY_GetNrmZipFile();
+
 
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;
@@ -662,27 +682,12 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     }
     
     if (recomp_get_config_u32("load_repl")) {
-        char bytes_area[100] = "Hello Alex";
+        REPY_PushInterpreter(test_subinterp);
+        load_repl();
+        REPY_PopInterpreter();
 
-        recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
-        REPY_Handle code_module = REPY_ImportModule("code");
-
-        REPY_Handle local = REPY_CreateDict(0);
-        REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
-        REPY_DictSetCStr(local, "bytes_area", REPY_CreatePtr_SUH(bytes_area));
-
-        REPY_Handle kwargs = REPY_CreateDict(0);
-        REPY_DictSetCStr(kwargs, "local", local);
-        REPY_Release(local);
-        
-        REPY_CallAttrCStr(code_module, "interact", 0, kwargs);
-        REPY_Release(kwargs);
-
-        REPY_ClearError();
-        REPY_Release(code_module);
+        load_repl();
     }
-
-    REPY_Release(nrm_zip);
     REPY_PopInterpreter();
 }
 

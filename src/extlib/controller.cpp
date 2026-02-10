@@ -163,9 +163,8 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
     assert(entry != NULL);
 
     if (entry->interp_index != current_interp_index) {
-        PLOGF.printf("REPY_Handle 0x%08X: accessing an interpreter %u object while interpreter %u is active", entry->interp_index, current_interp_index);
+        PLOGW.printf("REPY_Handle 0x%08X: accessing an interpreter %u object while interpreter %u is active", handle, entry->interp_index, current_interp_index);
     } 
-    // assert(entry->interp_index == current_interp_index);
     
     if (entry->is_single_use) {
         suh_release_queue.push(handle);
