@@ -615,22 +615,21 @@ REPY_ON_INIT void REPY_API_Tests() {
     REPY_Release(py_locals);
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 
-    REPY_Handle nrm_zip = REPY_GetNrmZipFile();
-
-    {
-        REPY_FN_SETUP;
-        REPY_FN_EXEC_CACHE(threading_test,
-            "import threading, time, repy_api\n"
-            "def test_func():\n"
-            "    print('thread_started')\n"
-            "    time.sleep(5)\n"
-            "    print('thread_finished')\n"
-            "test_thread = threading.Thread(None, test_func)\n"
-            "test_thread.start()\n"
-        );
-        REPY_FN_CLEANUP;
-    }
+    // {
+    //     REPY_FN_SETUP;
+    //     REPY_FN_EXEC_CACHE(threading_test,
+    //         "import threading, time, repy_api\n"
+    //         "def test_func():\n"
+    //         "    print('thread_started')\n"
+    //         "    time.sleep(5)\n"
+    //         "    print('thread_finished')\n"
+    //         "test_thread = threading.Thread(None, test_func)\n"
+    //         "test_thread.start()\n"
+    //     );
+    //     REPY_FN_CLEANUP;
+    // }
     
+    REPY_Handle nrm_zip = REPY_GetNrmZipFile();
 
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;

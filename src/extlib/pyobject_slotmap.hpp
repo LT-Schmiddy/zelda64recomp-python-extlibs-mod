@@ -6,7 +6,7 @@
 struct REPY_HandleEntry {
     py::object py_object = py::none();
     bool is_single_use = false;
-    REPY_SubinterpHandle subinterp = 0;
+    REPY_SubcontrollerHandle interp_index = 0;
 };
 
 #define PY_SPLIT_HANDLE(handle, page_index_name, entry_index_name) \
@@ -34,8 +34,7 @@ public:
     ~PyObjectSlotMap();
     uint32_t get_count();
     REPY_HandleEntry* get(REPY_Handle handle);
-    REPY_Handle add(py::object* object);
-    REPY_Handle add_and_steal(py::object* object);
+    REPY_Handle add(py::object* object, REPY_SubcontrollerHandle sub_index);
     bool has(REPY_Handle handle);
     void del(REPY_Handle handle);
     void del_all();

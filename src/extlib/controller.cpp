@@ -84,8 +84,14 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     py::initialize_interpreter(&config, 0, NULL, false); 
     PLOGI << "-> Python interpreter initialized";
 
-    // Collecting important Python objects:
-    auto builtins = py::module_::import("builtins");
+    PySubController* main_interp = new PySubController(PYTHON_MAIN_INTERPRETER_HANDLE);
+    subinterpreters.push_back(main_interp);
+
+    create_subcontroller();
+    
+    // Temporary until API calls are in place.
+    subinterp_handle_stack.push(0);
+    subinterp_handle_stack.push(1);
 
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
@@ -94,21 +100,48 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 PyInterpreterController::~PyInterpreterController() {
     // Restores the GIL to this thread.
     PyEval_RestoreThread(py_main_thread);
+    // Release all handles
     py_objects_smap.del_all();
+
+    // End all subinterpreters:
+    for (int i = 0; i < subinterpreters.size(); i++) {
+        delete subinterpreters.at(i);
+    }
 
     PLOGI << "-> Python interpreter shutdown";
 }
 
-uint32_t PyInterpreterController::create_subinterpreter() {
-    return 0;
+REPY_SubcontrollerHandle PyInterpreterController::create_subcontroller() {
+    REPY_SubcontrollerHandle retVal = subinterpreters.size();
 
+    PySubController* main_interp = new PySubController(retVal);
+    subinterpreters.push_back(main_interp);
+
+    return retVal;
+}
+
+REPY_SubcontrollerHandle PyInterpreterController::get_current_subcontroller_handle() {
+    assert(!subinterp_handle_stack.empty());
+    return subinterp_handle_stack.top();
+}
+
+PySubController* PyInterpreterController::get_current_subcontroller() {
+    return subinterpreters.at(get_current_subcontroller_handle());
+}
+
+void PyInterpreterController::push_subcontroller_handle(REPY_SubcontrollerHandle handle) {
+    subinterp_handle_stack.push(handle);
+}
+
+void PyInterpreterController::pop_subcontroller_handle() {
+    subinterp_handle_stack.pop();
 }
 
 REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
-    REPY_Handle new_handle;
-    new_handle = py_objects_smap.add(obj);
+    REPY_SubcontrollerHandle interp_handle = get_current_subcontroller_handle();
+    REPY_Handle new_handle = py_objects_smap.add(obj, interp_handle);
 
-    PLOGD.printf("-> REPY_Handle 0x%08X created", new_handle);
+    PLOGD.printf("-> REPY_Handle 0x%08X created on interpreter %u", new_handle, interp_handle);
     IF_PLOG(plog::verbose) {
         std::u8string repr_str = py::repr(*obj).cast<std::u8string>();
         PLOGV.printf("-> Handle %08X: %s", new_handle, repr_str.c_str());
@@ -117,6 +150,8 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
 }
 
 py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
+    REPY_SubcontrollerHandle current_interp_index = get_current_subcontroller_handle();
+
     if (handle == 0) {
         PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
     } 
@@ -128,11 +163,16 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
     } 
     assert(entry != NULL);
 
+    if (entry->interp_index != current_interp_index) {
+        PLOGF.printf("REPY_Handle 0x%08X: accessing an interpreter %u object while interpreter %u is active", entry->interp_index, current_interp_index);
+    } 
+    assert(entry->interp_index == current_interp_index);
+    
     if (entry->is_single_use) {
         suh_release_queue.push(handle);
-        PLOGD.printf("-> REPY_Handle 0x%08X accessed (SUH)", handle);
+        PLOGD.printf("-> REPY_Handle 0x%08X from interpreter %u accessed (SUH)", handle, entry->interp_index);
     } else {
-        PLOGD.printf("-> REPY_Handle 0x%08X accessed", handle);
+        PLOGD.printf("-> REPY_Handle 0x%08X from interpreter %u accessed", handle, entry->interp_index);
     }
     IF_PLOG(plog::verbose) {
         std::u8string repr_str = py::repr(entry->py_object).cast<std::u8string>();
@@ -200,6 +240,26 @@ void PyInterpreterController::release_handle(REPY_Handle handle) {
     py_objects_smap.del(handle);
 }
 
+py::function PyInterpreterController::py_compile() {
+    return get_current_subcontroller()->py_compile();
+}
+
+py::function PyInterpreterController::py_exec() {
+    return get_current_subcontroller()->py_exec();
+}
+
+py::function PyInterpreterController::py_eval() {
+    return get_current_subcontroller()->py_eval();
+}
+
+py::function PyInterpreterController::py_next() {
+    return get_current_subcontroller()->py_next();
+}
+
+py::object PyInterpreterController::py_stop_iteration_type() {
+    return get_current_subcontroller()->py_stop_iteration_type();
+}
+
 py::module_ PyInterpreterController::construct_module(std::string module_name, std::string module_code, bool add_to_sys) {
     py::gil_scoped_acquire gil;
     
@@ -224,39 +284,34 @@ py::module_ PyInterpreterController::construct_module(std::string module_name, s
 
 // Error Stuff
 bool PyInterpreterController::is_error_set() {
-    return is_py_error_set;
+    return get_current_subcontroller()->is_error_set();
 }
 
 void PyInterpreterController::handle_exception(py::error_already_set* e) {
-    is_py_error_set = true;
-
-    PLOGE << e->what();
-    last_error_type = e->type();
-    last_error_trace = e->trace();
-    last_error_value = e->value();
+    get_current_subcontroller()->handle_exception(e);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_type_handle() {
-    return create_handle(&last_error_type);
+    py::object retVal = get_current_subcontroller()->get_py_error_type();
+    return create_handle(&retVal);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_trace_handle() {
-    return create_handle(&last_error_trace);
+    py::object retVal = get_current_subcontroller()->get_py_error_trace();
+    return create_handle(&retVal);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_value_handle() {
-    return create_handle(&last_error_value);
+    py::object retVal = get_current_subcontroller()->get_py_error_value();
+    return create_handle(&retVal);
 }
 
 void PyInterpreterController::clear_py_error() {
-    is_py_error_set = false;
-    last_error_type = py::none();
-    last_error_trace = py::none();
-    last_error_value = py::none();
+    get_current_subcontroller()->clear_py_error();
 }
 
 REPY_Handle PyInterpreterController::get_zipfile_from_path(std::u8string filepath) {
-    py::object retVal = py_zipfile_class(py::str(filepath));
+    py::object retVal = get_current_subcontroller()->get_zipfile_from_path(filepath);
     return create_handle(&retVal);
 }
 

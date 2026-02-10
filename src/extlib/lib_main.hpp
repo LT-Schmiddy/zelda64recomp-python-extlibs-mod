@@ -8,3 +8,4 @@
 #include "globals.hpp"
 #include "lib_recomp.hpp"
 #include "controller.hpp"
+#include "subinterpreter.hpp"

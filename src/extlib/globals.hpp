@@ -34,6 +34,8 @@ namespace fs = std::filesystem;
 #define PYTHON_VERSION_STR "python314t"
 #define PYTHON_PROGRAM_NAME "RecompExternalPython"
 
-typedef unsigned int REPY_SubinterpHandle;
+#define PYTHON_MAIN_INTERPRETER_HANDLE 0
+
+typedef unsigned int REPY_SubcontrollerHandle;
 typedef unsigned int REPY_Handle;
 
