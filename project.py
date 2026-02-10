@@ -126,7 +126,7 @@ def add_archive_download_and_extract(name: str, url: str, extract_dir: Path) -> 
 if platform.system() == "Windows":
     llvmmips_download, llvmmips_extraction = add_archive_download_and_extract(
         "llvmmips",
-        "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Windows-AMD64.zip",
+        "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/release-21.1.8/Windows-AMD64-ClangEssentialsAndN64Recomp-ClangVersion21.1.8-MipsOnly.zip",
         binaries_dir.joinpath("llvmmips_win")
     )
     make_mips_compiler_path = binaries_dir.joinpath("llvmmips_win/nrs_bin/clang.exe")
@@ -154,7 +154,7 @@ if platform.system() == "Windows":
 elif platform.system() == "Darwin":
     llvmmips_download, llvmmips_extraction = add_archive_download_and_extract(
         "llvmmips",
-        "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Darwin-arm64.tar.xz",
+        "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/release-21.1.8/Darwin-arm64-ClangEssentialsAndN64Recomp-ClangVersion21.1.8-MipsOnly.tar.xz",
         binaries_dir.joinpath("llvmmips_macos")
     )
     make_mips_compiler_path = binaries_dir.joinpath("llvmmips_macos/nrs_bin/clang")
@@ -180,7 +180,7 @@ elif platform.system() == "Darwin":
 else:
     llvmmips_download, llvmmips_extraction = add_archive_download_and_extract(
         "llvmmips",
-        "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/shim-prerelease-0.1.0/N64RecompAndClangEssentials-ClangVersion21.1.6-MipsOnly-Linux-x86_64.tar.xz",
+        "https://github.com/LT-Schmiddy/n64recomp-clang/releases/download/release-21.1.8/Linux-x86_64-ClangEssentialsAndN64Recomp-ClangVersion21.1.8-MipsOnly.tar.xz",
         binaries_dir.joinpath("llvmmips_linux")
     )
     
