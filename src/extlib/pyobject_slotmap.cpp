@@ -58,7 +58,7 @@ REPY_HandleEntry* PyObjectSlotMap::get(REPY_Handle handle) {
     return entry;
 }
 
-REPY_Handle PyObjectSlotMap::add(py::object* object, REPY_SubcontrollerHandle sub_index) {
+REPY_Handle PyObjectSlotMap::add(py::object* object, REPY_InterpreterHandle sub_index) {
     REPY_Handle handle = get_next_handle();
     PY_SPLIT_HANDLE_DEFAULT(handle);
 
@@ -68,7 +68,6 @@ REPY_Handle PyObjectSlotMap::add(py::object* object, REPY_SubcontrollerHandle su
         pages[page_index] = page;
         page_count++;
     }
-
 
     assert(page->entries[entry_index] == NULL);
     REPY_HandleEntry* entry = new REPY_HandleEntry {(*object), false, sub_index};

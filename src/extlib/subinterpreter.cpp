@@ -1,7 +1,7 @@
 #include "subinterpreter.hpp"
 #include "controller.hpp"
 
-PySubController::PySubController(REPY_SubcontrollerHandle p_index) {
+PySubController::PySubController(REPY_InterpreterHandle p_index) {
     _index = p_index;
 
     if (_index != PYTHON_MAIN_INTERPRETER_HANDLE) {
@@ -18,7 +18,7 @@ PySubController::~PySubController() {
 
 }
 
-REPY_SubcontrollerHandle PySubController::get_index() {
+REPY_InterpreterHandle PySubController::get_index() {
     return _index;
 }
 
@@ -108,11 +108,17 @@ PySubControllerScope::PySubControllerScope(PySubController* subcontroller) {
     _subinterp = _subcontroller->get_subinterpreter();
     if (_subinterp != NULL) {
         _scope = new py::subinterpreter_scoped_activate(*_subinterp);
+        PLOGV.printf("Loaded PySubControllerScope for subcontroller %u", _subcontroller->get_index());
+    } else {
+        PLOGV.printf("Loaded PySubControllerScope for subcontroller %u (main interpreter)", _subcontroller->get_index());
     }
 }
 
 PySubControllerScope::~PySubControllerScope() {
     if (_subinterp != NULL) {
         delete _scope;
+        PLOGV.printf("Released PySubControllerScope for subcontroller %u", _subcontroller->get_index());
+    } else {
+        PLOGV.printf("Released PySubControllerScope for subcontroller %u (main interpreter)", _subcontroller->get_index());
     }
 }

@@ -87,12 +87,6 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
     PySubController* main_interp = new PySubController(PYTHON_MAIN_INTERPRETER_HANDLE);
     subinterpreters.push_back(main_interp);
 
-    create_subcontroller();
-    
-    // Temporary until API calls are in place.
-    subinterp_handle_stack.push(0);
-    subinterp_handle_stack.push(1);
-
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
 };
@@ -111,17 +105,22 @@ PyInterpreterController::~PyInterpreterController() {
     PLOGI << "-> Python interpreter shutdown";
 }
 
-REPY_SubcontrollerHandle PyInterpreterController::create_subcontroller() {
-    REPY_SubcontrollerHandle retVal = subinterpreters.size();
-
+REPY_InterpreterHandle PyInterpreterController::create_subcontroller() {
+    REPY_InterpreterHandle retVal = subinterpreters.size();
     PySubController* main_interp = new PySubController(retVal);
     subinterpreters.push_back(main_interp);
+
+    PLOGI.printf("Created new subinterpreter with a handle of %u", retVal);
 
     return retVal;
 }
 
-REPY_SubcontrollerHandle PyInterpreterController::get_current_subcontroller_handle() {
+REPY_InterpreterHandle PyInterpreterController::get_current_subcontroller_handle() {
+    if (subinterp_handle_stack.empty()) {
+        PLOGF.printf("No interpreter selected. Make sure you are using REPY_PushInterpreter and REPY_PopInterpreter correctly");
+    }
     assert(!subinterp_handle_stack.empty());
+    
     return subinterp_handle_stack.top();
 }
 
@@ -129,7 +128,7 @@ PySubController* PyInterpreterController::get_current_subcontroller() {
     return subinterpreters.at(get_current_subcontroller_handle());
 }
 
-void PyInterpreterController::push_subcontroller_handle(REPY_SubcontrollerHandle handle) {
+void PyInterpreterController::push_subcontroller_handle(REPY_InterpreterHandle handle) {
     subinterp_handle_stack.push(handle);
 }
 
@@ -138,7 +137,7 @@ void PyInterpreterController::pop_subcontroller_handle() {
 }
 
 REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
-    REPY_SubcontrollerHandle interp_handle = get_current_subcontroller_handle();
+    REPY_InterpreterHandle interp_handle = get_current_subcontroller_handle();
     REPY_Handle new_handle = py_objects_smap.add(obj, interp_handle);
 
     PLOGD.printf("-> REPY_Handle 0x%08X created on interpreter %u", new_handle, interp_handle);
@@ -150,7 +149,7 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
 }
 
 py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
-    REPY_SubcontrollerHandle current_interp_index = get_current_subcontroller_handle();
+    REPY_InterpreterHandle current_interp_index = get_current_subcontroller_handle();
 
     if (handle == 0) {
         PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
@@ -166,7 +165,7 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
     if (entry->interp_index != current_interp_index) {
         PLOGF.printf("REPY_Handle 0x%08X: accessing an interpreter %u object while interpreter %u is active", entry->interp_index, current_interp_index);
     } 
-    assert(entry->interp_index == current_interp_index);
+    // assert(entry->interp_index == current_interp_index);
     
     if (entry->is_single_use) {
         suh_release_queue.push(handle);

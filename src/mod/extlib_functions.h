@@ -16,6 +16,11 @@ RECOMP_IMPORT(".", u32 PythonNative_GetSUH(REPY_Handle py_object));
 RECOMP_IMPORT(".", void PythonNative_SetSUH(REPY_Handle py_object, u32 suh_status));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CopyHandle(REPY_Handle py_object));
 
+RECOMP_IMPORT(".", REPY_InterpreterHandle PythonNative_RegisterSubinterpreter());
+RECOMP_IMPORT(".", void PythonNative_PushInterpreter(REPY_InterpreterHandle interpreter_handle));
+RECOMP_IMPORT(".", void PythonNative_PopInterpreter());
+RECOMP_IMPORT(".", REPY_InterpreterHandle PythonNative_GetCurrentInterpreter());
+
 // Modules:
 RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStr(const char* identifier, const char* code, u32 add_to_sys));
 RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, u32 add_to_sys));

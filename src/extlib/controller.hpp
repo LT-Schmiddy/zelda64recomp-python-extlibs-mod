@@ -18,10 +18,10 @@ public:
     PyInterpreterController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
 
-    REPY_SubcontrollerHandle create_subcontroller();
-    REPY_SubcontrollerHandle get_current_subcontroller_handle();
+    REPY_InterpreterHandle create_subcontroller();
+    REPY_InterpreterHandle get_current_subcontroller_handle();
     PySubController* get_current_subcontroller();
-    void push_subcontroller_handle(REPY_SubcontrollerHandle handle);
+    void push_subcontroller_handle(REPY_InterpreterHandle handle);
     void pop_subcontroller_handle();
 
     // Handle Operations:
@@ -61,7 +61,7 @@ private:
     PyThreadState* py_main_thread = NULL;
     PyObjectSlotMap py_objects_smap;
     std::queue<REPY_Handle> suh_release_queue;
-    std::stack<REPY_SubcontrollerHandle> subinterp_handle_stack;
+    std::stack<REPY_InterpreterHandle> subinterp_handle_stack;
     std::vector<PySubController*> subinterpreters;
 
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;

@@ -17,9 +17,11 @@ void validate(char* case_name, bool case_stmt) {
 
     if (case_stmt) {
         _test_cases_passed++;
+    } else {
+        recomp_printf("Case %s %s\n", case_stmt ? "Passed:" : "Failed!", case_name);
     }
-    
-    recomp_printf("Case %s %s\n", case_stmt ? "Passed:" : "Failed!", case_name);
+
+
 }
 
 // These will streamline the process of testing the primatives create/cast.
@@ -107,25 +109,10 @@ CREATE_CAST_STRN_TEST_BLOCK_SUH(char*, py_type ## N_SUH, py_type, value, max_siz
     validate("repy_api.mem.write_" #c_type " works", value_var == value + 1); \
 } \
 
-REPY_ON_INIT void REPY_API_Tests() {
-    // Testing Handle Operations:
-    REPY_Handle testbool = REPY_CreateBool(true);
-    validate("First assigned handle (testbool) == 1", testbool == 1);
-    validate("testbool is valid (REPY_IsValidHandle)", REPY_IsValidHandle(testbool));
-    validate("testbool is not SUH (REPY_GetSUH)", REPY_GetSUH(testbool) == 0);
-    REPY_MakeSUH(testbool);
-    validate("testbool is made SUH (REPY_MakeSUH)", REPY_GetSUH(testbool) == 1);
-    REPY_SetSUH(testbool, false);
-    validate("testbool SUH disabled again (REPY_MakeSUH)", REPY_GetSUH(testbool) == 0);
-    REPY_Handle testbool2 = REPY_CopyHandle(testbool);
-    validate("Copied handle (testbool2) == 2", testbool2 == 2);
-    REPY_MakeSUH(testbool2);
-    REPY_Handle testbool3 = REPY_CopyHandle(testbool2);
-    validate("testbool2 is not valid after SUH access", !REPY_IsValidHandle(testbool2));
-    REPY_Release(testbool);
-    validate("testbool is not valid after release (REPY_Release)", !REPY_IsValidHandle(testbool));
-    REPY_Release(testbool3);
-    // From here, we assume that handle operations work.
+
+void interpreter_test_suite() {
+    recomp_printf("Testing on interpreter %u...\n", REPY_GetCurrentInterpreter());
+
 
     // Testing Create/Casting of primatives:
     CREATE_CAST_TEST(u8, U8, 66);
@@ -613,6 +600,38 @@ REPY_ON_INIT void REPY_API_Tests() {
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);
+}
+
+REPY_ON_POST_INIT void REPY_API_Tests() {
+    REPY_PushInterpreter(REPY_MAIN_INTERPRETER);
+    // Testing Handle Operations:
+    REPY_Handle testbool = REPY_CreateBool(true);
+    validate("First assigned handle (testbool) == 1", testbool == 1);
+    validate("testbool is valid (REPY_IsValidHandle)", REPY_IsValidHandle(testbool));
+    validate("testbool is not SUH (REPY_GetSUH)", REPY_GetSUH(testbool) == 0);
+    REPY_MakeSUH(testbool);
+    validate("testbool is made SUH (REPY_MakeSUH)", REPY_GetSUH(testbool) == 1);
+    REPY_SetSUH(testbool, false);
+    validate("testbool SUH disabled again (REPY_MakeSUH)", REPY_GetSUH(testbool) == 0);
+    REPY_Handle testbool2 = REPY_CopyHandle(testbool);
+    validate("Copied handle (testbool2) == 2", testbool2 == 2);
+    REPY_MakeSUH(testbool2);
+    REPY_Handle testbool3 = REPY_CopyHandle(testbool2);
+    validate("testbool2 is not valid after SUH access", !REPY_IsValidHandle(testbool2));
+    REPY_Release(testbool);
+    validate("testbool is not valid after release (REPY_Release)", !REPY_IsValidHandle(testbool));
+    REPY_Release(testbool3);
+    // From here, we assume that handle operations work.
+
+    interpreter_test_suite();
+
+    REPY_InterpreterHandle test_subinterp = REPY_RegisterSubinterpreter();
+    REPY_PushInterpreter(test_subinterp);
+    interpreter_test_suite();
+
+    REPY_PopInterpreter();
+    interpreter_test_suite();
+
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 
     // {
@@ -664,5 +683,6 @@ REPY_ON_INIT void REPY_API_Tests() {
     }
 
     REPY_Release(nrm_zip);
+    REPY_PopInterpreter();
 }
 

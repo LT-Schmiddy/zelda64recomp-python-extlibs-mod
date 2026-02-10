@@ -107,6 +107,10 @@ typedef unsigned int REPY_Handle;
  */
 #define REPY_NO_OBJECT 0
 
+
+typedef unsigned int REPY_InterpreterHandle;
+#define REPY_MAIN_INTERPRETER 0
+
 /**
  * @brief Used to set the type of code-string being compiled, in line with how Python's
  * built-in `compile` function operates.
@@ -1773,6 +1777,7 @@ for ( \
   */
 REPY_IMPORT(void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file_path));
 
+/** @}*/
 
 /** \defgroup repy_handle_funcs Handle Functions
  * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
@@ -1856,6 +1861,19 @@ REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_handle_no_release, REPY_bool value))
  */
 REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_handle));
 
+/** @}*/
+
+/** \defgroup repy_interpreter_funcs Module Functions
+ * \brief Functions Used for Python interpreter/subinterpreter operations.
+ *  @{
+ */
+
+REPY_IMPORT(REPY_InterpreterHandle REPY_RegisterSubinterpreter());
+REPY_IMPORT(void REPY_PushInterpreter(REPY_InterpreterHandle interpreter_handle));
+REPY_IMPORT(void REPY_PopInterpreter());
+REPY_IMPORT(REPY_InterpreterHandle REPY_GetCurrentInterpreter());
+
+/** @}*/
 
 /** \defgroup repy_handle_funcs Module Functions
  * \brief Functions Used for Python module operations.
@@ -1897,6 +1915,7 @@ REPY_IMPORT(void REPY_ConstructModuleFromCStrN(const char* identifier, const cha
  * @param identifier The name of the Python module. Should be NULL-terminated.
  */
 REPY_IMPORT(REPY_Handle REPY_ImportModule(const char* identifier));
+
 /** @}*/
 
 /** \defgroup repy_primative_funcs Primative Operations

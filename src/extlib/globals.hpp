@@ -36,6 +36,6 @@ namespace fs = std::filesystem;
 
 #define PYTHON_MAIN_INTERPRETER_HANDLE 0
 
-typedef unsigned int REPY_SubcontrollerHandle;
+typedef unsigned int REPY_InterpreterHandle;
 typedef unsigned int REPY_Handle;
 

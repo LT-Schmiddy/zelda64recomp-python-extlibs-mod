@@ -16,7 +16,6 @@ extern "C" {
     PySubControllerScope interpreter(controller->get_current_subcontroller()); \
 
 
-
 static const char* code_type_strs[] = {
     "exec",
     "eval",
@@ -50,46 +49,37 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 }
 // ======================================  General: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Release) {
-    controller->set_rdram(rdram);
+    INTERP_API_HEADER;
 
-    py::gil_scoped_acquire gil;
     int handle = RECOMP_ARG(int, 0);
-
     controller->release_handle(handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
-    INTERP_API_HEADER;
+    // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-
     controller->set_handle_suh(handle, true);
 
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
-    controller->set_rdram(rdram);
-    // Don't need the GIL for this.
+    // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-
     RECOMP_RETURN(uint32_t, (uint32_t) controller->is_valid_handle(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetSUH) {
-    controller->set_rdram(rdram);
-
-    py::gil_scoped_acquire gil;
+    // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-
     RECOMP_RETURN(uint32_t, (uint32_t) controller->get_handle_suh(handle));
 }
 
 
 RECOMP_DLL_FUNC(PythonNative_SetSUH) {
-    INTERP_API_HEADER;
+    // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_Handle value = RECOMP_ARG(uint32_t, 1);
-
     controller->set_handle_suh(handle, value);
 }
 
@@ -100,6 +90,26 @@ RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
     REPY_Handle new_handle = controller->create_handle(object);
     controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, new_handle);
+}
+// ======================================  Subcontrollers/Subinterpreters: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
+    py::gil_scoped_acquire gil; 
+    REPY_InterpreterHandle retVal = controller->create_subcontroller();
+    RECOMP_RETURN(REPY_InterpreterHandle, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_PushInterpreter) {
+    REPY_InterpreterHandle interp = RECOMP_ARG(REPY_InterpreterHandle, 0);
+    controller->push_subcontroller_handle(interp);
+}
+
+RECOMP_DLL_FUNC(PythonNative_PopInterpreter) {
+    controller->pop_subcontroller_handle();
+}
+
+RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
+    REPY_InterpreterHandle retVal = controller->get_current_subcontroller_handle();
+    RECOMP_RETURN(REPY_InterpreterHandle, retVal);
 }
 
 // ======================================  Modules: ====================================== 
@@ -1215,6 +1225,16 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
 }
 
 
+// ====================================== Zipfile: ====================================== 
+// Quickly generates ZipFile
+RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPathCStr) {
+    INTERP_API_HEADER;
+    std::u8string filepath = RECOMP_ARG_U8STR(0);
+    REPY_Handle retVal = controller->get_zipfile_from_path(filepath);
+
+    RECOMP_RETURN(REPY_Handle, retVal);
+}
+
 // ====================================== Errors: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_IsErrorSet) {
     controller->set_rdram(rdram);
@@ -1243,16 +1263,6 @@ RECOMP_DLL_FUNC(PythonNative_GetErrorValue) {
 RECOMP_DLL_FUNC(PythonNative_ClearError) {
     INTERP_API_HEADER;
     controller->clear_py_error();
-}
-
-// ====================================== Zipfile: ====================================== 
-// Quickly generates ZipFile
-RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPathCStr) {
-    INTERP_API_HEADER;
-    std::u8string filepath = RECOMP_ARG_U8STR(0);
-    REPY_Handle retVal = controller->get_zipfile_from_path(filepath);
-
-    RECOMP_RETURN(REPY_Handle, retVal);
 }
 
 // ====================================== Logging: ====================================== 

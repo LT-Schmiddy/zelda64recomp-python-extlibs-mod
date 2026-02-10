@@ -64,6 +64,23 @@ RECOMP_EXPORT REPY_Handle REPY_CopyHandle(REPY_Handle py_object) {
     return PythonNative_CopyHandle(py_object);
 }
 
+// Subinterpreters:
+RECOMP_EXPORT REPY_InterpreterHandle REPY_RegisterSubinterpreter() {
+    return PythonNative_RegisterSubinterpreter();
+}
+
+RECOMP_EXPORT void REPY_PushInterpreter(REPY_InterpreterHandle interpreter_handle) {
+    PythonNative_PushInterpreter(interpreter_handle);
+}
+
+RECOMP_EXPORT void REPY_PopInterpreter() {
+    PythonNative_PopInterpreter();
+}
+
+RECOMP_EXPORT REPY_InterpreterHandle REPY_GetCurrentInterpreter() {
+    return PythonNative_GetCurrentInterpreter();
+}
+
 // Modules:
 RECOMP_EXPORT void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys) {
     PythonNative_ConstructModuleFromCStr(identifier, code, (u32)add_to_sys);
