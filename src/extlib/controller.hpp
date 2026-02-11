@@ -26,6 +26,7 @@ public:
 
     // Handle Operations:
     REPY_Handle create_handle(py::object* obj);
+    REPY_InterpreterHandle get_py_object_interpreter(REPY_Handle handle);
     py::object* get_py_object(REPY_Handle handle);
     bool is_valid_handle(REPY_Handle handle);
     bool get_handle_suh(REPY_Handle handle);

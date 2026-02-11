@@ -13,7 +13,7 @@ extern "C" {
 #define INTERP_API_HEADER \
     controller->set_rdram(rdram); \
     py::gil_scoped_acquire gil; \
-    PySubControllerScope interpreter(controller->get_current_subcontroller()); \
+    PySubControllerScope interpreter_scope(controller->get_current_subcontroller()); \
 
 
 static const char* code_type_strs[] = {
@@ -75,14 +75,12 @@ RECOMP_DLL_FUNC(PythonNative_GetSUH) {
     RECOMP_RETURN(uint32_t, (uint32_t) controller->get_handle_suh(handle));
 }
 
-
 RECOMP_DLL_FUNC(PythonNative_SetSUH) {
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_Handle value = RECOMP_ARG(uint32_t, 1);
     controller->set_handle_suh(handle, value);
 }
-
 
 RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
     INTERP_API_HEADER;
@@ -91,6 +89,7 @@ RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
     controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, new_handle);
 }
+
 // ======================================  Subcontrollers/Subinterpreters: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
     py::gil_scoped_acquire gil; 
@@ -112,6 +111,12 @@ RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
     RECOMP_RETURN(REPY_InterpreterHandle, retVal);
 }
 
+RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
+    REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
+    REPY_InterpreterHandle retVal = controller->get_py_object_interpreter(handle);
+    RECOMP_RETURN(REPY_InterpreterHandle, retVal);
+}
+
 // ======================================  Modules: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
     INTERP_API_HEADER;
@@ -127,7 +132,7 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
     std::string module_name = RECOMP_ARG_STR(0);
     int32_t code_len = RECOMP_ARG(int32_t, 2);
     std::string code_string = RECOMP_ARG_STR_N(1, code_len);
-    uint32_t add_to_sys = RECOMP_ARG(uint32_t, 2);
+    uint32_t add_to_sys = RECOMP_ARG(uint32_t, 3);
 
     controller->construct_module(module_name, code_string, (bool)add_to_sys);
 }

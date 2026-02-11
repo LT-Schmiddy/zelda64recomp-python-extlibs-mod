@@ -89,7 +89,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
-};
+}
 
 PyInterpreterController::~PyInterpreterController() {
     // Restores the GIL to this thread.
@@ -146,6 +146,21 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
         PLOGV.printf("-> Handle %08X: %s", new_handle, repr_str.c_str());
     }
     return new_handle;
+}
+
+REPY_InterpreterHandle PyInterpreterController::get_py_object_interpreter(REPY_Handle handle) {
+    if (handle == 0) {
+        PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
+    } 
+    assert(handle != 0);
+
+    REPY_HandleEntry* entry = py_objects_smap.get(handle);
+    if (entry == NULL) {
+        PLOGF.printf("0x%08X is not a valid REPY_Handle");
+    } 
+    assert(entry != NULL);
+
+    return entry->interp_index;
 }
 
 py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {

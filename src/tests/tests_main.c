@@ -238,25 +238,7 @@ void interpreter_test_suite() {
     validate("REPY_Exec - exec str 'e = 1000' executed successfully", REPY_Exec(REPY_CreateStr_SUH("e = 1000"), py_globals, py_locals));
     validate("REPY_Exec - eval str 'e == 1000' evaluated true", REPY_CastBool(REPY_MakeSUH(REPY_Eval(REPY_CreateStr_SUH("e == 1000"), py_globals, py_locals))));
 
-    // Testing the EvalVL functions.
-    // REPY_Handle test_list = REPY_EvalCStr("[0, 1, 2, 3, 4, 5]", 0, 0);
     bool py_list_match = true;
-    // for (int i = 0; i < 6; i++) {
-    //     py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStr("_0[_1]", py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
-    // }
-    // validate("REPY_EvalVLCStr returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
-
-    // py_list_match = true;
-    // for (int i = 0; i < 6; i++) {
-    //     py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVLCStrN("_0[_1]", 6, py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
-    // }
-    // validate("REPY_EvalVLCStrN returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
-
-    // py_list_match = true;
-    // for (int i = 0; i < 6; i++) {
-    //     py_list_match = py_list_match && (i == REPY_CastS32(REPY_MakeSUH(REPY_EvalVL(REPY_CreateStr_SUH("_0[_1]"), py_globals, py_locals, 2, test_list, REPY_CreateS32_SUH(i)))));
-    // }
-    // validate("REPY_EvalVL returned correct values for [0, 1, 2, 3, 4, 5] using code string '_0[_1]'", py_list_match);
 
     // From here on, we'll assume that compiling and executing bytecode, as well as executing python strings works correctly, so long as the Python code is correct.
     // Testing the Memcpy functions:
@@ -592,7 +574,6 @@ void interpreter_test_suite() {
     REPY_ExecCStr("mem.write_bytes_n(mem_bytes_ptr, b'hello recomp', 20)", py_globals, py_locals);
     validate("repy_api.mem.write_bytes_n matches target", strncmp((const char*)mem_bytes, "hello recomp", 20) == 0);
     
-
     REPY_DictSetCStr(py_locals, "mem_bytearray_value", REPY_MakeSUH(REPY_MemcpyToByteArray(mem_bytes, 20, false)));
     validate("repy_api.mem.read_bytearray_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytearray_n(mem_bytes_ptr, 20) == mem_bytearray_value", py_globals, py_locals))));
     REPY_ExecCStr("mem.write_bytearray_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
@@ -644,31 +625,44 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     // From here, we assume that handle operations work.
 
     interpreter_test_suite();
+    {
+        REPY_FN_SETUP;
+        REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
+        REPY_FN_EXEC_CACHE(threading_test1,
+            "import threading, time, repy_api\n"
+            "def test_func():\n"
+            "    print(f'thread {interp} started')\n"
+            "    time.sleep(5)\n"
+            "    print(f'thread {interp} finished')\n"
+            "test_thread = threading.Thread(None, test_func)\n"
+            "test_thread.start()\n"
+        );
+        REPY_FN_CLEANUP;
+    }
 
     REPY_InterpreterHandle test_subinterp = REPY_RegisterSubinterpreter();
     REPY_PushInterpreter(test_subinterp);
     interpreter_test_suite();
 
+    {
+        REPY_FN_SETUP;
+        REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
+        REPY_FN_EXEC_CACHE(threading_test2,
+            "import threading, time, repy_api\n"
+            "def test_func():\n"
+            "    print(f'thread {interp} started')\n"
+            "    time.sleep(5)\n"
+            "    print(f'thread {interp} finished')\n"
+            "test_thread = threading.Thread(None, test_func)\n"
+            "test_thread.start()\n"
+        );
+        REPY_FN_CLEANUP;
+    }
+
     REPY_PopInterpreter();
     interpreter_test_suite();
 
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
-
-    // {
-    //     REPY_FN_SETUP;
-    //     REPY_FN_EXEC_CACHE(threading_test,
-    //         "import threading, time, repy_api\n"
-    //         "def test_func():\n"
-    //         "    print('thread_started')\n"
-    //         "    time.sleep(5)\n"
-    //         "    print('thread_finished')\n"
-    //         "test_thread = threading.Thread(None, test_func)\n"
-    //         "test_thread.start()\n"
-    //     );
-    //     REPY_FN_CLEANUP;
-    // }
-    
-
 
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;
