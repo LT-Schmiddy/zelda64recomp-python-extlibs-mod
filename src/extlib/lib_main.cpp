@@ -10,9 +10,23 @@ extern "C" {
     DLLEXPORT uint32_t recomp_api_version = 1;
 }
 
+// class PyGilWrapper {
+// public:
+//     py::gil_scoped_acquire* _gil = NULL;
+//     PyGilWrapper() {
+//         ZoneScoped;
+//         _gil = new py::gil_scoped_acquire();
+//     }
+
+//     ~PyGilWrapper() {
+//         ZoneScoped;
+//         delete _gil;
+//     }
+// };
+
 #define INTERP_API_HEADER \
     controller->set_rdram(rdram); \
-    py::gil_scoped_acquire gil; \
+    // py::gil_scoped_acquire gil; \
 
 
 static const char* code_type_strs[] = {
@@ -43,9 +57,6 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     controller->set_rdram(rdram);
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
-
-    // Release the GIL so that Python threads can run in the background.
-    // This does mean that all other functions that operate on python will need to reaquire the GIL.
     RECOMP_RETURN(int, 1);
 }
 // ======================================  General: ====================================== 

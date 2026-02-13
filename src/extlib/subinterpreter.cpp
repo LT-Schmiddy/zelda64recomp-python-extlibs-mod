@@ -40,6 +40,8 @@ void PySubController::activate() {
     ZoneScoped;
     assert(!_is_active);
     _is_active = true;
+    _gil = new py::gil_scoped_acquire();
+
     if (_index != 0) {
         _scope = new py::subinterpreter_scoped_activate(_subinterp);
         PLOGI.printf("Activated Python interpreter %u", _index);
@@ -52,6 +54,7 @@ void PySubController::deactivate() {
     ZoneScoped;
     assert(_is_active);
     _is_active = false;
+
     if (_index != 0) {
         delete _scope;
         _scope = NULL;
@@ -59,6 +62,9 @@ void PySubController::deactivate() {
     } else {
         PLOGI.printf("Deactivated Python interpreter %u (main interpreter)", _index);
     }
+
+    delete _gil;
+    _gil = NULL;
 }
 
 bool PySubController::is_active() {

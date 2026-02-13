@@ -52,6 +52,7 @@ private:
 
     REPY_InterpreterIndex _index;    
     py::subinterpreter _subinterp;
+    py::gil_scoped_acquire* _gil = NULL;
     py::subinterpreter_scoped_activate* _scope = NULL;
     bool _is_active = false;
 };
