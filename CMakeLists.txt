@@ -62,14 +62,11 @@ include_directories("./extern/incbin/")
 add_subdirectory("./extern/plog/")
 include_directories("./extern/plog/include")
 
-# Including Tracy:
-# if (DEFINED TRACY_PROFILING)
-    option (TRACY_ENABLE "" ON)
-    option (TRACY_ON_DEMAND "" ON)
-    option (TRACY_ONLY_LOCALHOST "" ON)
-    add_subdirectory("./extern/tracy/")
-    include_directories("./extern/tracy/public")
-# endif()
+option (TRACY_ENABLE "" ON)
+option (TRACY_ON_DEMAND "" ON)
+option (TRACY_ONLY_LOCALHOST "" ON)
+add_subdirectory("./extern/tracy/")
+include_directories("./extern/tracy/public")
 
 # Establishing Build Target:
 add_library(${TARGET_NAME} SHARED)
@@ -77,10 +74,14 @@ add_subdirectory("./src/extlib")
 target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
 target_link_libraries(${TARGET_NAME} PRIVATE plog::plog)
 link_python_standalone(${TARGET_NAME})
+# target_link_libraries(${TARGET_NAME} PRIVATE Tracy::TracyClient)
 
-# if (DEFINED TRACY_PROFILING)
-    target_link_libraries(${TARGET_NAME} PRIVATE Tracy::TracyClient)
-# endif()
+target_sources(${TARGET_NAME} PUBLIC "./extern/tracy/public/TracyClient.cpp")
+
+if(DEFINED TRACY_PROFILING)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DTRACY_ENABLE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTRACY_ENABLE")
+endif()
 
 set_target_properties(${TARGET_NAME}
     PROPERTIES
