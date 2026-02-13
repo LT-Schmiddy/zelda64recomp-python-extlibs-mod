@@ -5,7 +5,7 @@
 // be part of the class definition. They're used in initializing the interpreter 
 // and then never again.
 static std::string path_to_string_utf8(const std::filesystem::path& path) {
-    ZoneScoped
+    ZoneScoped;
     std::u8string path_u8string = path.u8string();
     std::string to_escape{ reinterpret_cast<const char*>(path_u8string.c_str()), path_u8string.size() };
 
@@ -22,7 +22,7 @@ static std::string path_to_string_utf8(const std::filesystem::path& path) {
 }
 
 static void py_preinit_add_search_path(PyConfig* config, fs::path path) {
-    ZoneScoped
+    ZoneScoped;
     PyStatus status;
 
     wchar_t* pathstr = nullptr;
@@ -35,7 +35,7 @@ static void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 
 // ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
-    ZoneScoped
+    ZoneScoped;
     // Initialize Logging
     fs::path file_appender_path = fs::path(mod_dir).parent_path().append("REPY.log");
     log = &plog::init((plog::Severity)log_severity);
@@ -95,7 +95,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 }
 
 PyInterpreterController::~PyInterpreterController() {
-    ZoneScoped
+    ZoneScoped;
     // Restores the GIL to this thread.
     PyEval_RestoreThread(py_main_thread);
     // Release all handles
@@ -110,7 +110,7 @@ PyInterpreterController::~PyInterpreterController() {
 }
 
 REPY_InterpreterHandle PyInterpreterController::create_subcontroller() {
-    ZoneScoped
+    ZoneScoped;
     REPY_InterpreterHandle retVal = subinterpreters.size();
     PySubController* main_interp = new PySubController(retVal);
     subinterpreters.push_back(main_interp);
@@ -121,7 +121,7 @@ REPY_InterpreterHandle PyInterpreterController::create_subcontroller() {
 }
 
 REPY_InterpreterHandle PyInterpreterController::get_current_subcontroller_handle() {
-    ZoneScoped
+    ZoneScoped;
     if (subinterp_handle_stack.empty()) {
         PLOGF.printf("No interpreter selected. Make sure you are using REPY_PushInterpreter and REPY_PopInterpreter correctly");
     }
@@ -131,22 +131,22 @@ REPY_InterpreterHandle PyInterpreterController::get_current_subcontroller_handle
 }
 
 PySubController* PyInterpreterController::get_current_subcontroller() {
-    ZoneScoped
+    ZoneScoped;
     return subinterpreters.at(get_current_subcontroller_handle());
 }
 
 void PyInterpreterController::push_subcontroller_handle(REPY_InterpreterHandle handle) {
-    ZoneScoped
+    ZoneScoped;
     subinterp_handle_stack.push(handle);
 }
 
 void PyInterpreterController::pop_subcontroller_handle() {
-    ZoneScoped
+    ZoneScoped;
     subinterp_handle_stack.pop();
 }
 
 REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
-    ZoneScoped
+    ZoneScoped;
     REPY_InterpreterHandle interp_handle = get_current_subcontroller_handle();
     REPY_Handle new_handle = py_objects_smap.add(obj, interp_handle);
 
@@ -159,7 +159,7 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
 }
 
 REPY_InterpreterHandle PyInterpreterController::get_py_object_interpreter(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     if (handle == 0) {
         PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
     } 
@@ -175,7 +175,7 @@ REPY_InterpreterHandle PyInterpreterController::get_py_object_interpreter(REPY_H
 }
 
 py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     REPY_InterpreterHandle current_interp_index = get_current_subcontroller_handle();
 
     if (handle == 0) {
@@ -208,12 +208,12 @@ py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
 }
 
 bool PyInterpreterController::is_valid_handle(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     return py_objects_smap.has(handle);
 }
 
 bool PyInterpreterController::get_handle_suh(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     if (handle == 0) {
         PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
     } 
@@ -229,7 +229,7 @@ bool PyInterpreterController::get_handle_suh(REPY_Handle handle) {
 }
 
 void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_use) {
-    ZoneScoped
+    ZoneScoped;
     if (handle == 0) {
         PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
     } 
@@ -246,7 +246,7 @@ void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_
 }
 
 void PyInterpreterController::release_suh_handles() {
-    ZoneScoped
+    ZoneScoped;
     while (suh_release_queue.size() > 0) {
         REPY_Handle handle = suh_release_queue.front();
         PLOGD.printf("-> REPY_Handle %08X released (SUH)", handle);
@@ -260,7 +260,7 @@ void PyInterpreterController::release_suh_handles() {
 }
 
 void PyInterpreterController::release_handle(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     PLOGD.printf("-> REPY_Handle %08X released", handle);
     IF_PLOG(plog::verbose) {
         std::u8string repr_str = py::repr(py_objects_smap.get(handle)->py_object).cast<std::u8string>();
@@ -271,32 +271,32 @@ void PyInterpreterController::release_handle(REPY_Handle handle) {
 }
 
 py::function PyInterpreterController::py_compile() {
-    ZoneScoped
+    ZoneScoped;
     return get_current_subcontroller()->py_compile();
 }
 
 py::function PyInterpreterController::py_exec() {
-    ZoneScoped
+    ZoneScoped;
     return get_current_subcontroller()->py_exec();
 }
 
 py::function PyInterpreterController::py_eval() {
-    ZoneScoped
+    ZoneScoped;
     return get_current_subcontroller()->py_eval();
 }
 
 py::function PyInterpreterController::py_next() {
-    ZoneScoped
+    ZoneScoped;
     return get_current_subcontroller()->py_next();
 }
 
 py::object PyInterpreterController::py_stop_iteration_type() {
-    ZoneScoped
+    ZoneScoped;
     return get_current_subcontroller()->py_stop_iteration_type();
 }
 
 py::module_ PyInterpreterController::construct_module(std::string module_name, std::string module_code, bool add_to_sys) {
-    ZoneScoped
+    ZoneScoped;
     py::gil_scoped_acquire gil;
     
     auto types = py::module_::import("types");
@@ -320,51 +320,51 @@ py::module_ PyInterpreterController::construct_module(std::string module_name, s
 
 // Error Stuff
 bool PyInterpreterController::is_error_set() {
-    ZoneScoped
+    ZoneScoped;
     return get_current_subcontroller()->is_error_set();
 }
 
 void PyInterpreterController::handle_exception(py::error_already_set* e) {
-    ZoneScoped
+    ZoneScoped;
     get_current_subcontroller()->handle_exception(e);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_type_handle() {
-    ZoneScoped
+    ZoneScoped;
     py::object retVal = get_current_subcontroller()->get_py_error_type();
     return create_handle(&retVal);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_trace_handle() {
-    ZoneScoped
+    ZoneScoped;
     py::object retVal = get_current_subcontroller()->get_py_error_trace();
     return create_handle(&retVal);
 }
 
 REPY_Handle PyInterpreterController::get_py_error_value_handle() {
-    ZoneScoped
+    ZoneScoped;
     py::object retVal = get_current_subcontroller()->get_py_error_value();
     return create_handle(&retVal);
 }
 
 void PyInterpreterController::clear_py_error() {
-    ZoneScoped
+    ZoneScoped;
     get_current_subcontroller()->clear_py_error();
 }
 
 REPY_Handle PyInterpreterController::get_zipfile_from_path(std::u8string filepath) {
-    ZoneScoped
+    ZoneScoped;
     py::object retVal = get_current_subcontroller()->get_zipfile_from_path(filepath);
     return create_handle(&retVal);
 }
 
 uint8_t* PyInterpreterController::get_rdram() {
-    ZoneScoped
+    ZoneScoped;
     return rdram;
 }
 
 void PyInterpreterController::set_rdram(uint8_t* p_rdram) {
-    ZoneScoped
+    ZoneScoped;
     rdram = p_rdram;
 }
 

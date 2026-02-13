@@ -2,7 +2,7 @@
 
 // Handling the submaps construction/destruction:
 PyObjectSlotMap::MapPage::MapPage(uint32_t p_pos) {
-    ZoneScoped
+    ZoneScoped;
     pos = p_pos;
     PLOGD.printf("MapPage 0x%08X created", pos);
     for (uint32_t i = 0; i < PYMAP_LEVEL_SIZE; i++) {
@@ -11,7 +11,7 @@ PyObjectSlotMap::MapPage::MapPage(uint32_t p_pos) {
 }
 
 PyObjectSlotMap::MapPage::~MapPage() {
-    ZoneScoped
+    ZoneScoped;
     if (count != 0) {
         PLOGD.printf("MapPage 0x%08X deleted without being empty. %u items remaining. Cleaning now...", pos, count);
         for (uint32_t i = 0; i < PYMAP_LEVEL_SIZE; i++) {
@@ -25,14 +25,14 @@ PyObjectSlotMap::MapPage::~MapPage() {
 
 // The main map object:
 PyObjectSlotMap::PyObjectSlotMap() {
-    ZoneScoped
+    ZoneScoped;
     for (uint32_t i = 0; i < PYMAP_LEVEL_SIZE; i++) {
         pages[i] = NULL;
     }
 }
 
 PyObjectSlotMap::~PyObjectSlotMap() {
-    ZoneScoped
+    ZoneScoped;
     if (page_count != 0) {
         PLOGD.printf("PyObjectSlotMap deleted without being empty. %u items remaining. Cleaning now...", page_count);
 
@@ -42,12 +42,12 @@ PyObjectSlotMap::~PyObjectSlotMap() {
 }
 
 uint32_t PyObjectSlotMap::get_count() {
-    ZoneScoped
+    ZoneScoped;
     return count;
 }
 
 REPY_HandleEntry* PyObjectSlotMap::get(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     PY_SPLIT_HANDLE_DEFAULT(handle);
 
     MapPage* page = pages[page_index];
@@ -66,7 +66,7 @@ REPY_HandleEntry* PyObjectSlotMap::get(REPY_Handle handle) {
 }
 
 REPY_Handle PyObjectSlotMap::add(py::object* object, REPY_InterpreterHandle sub_index) {
-    ZoneScoped
+    ZoneScoped;
     REPY_Handle handle = get_next_handle();
     PY_SPLIT_HANDLE_DEFAULT(handle);
 
@@ -86,12 +86,12 @@ REPY_Handle PyObjectSlotMap::add(py::object* object, REPY_InterpreterHandle sub_
 }
 
 bool PyObjectSlotMap::has(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     return get(handle) != NULL;
 }
 
 void PyObjectSlotMap::del(REPY_Handle handle) {
-    ZoneScoped
+    ZoneScoped;
     PY_SPLIT_HANDLE_DEFAULT(handle);
 
     MapPage* page = pages[page_index];
@@ -119,7 +119,7 @@ void PyObjectSlotMap::del(REPY_Handle handle) {
 }
 
 REPY_Handle PyObjectSlotMap::get_next_handle() {
-    ZoneScoped
+    ZoneScoped;
     PY_SPLIT_HANDLE_DEFAULT(next_handle_val);
     if (entry_index == 0) {
         // We're moving on to a new page, so check if the old page exists and is empty. Delete it if so.
@@ -147,7 +147,7 @@ REPY_Handle PyObjectSlotMap::get_next_handle() {
 }
 
 void PyObjectSlotMap::del_all() {
-    ZoneScoped
+    ZoneScoped;
     for (uint32_t i = 0; i < PYMAP_LEVEL_SIZE; i++) {
         delete pages[i];
         pages[i] = NULL;

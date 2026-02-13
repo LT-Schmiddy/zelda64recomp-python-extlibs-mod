@@ -24,7 +24,7 @@ static const char* code_type_strs[] = {
 static std::queue<fs::path> preinit_module_nrms;
 
 RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterNrmInModuleSearchPath) {
-    ZoneScoped
+    ZoneScoped;
     std::u8string nrm_path_str = RECOMP_ARG_U8STR(0);
     fs::path nrm_path(nrm_path_str);
 
@@ -33,7 +33,7 @@ RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterNrmInModuleSearchPath) {
 
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
-    ZoneScoped
+    ZoneScoped;
     uint32_t log_level = RECOMP_ARG(uint32_t, 0);
     uint32_t log_to_file = RECOMP_ARG(uint32_t, 1);
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(2);
@@ -51,7 +51,7 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 }
 // ======================================  General: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Release) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
 
     int handle = RECOMP_ARG(int, 0);
@@ -59,7 +59,7 @@ RECOMP_DLL_FUNC(PythonNative_Release) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
-    ZoneScoped
+    ZoneScoped;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     controller->set_handle_suh(handle, true);
@@ -68,21 +68,21 @@ RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
-    ZoneScoped
+    ZoneScoped;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     RECOMP_RETURN(uint32_t, (uint32_t) controller->is_valid_handle(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetSUH) {
-    ZoneScoped
+    ZoneScoped;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     RECOMP_RETURN(uint32_t, (uint32_t) controller->get_handle_suh(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_SetSUH) {
-    ZoneScoped
+    ZoneScoped;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_Handle value = RECOMP_ARG(uint32_t, 1);
@@ -90,7 +90,7 @@ RECOMP_DLL_FUNC(PythonNative_SetSUH) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* object = RECOMP_ARG_PYOBJECT(0);
     REPY_Handle new_handle = controller->create_handle(object);
@@ -100,31 +100,31 @@ RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
 
 // ======================================  Subcontrollers/Subinterpreters: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
-    ZoneScoped
+    ZoneScoped;
     py::gil_scoped_acquire gil; 
     REPY_InterpreterHandle retVal = controller->create_subcontroller();
     RECOMP_RETURN(REPY_InterpreterHandle, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PushInterpreter) {
-    ZoneScoped
+    ZoneScoped;
     REPY_InterpreterHandle interp = RECOMP_ARG(REPY_InterpreterHandle, 0);
     controller->push_subcontroller_handle(interp);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PopInterpreter) {
-    ZoneScoped
+    ZoneScoped;
     controller->pop_subcontroller_handle();
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
-    ZoneScoped
+    ZoneScoped;
     REPY_InterpreterHandle retVal = controller->get_current_subcontroller_handle();
     RECOMP_RETURN(REPY_InterpreterHandle, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
-    ZoneScoped
+    ZoneScoped;
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_InterpreterHandle retVal = controller->get_py_object_interpreter(handle);
     RECOMP_RETURN(REPY_InterpreterHandle, retVal);
@@ -132,7 +132,7 @@ RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
 
 // ======================================  Modules: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::string module_name = RECOMP_ARG_STR(0);
     std::string code_string = RECOMP_ARG_STR(1);
@@ -142,7 +142,7 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::string module_name = RECOMP_ARG_STR(0);
     int32_t code_len = RECOMP_ARG(int32_t, 2);
@@ -153,7 +153,7 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_ImportModule) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::string module_name = RECOMP_ARG_STR(0);
 
@@ -171,7 +171,7 @@ RECOMP_DLL_FUNC(PythonNative_ImportModule) {
 // ====================================== Primative Casting: ======================================  
 #define PYTHON_OBJECT_CREATE(fname, c_type, py_type) \
 RECOMP_DLL_FUNC(fname) { \
-    ZoneScoped \
+    ZoneScoped; \
     INTERP_API_HEADER \
     c_type value = RECOMP_ARG(c_type, 0); \
     py_type obj = py_type(value); \
@@ -181,7 +181,7 @@ RECOMP_DLL_FUNC(fname) { \
 
 #define PYTHON_OBJECT_CAST(fname, c_type, py_type) \
 RECOMP_DLL_FUNC(fname) { \
-    ZoneScoped \
+    ZoneScoped; \
     INTERP_API_HEADER \
     py_type* obj = (py_type*)RECOMP_ARG_PYOBJECT(0); \
     c_type retVal = obj->cast<c_type>(); \
@@ -206,7 +206,7 @@ PYTHON_OBJECT_CREATECAST(F32, float, py::float_);
 
 #define NUMBER64_OPERATION(name, c_type, py_type) \
 RECOMP_DLL_FUNC(name) { \
-    ZoneScoped \
+    ZoneScoped; \
     INTERP_API_HEADER \
     PTR(c_type) location = RECOMP_ARG(PTR(c_type), 0); \
     /* 0 for read, 1 for write */ \
@@ -236,7 +236,7 @@ NUMBER64_OPERATION(PythonNative_F64Operation, double, py::float_);
 
 // ======================================  String Casting: ======================================
 RECOMP_DLL_FUNC(PythonNative_CreateStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::u8string value = RECOMP_ARG_U8STR(0);
 
@@ -246,7 +246,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CreateStrN) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     int32_t str_len = RECOMP_ARG(int32_t, 1);
     std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
@@ -260,7 +260,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateStrN) {
 // by mod-code, which allows this to work correctly.
 thread_local static std::u8string cached_return_u8string;
 RECOMP_DLL_FUNC(PythonNative_CastStr_Prepare) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
     cached_return_u8string = str->cast<std::u8string>();
@@ -269,7 +269,7 @@ RECOMP_DLL_FUNC(PythonNative_CastStr_Prepare) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CastStr_Copy) {
-    ZoneScoped
+    ZoneScoped;
     controller->set_rdram(rdram);
     // Don't need the GIL for this step.
     int str_len = RECOMP_ARG(int, 0);
@@ -281,7 +281,7 @@ RECOMP_DLL_FUNC(PythonNative_CastStr_Copy) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CreateByteStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::string value = RECOMP_ARG_STR(0);
 
@@ -291,7 +291,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateByteStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CreateByteStrN) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     int32_t str_len = RECOMP_ARG(int32_t, 1);
     std::string value = RECOMP_ARG_STR_N(0, str_len);
@@ -305,7 +305,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateByteStrN) {
 // by mod-code, which allows this to work correctly.
 thread_local static std::string cached_return_string;
 RECOMP_DLL_FUNC(PythonNative_CastByteStr_Prepare) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::bytes* str = (py::bytes*)RECOMP_ARG_PYOBJECT(0);
     cached_return_string = str->cast<std::string>();
@@ -314,7 +314,7 @@ RECOMP_DLL_FUNC(PythonNative_CastByteStr_Prepare) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CastByteStr_Copy) {
-    ZoneScoped
+    ZoneScoped;
     controller->set_rdram(rdram);
     // Don't actually need the GIL for this one.
     int str_len = RECOMP_ARG(int, 0);
@@ -327,7 +327,7 @@ RECOMP_DLL_FUNC(PythonNative_CastByteStr_Copy) {
 
 // ====================================== Memcpy: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
@@ -348,7 +348,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
@@ -379,7 +379,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
@@ -401,7 +401,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
 
 
 RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
@@ -433,7 +433,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
 // ====================================== Indexing and Slicing Operations: ====================================== 
 
 RECOMP_DLL_FUNC(PythonNative_Len) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* object = RECOMP_ARG_PYOBJECT(0);
     uint32_t len_val = py::len(*object);
@@ -444,7 +444,7 @@ RECOMP_DLL_FUNC(PythonNative_Len) {
 
 // ====================================== Iteration: ======================================
 RECOMP_DLL_FUNC(PythonNative_Iter) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
 
@@ -455,7 +455,7 @@ RECOMP_DLL_FUNC(PythonNative_Iter) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_Next) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
     uint32_t process_stop_iteration = RECOMP_ARG(uint32_t, 2);
@@ -488,7 +488,7 @@ RECOMP_DLL_FUNC(PythonNative_Next) {
 
 // ====================================== Tuple: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_CreateTuple) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     int32_t size = RECOMP_ARG(int32_t, 0);
     REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 1);
@@ -513,7 +513,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateTuple) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_TupleGetIndexS32) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
 
     py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
@@ -534,7 +534,7 @@ RECOMP_DLL_FUNC(PythonNative_TupleGetIndexS32) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CreatePairCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
 
     std::u8string key = RECOMP_ARG_U8STR(0); 
@@ -559,7 +559,7 @@ RECOMP_DLL_FUNC(PythonNative_CreatePairCStr) {
 
 // ======================================  Dicts: ======================================  
 RECOMP_DLL_FUNC(PythonNative_CreateDict) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::dict new_dict = py::dict();
 
@@ -583,7 +583,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateDict) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetDict) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -603,7 +603,7 @@ RECOMP_DLL_FUNC(PythonNative_GetDict) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictGetCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -623,7 +623,7 @@ RECOMP_DLL_FUNC(PythonNative_DictGetCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictSet) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -639,7 +639,7 @@ RECOMP_DLL_FUNC(PythonNative_DictSet) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictSetCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -655,7 +655,7 @@ RECOMP_DLL_FUNC(PythonNative_DictSetCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictHas) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     uint32_t retVal = 0;
 
@@ -674,7 +674,7 @@ RECOMP_DLL_FUNC(PythonNative_DictHas) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictHasCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     uint32_t retVal = 0;
 
@@ -693,7 +693,7 @@ RECOMP_DLL_FUNC(PythonNative_DictHasCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictDel) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -707,7 +707,7 @@ RECOMP_DLL_FUNC(PythonNative_DictDel) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictDelCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -724,7 +724,7 @@ RECOMP_DLL_FUNC(PythonNative_DictDelCStr) {
 
 // ====================================== Object Attributes: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_GetAttr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -750,7 +750,7 @@ RECOMP_DLL_FUNC(PythonNative_GetAttr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetAttrCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -776,7 +776,7 @@ RECOMP_DLL_FUNC(PythonNative_GetAttrCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_SetAttr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -792,7 +792,7 @@ RECOMP_DLL_FUNC(PythonNative_SetAttr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_SetAttrCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -808,7 +808,7 @@ RECOMP_DLL_FUNC(PythonNative_SetAttrCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_HasAttr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     uint32_t retVal = 0;
     try {
@@ -825,7 +825,7 @@ RECOMP_DLL_FUNC(PythonNative_HasAttr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_HasAttrCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     uint32_t retVal = 0;
     try {
@@ -841,7 +841,7 @@ RECOMP_DLL_FUNC(PythonNative_HasAttrCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DelAttr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -856,7 +856,7 @@ RECOMP_DLL_FUNC(PythonNative_DelAttr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_DelAttrCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
@@ -872,7 +872,7 @@ RECOMP_DLL_FUNC(PythonNative_DelAttrCStr) {
 
 // ====================================== Execution: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Compile) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::str* code_str = (py::str*)RECOMP_ARG_PYOBJECT(0);
     py::str* identifier_str = (py::str*)RECOMP_ARG_PYOBJECT(1);
@@ -893,7 +893,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::string code_str = RECOMP_ARG_STR(0);
     std::string identifier = RECOMP_ARG_STR(1);
@@ -913,7 +913,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     int32_t code_len = RECOMP_ARG(int32_t, 1);
     std::string code_str = RECOMP_ARG_STR_N(0, code_len);
@@ -933,7 +933,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_Exec) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
     py::dict empty_globals = py::dict();
@@ -961,7 +961,7 @@ RECOMP_DLL_FUNC(PythonNative_Exec) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::string code_string = RECOMP_ARG_STR(0);
     py::dict empty_globals = py::dict();
@@ -990,7 +990,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     int32_t code_len = RECOMP_ARG(int32_t, 1);
     std::string code_string = RECOMP_ARG_STR_N(0, code_len);
@@ -1019,7 +1019,7 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_Eval) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
     py::dict empty_globals = py::dict();
@@ -1050,7 +1050,7 @@ RECOMP_DLL_FUNC(PythonNative_Eval) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::string code_string = RECOMP_ARG_STR(0);
     py::dict empty_globals = py::dict();
@@ -1081,7 +1081,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     int32_t code_len = RECOMP_ARG(int32_t, 1);
     std::string code_string = RECOMP_ARG_STR_N(0, code_len);
@@ -1115,7 +1115,7 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
 
 // Python Functions
 RECOMP_DLL_FUNC(PythonNative_Call) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
     py::tuple* args = RECOMP_ARG(REPY_Handle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : NULL;
@@ -1142,7 +1142,7 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallReturn) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
     py::tuple* args = RECOMP_ARG(REPY_Handle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : NULL;
@@ -1172,7 +1172,7 @@ RECOMP_DLL_FUNC(PythonNative_CallReturn) {
 
 
 RECOMP_DLL_FUNC(PythonNative_CallAttr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
     py::object* name = RECOMP_ARG_PYOBJECT(1);
@@ -1200,7 +1200,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
     std::u8string name = RECOMP_ARG_U8STR(1);
@@ -1228,7 +1228,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrReturn) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
     py::object* name = RECOMP_ARG_PYOBJECT(1);
@@ -1257,7 +1257,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrReturn) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     py::object* obj = RECOMP_ARG_PYOBJECT(0);
     std::u8string name = RECOMP_ARG_U8STR(1);
@@ -1289,7 +1289,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
 // ====================================== Zipfile: ====================================== 
 // Quickly generates ZipFile
 RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPathCStr) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     std::u8string filepath = RECOMP_ARG_U8STR(0);
     REPY_Handle retVal = controller->get_zipfile_from_path(filepath);
@@ -1299,32 +1299,32 @@ RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPathCStr) {
 
 // ====================================== Errors: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_IsErrorSet) {
-    ZoneScoped
+    ZoneScoped;
     controller->set_rdram(rdram);
 
     RECOMP_RETURN(int32_t, controller->is_error_set());
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorType) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     RECOMP_RETURN(REPY_Handle, controller->get_py_error_type_handle());
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorTrace) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     RECOMP_RETURN(REPY_Handle, controller->get_py_error_trace_handle());
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorValue) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     RECOMP_RETURN(REPY_Handle, controller->get_py_error_value_handle());
 }
 
 RECOMP_DLL_FUNC(PythonNative_ClearError) {
-    ZoneScoped
+    ZoneScoped;
     INTERP_API_HEADER;
     controller->clear_py_error();
 }
@@ -1337,7 +1337,7 @@ static uint32_t py_log_line_number;
 static std::string py_log_file_name;
 
 RECOMP_DLL_FUNC(PythonNative_SetLogMetaData) {
-    ZoneScoped
+    ZoneScoped;
     py_log_severity = (plog::Severity)RECOMP_ARG(uint32_t, 0);
     py_log_func = RECOMP_ARG_STR(1);
     py_log_line_number = RECOMP_ARG(uint32_t, 2);
@@ -1345,7 +1345,7 @@ RECOMP_DLL_FUNC(PythonNative_SetLogMetaData) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_CommitLogMessage) {
-    ZoneScoped
+    ZoneScoped;
     std::string log_message = RECOMP_ARG_STR(0);
     if (!plog::get<0>() || !plog::get<0>()->checkSeverity(py_log_severity)) {
         ;
