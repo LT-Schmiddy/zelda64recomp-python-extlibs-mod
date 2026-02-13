@@ -2,6 +2,7 @@
 assets_extracted/
 binaries/
 build/
+build_tracy/
 downloads/
 doxygen/
 test_env/
