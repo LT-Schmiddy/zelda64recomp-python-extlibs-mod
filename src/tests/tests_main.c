@@ -605,6 +605,10 @@ void load_repl() {
 
 REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_PushInterpreter(REPY_MAIN_INTERPRETER);
+
+    // REPY_Handle builtins = REPY_ImportModule("builtins");
+    // bui
+
     // Testing Handle Operations:
     REPY_Handle testbool = REPY_CreateBool(true);
     validate("First assigned handle (testbool) == 1", testbool == 1);

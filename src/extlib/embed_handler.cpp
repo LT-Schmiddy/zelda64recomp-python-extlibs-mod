@@ -13,6 +13,7 @@ INCBIN(python_stdlib, "python_stdlib.zip");
 // For that reason, zig is critical for compiling this project on Windows,
 // and stdlib extraction is disabled on non-zig Windows builds.
 void extract_python_stdlib(fs::path output_file) {
+    ZoneScoped
     if (fs::exists(output_file)) {
         PLOGI.printf("Python's standard library already exists. No need for extraction.");
         return;
@@ -83,6 +84,7 @@ static const char* other_dlls[] = {
 
 #define PY_NATIVE_EXTENSION ".pyd"
 void setup_python_stdlib_dlls(fs::path mod_dir, fs::path dll_dir) {
+    ZoneScoped
 
     PLOGI.printf("Checking extensions on native modules...");
     if (!fs::exists(dll_dir)) {

@@ -33,11 +33,19 @@
                 "CMAKE_BUILD_TYPE":"Debug"
             }
         },
-                {
+        {
             "name": "native-windows-x64-RelWithDebInfo",
             "inherits": "native-windows-x64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
+        },
+        {
+            "name": "native-windows-x64-TracyProfiling",
+            "inherits": "native-windows-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
             }
         },
         {
@@ -79,6 +87,14 @@
             }
         },
         {
+            "name": "native-linux-x64-TracyProfiling",
+            "inherits": "native-linux-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
+            }
+        },
+        {
             "name": "native-linux-x64-Release",
             "inherits": "native-linux-x64",
             "cacheVariables": {
@@ -109,11 +125,20 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"Debug"
             }
-        },        {
+        },
+        {
             "name": "native-macos-x64-RelWithDebInfo",
             "inherits": "native-macos-x64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
+        },
+        {
+            "name": "native-macos-x64-TracyProfiling",
+            "inherits": "native-macos-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
             }
         },
         {
@@ -152,6 +177,14 @@
             "inherits": "native-macos-aarch64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
+        },
+        {
+            "name": "native-macos-aarch64-TracyProfiling",
+            "inherits": "native-macos-aarch64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
             }
         },
         {
@@ -341,6 +374,10 @@
             "configurePreset": "native-windows-x64-RelWithDebInfo"
         },
         {
+            "name": "native-windows-x64-TracyProfiling",
+            "configurePreset": "native-windows-x64-TracyProfiling"
+        },
+        {
             "name": "native-windows-x64-Release",
             "configurePreset": "native-windows-x64-Release"
         },
@@ -359,6 +396,10 @@
         {
             "name": "native-linux-x64-RelWithDebInfo",
             "configurePreset": "native-linux-x64-RelWithDebInfo"
+        },
+        {
+            "name": "native-linux-x64-TracyProfiling",
+            "configurePreset": "native-linux-x64-TracyProfiling"
         },
         {
             "name": "native-linux-x64-Release",
@@ -381,6 +422,10 @@
             "configurePreset": "native-macos-x64-RelWithDebInfo"
         },
         {
+            "name": "macos-x64-TracyProfiling",
+            "configurePreset": "native-macos-x64-TracyProfiling"
+        },
+        {
             "name": "native-macos-x64-Release",
             "configurePreset": "native-macos-x64-Release"
         },
@@ -399,6 +444,10 @@
         {
             "name": "native-macos-aarch64-RelWithDebInfo",
             "configurePreset": "native-macos-aarch64-RelWithDebInfo"
+        },
+        {
+            "name": "native-macos-aarch64-TracyProfiling",
+            "configurePreset": "native-macos-aarch64-TracyProfiling"
         },
         {
             "name": "native-macos-aarch64-Release",

@@ -390,7 +390,7 @@ def native_output_files(build_type: str) -> dict[Path, Path]:
             Path("python313.dll"): get_preset_lib_path(preset_name).joinpath(f"{python_version_string_nt}.dll"),
             Path(f"{extlib_name}.dll"): get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.dll")
         }
-        if build_type == "Debug" or build_type == "RelWithDebInfo":
+        if build_type == "Debug" or build_type == "RelWithDebInfo" or build_type == "TracyProfiling":
             win_base[Path(f"{extlib_name}.pdb")] = get_preset_lib_path(preset_name).joinpath(f"{extlib_name}.pdb")
         return with_windows_dlls(preset_name, win_base)
     if platform.system() == "Darwin":
@@ -469,9 +469,12 @@ cmake_build_groups = {
     },
     "native-Release" : {
         "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("Release"), native_preset_name("Release")),
-    }, 
+    },
     "native-RelWithDebInfo": {
         "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("RelWithDebInfo"), native_preset_name("RelWithDebInfo")),
+    },
+    "native-TracyProfiling": {
+        "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("TracyProfiling"), native_preset_name("TracyProfiling")),
     },
     "native-MinSizeRel": {
         "Native": CMakeBuildJob.from_preset_pair(extlib, native_output_files("MinSizeRel"), native_preset_name("MinSizeRel")),

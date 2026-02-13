@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <stdio.h>
 
+#include <tracy/Tracy.hpp>
+
 // This is what allows us to use free-threaded Python
 #define Py_GIL_DISABLED 1
 #ifdef _DEBUG
@@ -35,7 +37,6 @@ namespace fs = std::filesystem;
 #define PYTHON_PROGRAM_NAME "RecompExternalPython"
 
 #define PYTHON_MAIN_INTERPRETER_HANDLE 0
-
 typedef unsigned int REPY_InterpreterHandle;
 typedef unsigned int REPY_Handle;
 
