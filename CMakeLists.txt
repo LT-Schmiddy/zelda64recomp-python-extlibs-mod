@@ -1,21 +1,22 @@
 cmake_minimum_required(VERSION 3.20)
 
-if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+project(recomp_mod_native_lib)
 
+# Include the script to download and set up the Python binary
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+    include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_Win_x64.cmake)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     # Macos
+    include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_MacOS_aarch64.cmake)
     set(CMAKE_MACOSX_RPATH On)
-
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
     # 64-bit Linux
     set(CMAKE_BUILD_RPATH_USE_ORIGIN On)
     set(CMAKE_BUILD_RPATH "$ORIGIN/.")
     set(CMAKE_INSTALL_RPATH "$ORIGIN/.")
-    # set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    # set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_Linux_x64.cmake)
 endif()
 
-project(recomp_mod_native_lib)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 23)
@@ -26,14 +27,6 @@ if (NOT DEFINED ENV{LIB_NAME})
 else()
     set(TARGET_NAME $ENV{LIB_NAME})
 endif()
-
-function(py_watch)
-    set_property(
-            DIRECTORY
-            APPEND
-            PROPERTY CMAKE_CONFIGURE_DEPENDS ${ARGV}
-    )
-endfunction()
 
 include_directories("./offline_build")
 include_directories("./include/extlib")
@@ -51,16 +44,6 @@ else()
     message(FATAL_ERROR "Unknown pointer size.")
 endif()
 
-# Include the script to download and set up the Python binary
-if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-    include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_Win_x64.cmake)
-elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    # Macos
-    include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_MacOS_aarch64.cmake)
-elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    # 64-bit Linux
-    include(${CMAKE_SOURCE_DIR}/cmake/PythonStandalone_Linux_x64.cmake)
-endif()
 
 set(PYBIND11_PYTHON_VERSION 3.14t)
 set(PYTHON_EXECUTABLE ${PYTHON_EXE})
@@ -75,17 +58,29 @@ add_subdirectory("./extern/pybind11")
 # Including GraphiteMaster's Incbin:
 include_directories("./extern/incbin/")
 
-#Including PLOG:
+# Including PLOG:
 add_subdirectory("./extern/plog/")
 include_directories("./extern/plog/include")
+
+# Including Tracy:
+# if (DEFINED TRACY_PROFILING)
+    option (TRACY_ENABLE "" ON)
+    option (TRACY_ON_DEMAND "" ON)
+    option (TRACY_ONLY_LOCALHOST "" ON)
+    add_subdirectory("./extern/tracy/")
+    include_directories("./extern/tracy/public")
+# endif()
 
 # Establishing Build Target:
 add_library(${TARGET_NAME} SHARED)
 add_subdirectory("./src/extlib")
 target_link_libraries(${TARGET_NAME} PRIVATE pybind11::embed)
 target_link_libraries(${TARGET_NAME} PRIVATE plog::plog)
-
 link_python_standalone(${TARGET_NAME})
+
+# if (DEFINED TRACY_PROFILING)
+    target_link_libraries(${TARGET_NAME} PRIVATE Tracy::TracyClient)
+# endif()
 
 set_target_properties(${TARGET_NAME}
     PROPERTIES
