@@ -450,6 +450,22 @@ cmake_build_groups = {
                 Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-RelWithDebInfo").joinpath(f"{extlib_name}.so")
             }, "zig-linux-x64-RelWithDebInfo"),
     },
+    "TracyProfiling": {
+        "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-TracyProfiling", {
+                Path(f"{python_version_string_nt}.dll"): get_preset_lib_path("zig-windows-x64-TracyProfiling").joinpath(f"{python_version_string_nt}.dll"),
+                Path(f"{extlib_name}.dll"): get_preset_lib_path("zig-windows-x64-TracyProfiling").joinpath(f"{extlib_name}.dll"),
+                Path(f"{extlib_name}.pdb"): get_preset_lib_path("zig-windows-x64-TracyProfiling").joinpath(f"{extlib_name}.pdb")
+            }), "zig-windows-x64-TracyProfiling"),
+        "Darwin": CMakeBuildJob.from_preset_pair(extlib, {
+                Path(f"lib{python_version_string_posix}.dylib"): get_preset_lib_path("zig-macos-aarch64-TracyProfiling").joinpath(f"lib{python_version_string_posix}.dylib"),
+                Path(f"{extlib_name}.dylib"): get_preset_lib_path("zig-macos-aarch64-TracyProfiling").joinpath(f"{extlib_name}.dylib")
+            }, "zig-macos-aarch64-TracyProfiling"),
+        "Linux": CMakeBuildJob.from_preset_pair(extlib, {
+                Path(f"lib{python_version_string_posix}.so.1.0"): get_preset_lib_path("zig-linux-x64-TracyProfiling").joinpath(f"lib{python_version_string_posix}.so.1.0"),
+                Path(f"{extlib_name}.so"): get_preset_lib_path("zig-linux-x64-TracyProfiling").joinpath(f"{extlib_name}.so")
+            }, "zig-linux-x64-TracyProfiling"),
+    },
+    
     "MinSizeRel": {
         "Windows": CMakeBuildJob.from_preset_pair(extlib, with_windows_dlls("zig-windows-x64-MinSizeRel", {
                 Path(f"{python_version_string_posix}.dll"): get_preset_lib_path("zig-windows-x64-MinSizeRel").joinpath(f"{python_version_string_posix}.dll"),

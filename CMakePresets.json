@@ -227,6 +227,14 @@
             }
         },
         {
+            "name": "zig-windows-x64-TracyProfiling",
+            "inherits": "zig-windows-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
+            }
+        },
+        {
             "name": "zig-windows-x64-Release",
             "inherits": "zig-windows-x64",
             "cacheVariables": {
@@ -262,6 +270,14 @@
             "inherits": "zig-linux-x64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
+        },
+        {
+            "name": "zig-linux-x64-TracyProfiling",
+            "inherits": "zig-linux-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
             }
         },
         {
@@ -302,6 +318,14 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"RelWithDebInfo"
             }
+        },        
+        {
+            "name": "zig-macos-x64-TracyProfiling",
+            "inherits": "zig-macos-x64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
+            }
         },
         {
             "name": "zig-macos-x64-Release",
@@ -339,6 +363,14 @@
             "inherits": "zig-macos-aarch64",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE":"RelWithDebInfo"
+            }
+        },        
+        {
+            "name": "zig-macos-aarch64-TracyProfiling",
+            "inherits": "zig-macos-aarch64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"RelWithDebInfo",
+                "TRACY_PROFILING": true
             }
         },
         {
@@ -414,15 +446,15 @@
             "configurePreset": "native-macos-x64"
         },
         {
-            "name": "macos-x64-Debug",
+            "name": "native-macos-x64-Debug",
             "configurePreset": "native-macos-x64-Debug"
         },        
         {
-            "name": "macos-x64-RelWithDebInfo",
+            "name": "native-macos-x64-RelWithDebInfo",
             "configurePreset": "native-macos-x64-RelWithDebInfo"
         },
         {
-            "name": "macos-x64-TracyProfiling",
+            "name": "native-macos-x64-TracyProfiling",
             "configurePreset": "native-macos-x64-TracyProfiling"
         },
         {
@@ -468,6 +500,10 @@
         {
             "name": "zig-windows-x64-RelWithDebInfo",
             "configurePreset": "zig-windows-x64-RelWithDebInfo"
+        },        
+        {
+            "name": "zig-windows-x64-TracyProfiling",
+            "configurePreset": "zig-windows-x64-TracyProfiling"
         },
         {
             "name": "zig-windows-x64-Release",
@@ -484,10 +520,14 @@
         {
             "name": "zig-linux-x64-Debug",
             "configurePreset": "zig-linux-x64-Debug"
-        },        
+        },
         {
             "name": "zig-linux-x64-RelWithDebInfo",
             "configurePreset": "zig-linux-x64-RelWithDebInfo"
+        },
+        {
+            "name": "zig-linux-x64-TracyProfiling",
+            "configurePreset": "zig-linux-x64-TracyProfiling"
         },
         {
             "name": "zig-linux-x64-Release",
@@ -504,10 +544,14 @@
         {
             "name": "zig-macos-x64-Debug",
             "configurePreset": "zig-macos-x64-Debug"
-        },        
+        },
         {
             "name": "zig-macos-x64-RelWithDebInfo",
             "configurePreset": "zig-macos-x64-RelWithDebInfo"
+        },
+        {
+            "name": "zig-macos-x64-TracyProfiling",
+            "configurePreset": "zig-macos-x64-TracyProfiling"
         },
         {
             "name": "zig-macos-x64-Release",
@@ -524,10 +568,14 @@
         {
             "name": "zig-macos-aarch64-Debug",
             "configurePreset": "zig-macos-aarch64-Debug"
-        },        
+        },
         {
             "name": "zig-macos-aarch64-RelWithDebInfo",
             "configurePreset": "zig-macos-aarch64-RelWithDebInfo"
+        },
+        {
+            "name": "zig-macos-aarch64-TracyProfiling",
+            "configurePreset": "zig-macos-aarch64-TracyProfiling"
         },
         {
             "name": "zig-macos-aarch64-Release",
