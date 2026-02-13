@@ -54,6 +54,9 @@
                 "${workspaceFolder}/extern/plog/include",
                 "${workspaceFolder}/extern/incbin",
                 "${workspaceFolder}/extern/tracy/public"
+            ],
+            "defines": [
+                "TRACY_ENABLE"
             ]
         },
         {

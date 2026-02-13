@@ -496,6 +496,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateTuple) {
         py::list tmp = py::list();
         for (int i = 0; i < size; i++) {
             tmp.append(controller->get_py_object(va_args_ptr[i]));
+            FrameMark;
         }
 
         py::tuple new_tuple = py::tuple(tmp);
@@ -568,6 +569,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateDict) {
         for (int i = 0; i < size; i++) {
             py::tuple* pair = (py::tuple*)controller->get_py_object(va_args_ptr[i]);
             new_dict[(*pair)[0]] = (*pair)[1];
+            FrameMark;
         }
 
         REPY_Handle new_handle = controller->create_handle(&new_dict);
@@ -818,7 +820,6 @@ RECOMP_DLL_FUNC(PythonNative_HasAttr) {
     } catch(py::error_already_set &e) {
         controller->handle_exception(&e);
     }
-
     controller->release_suh_handles();
     RECOMP_RETURN(uint32_t, retVal);
 }
@@ -850,7 +851,6 @@ RECOMP_DLL_FUNC(PythonNative_DelAttr) {
     } catch(py::error_already_set &e) {
         controller->handle_exception(&e);
     }
-
     controller->release_suh_handles();
 }
 
@@ -865,7 +865,6 @@ RECOMP_DLL_FUNC(PythonNative_DelAttrCStr) {
     } catch(py::error_already_set &e) {
         controller->handle_exception(&e);
     }
-
     controller->release_suh_handles();
 }
 
@@ -885,7 +884,6 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
         controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-    
     REPY_Handle handle = controller->create_handle(&bytecode);
     controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);

@@ -17,6 +17,9 @@ PySubController::PySubController(REPY_InterpreterIndex p_index) {
 
 PySubController::~PySubController() {
     ZoneScoped;
+    if (_is_active) {
+        deactivate();
+    }
 }
 
 REPY_InterpreterIndex PySubController::get_index() {
@@ -39,25 +42,27 @@ void PySubController::activate() {
     _is_active = true;
     if (_index != 0) {
         _scope = new py::subinterpreter_scoped_activate(_subinterp);
-        PLOGD.printf("Activated PySubController for subcontroller %u", _index);
+        PLOGI.printf("Activated Python interpreter %u", _index);
     } else {
-        PLOGD.printf("Activated PySubController for subcontroller %u (main interpreter)", _index);
+        PLOGI.printf("Activated Python interpreter %u (main interpreter)", _index);
     }
 }
 
 void PySubController::deactivate() {
     ZoneScoped;
     assert(_is_active);
-    _is_active = true;
+    _is_active = false;
     if (_index != 0) {
         delete _scope;
-        PLOGV.printf("Released PySubControllerScope for subcontroller %u", _index);
+        _scope = NULL;
+        PLOGI.printf("Deactivated Python interpreter %u", _index);
     } else {
-        PLOGV.printf("Released PySubControllerScope for subcontroller %u (main interpreter)", _index);
+        PLOGI.printf("Deactivated Python interpreter %u (main interpreter)", _index);
     }
 }
 
 bool PySubController::is_active() {
+    ZoneScoped;
     return _is_active;
 }
 
