@@ -13,7 +13,6 @@ extern "C" {
 #define INTERP_API_HEADER \
     controller->set_rdram(rdram); \
     py::gil_scoped_acquire gil; \
-    PySubControllerScope interpreter_scope(controller->get_current_subcontroller()); \
 
 
 static const char* code_type_strs[] = {
@@ -102,32 +101,32 @@ RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
 RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
     ZoneScoped;
     py::gil_scoped_acquire gil; 
-    REPY_InterpreterHandle retVal = controller->create_subcontroller();
-    RECOMP_RETURN(REPY_InterpreterHandle, retVal);
+    REPY_InterpreterIndex retVal = controller->create_subcontroller();
+    RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PushInterpreter) {
     ZoneScoped;
-    REPY_InterpreterHandle interp = RECOMP_ARG(REPY_InterpreterHandle, 0);
-    controller->push_subcontroller_handle(interp);
+    REPY_InterpreterIndex interp = RECOMP_ARG(REPY_InterpreterIndex, 0);
+    controller->push_subcontroller_index(interp);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PopInterpreter) {
     ZoneScoped;
-    controller->pop_subcontroller_handle();
+    controller->pop_subcontroller_index();
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
     ZoneScoped;
-    REPY_InterpreterHandle retVal = controller->get_current_subcontroller_handle();
-    RECOMP_RETURN(REPY_InterpreterHandle, retVal);
+    REPY_InterpreterIndex retVal = controller->get_current_subcontroller_index();
+    RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
     ZoneScoped;
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    REPY_InterpreterHandle retVal = controller->get_py_object_interpreter(handle);
-    RECOMP_RETURN(REPY_InterpreterHandle, retVal);
+    REPY_InterpreterIndex retVal = controller->get_py_object_interpreter(handle);
+    RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
 // ======================================  Modules: ====================================== 

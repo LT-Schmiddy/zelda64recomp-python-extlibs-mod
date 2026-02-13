@@ -7,11 +7,15 @@
 
 class PySubController {
 public:
-    PySubController(REPY_InterpreterHandle p_index);
+    PySubController(REPY_InterpreterIndex p_index);
     ~PySubController();
 
-    REPY_InterpreterHandle get_index();
+    REPY_InterpreterIndex get_index();
     py::subinterpreter* get_subinterpreter();
+
+    void activate();
+    void deactivate();
+    bool is_active();
 
     py::function py_compile();
     py::function py_exec();
@@ -46,17 +50,8 @@ private:
 
     void init_py_objects();
 
-    REPY_InterpreterHandle _index;    
+    REPY_InterpreterIndex _index;    
     py::subinterpreter _subinterp;
     py::subinterpreter_scoped_activate* _scope = NULL;
-};
-
-class PySubControllerScope {
-public:
-    PySubControllerScope(PySubController* subcontroller);
-    ~PySubControllerScope();
-private:
-    PySubController* _subcontroller = NULL;
-    py::subinterpreter* _subinterp = NULL;
-    py::subinterpreter_scoped_activate* _scope = NULL;
+    bool _is_active = false;
 };

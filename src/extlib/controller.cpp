@@ -109,9 +109,9 @@ PyInterpreterController::~PyInterpreterController() {
     PLOGI << "-> Python interpreter shutdown";
 }
 
-REPY_InterpreterHandle PyInterpreterController::create_subcontroller() {
+REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {
     ZoneScoped;
-    REPY_InterpreterHandle retVal = subinterpreters.size();
+    REPY_InterpreterIndex retVal = subinterpreters.size();
     PySubController* main_interp = new PySubController(retVal);
     subinterpreters.push_back(main_interp);
 
@@ -120,37 +120,57 @@ REPY_InterpreterHandle PyInterpreterController::create_subcontroller() {
     return retVal;
 }
 
-REPY_InterpreterHandle PyInterpreterController::get_current_subcontroller_handle() {
+REPY_InterpreterIndex PyInterpreterController::get_current_subcontroller_index() {
     ZoneScoped;
-    if (subinterp_handle_stack.empty()) {
+    if (subinterp_index_stack.empty()) {
         PLOGF.printf("No interpreter selected. Make sure you are using REPY_PushInterpreter and REPY_PopInterpreter correctly");
     }
-    assert(!subinterp_handle_stack.empty());
+    assert(!subinterp_index_stack.empty());
     
-    return subinterp_handle_stack.top();
+    return subinterp_index_stack.top();
 }
 
 PySubController* PyInterpreterController::get_current_subcontroller() {
     ZoneScoped;
-    return subinterpreters.at(get_current_subcontroller_handle());
+    return subinterpreters.at(get_current_subcontroller_index());
 }
 
-void PyInterpreterController::push_subcontroller_handle(REPY_InterpreterHandle handle) {
+void PyInterpreterController::push_subcontroller_index(REPY_InterpreterIndex index) {
     ZoneScoped;
-    subinterp_handle_stack.push(handle);
+    if (subinterp_index_stack.empty()) {
+        subinterp_index_stack.push(index);
+        subinterpreters.at(index)->activate();
+    } else {
+        REPY_InterpreterIndex old_index = subinterp_index_stack.top();
+        subinterp_index_stack.push(index);
+        if (old_index != index) {
+            subinterpreters.at(old_index)->deactivate();
+            subinterpreters.at(index)->activate();
+        }
+    }
 }
 
-void PyInterpreterController::pop_subcontroller_handle() {
+void PyInterpreterController::pop_subcontroller_index() {
     ZoneScoped;
-    subinterp_handle_stack.pop();
+    REPY_InterpreterIndex old_index = subinterp_index_stack.top();
+    subinterp_index_stack.pop();
+    if (subinterp_index_stack.empty()) {
+        subinterpreters.at(old_index)->deactivate();
+    } else {
+        REPY_InterpreterIndex new_index = subinterp_index_stack.top();
+        if (old_index != new_index) {
+            subinterpreters.at(old_index)->deactivate();
+            subinterpreters.at(new_index)->activate();
+        }
+    }
 }
 
 REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
     ZoneScoped;
-    REPY_InterpreterHandle interp_handle = get_current_subcontroller_handle();
-    REPY_Handle new_handle = py_objects_smap.add(obj, interp_handle);
+    REPY_InterpreterIndex interp_index = get_current_subcontroller_index();
+    REPY_Handle new_handle = py_objects_smap.add(obj, interp_index);
 
-    PLOGD.printf("-> REPY_Handle 0x%08X created on interpreter %u", new_handle, interp_handle);
+    PLOGD.printf("-> REPY_Handle 0x%08X created on interpreter %u", new_handle, interp_index);
     IF_PLOG(plog::verbose) {
         std::u8string repr_str = py::repr(*obj).cast<std::u8string>();
         PLOGV.printf("-> Handle %08X: %s", new_handle, repr_str.c_str());
@@ -158,7 +178,7 @@ REPY_Handle PyInterpreterController::create_handle(py::object* obj) {
     return new_handle;
 }
 
-REPY_InterpreterHandle PyInterpreterController::get_py_object_interpreter(REPY_Handle handle) {
+REPY_InterpreterIndex PyInterpreterController::get_py_object_interpreter(REPY_Handle handle) {
     ZoneScoped;
     if (handle == 0) {
         PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
@@ -176,7 +196,7 @@ REPY_InterpreterHandle PyInterpreterController::get_py_object_interpreter(REPY_H
 
 py::object* PyInterpreterController::get_py_object(REPY_Handle handle) {
     ZoneScoped;
-    REPY_InterpreterHandle current_interp_index = get_current_subcontroller_handle();
+    REPY_InterpreterIndex current_interp_index = get_current_subcontroller_index();
 
     if (handle == 0) {
         PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");

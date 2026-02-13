@@ -108,7 +108,7 @@ typedef unsigned int REPY_Handle;
 #define REPY_NO_OBJECT 0
 
 
-typedef unsigned int REPY_InterpreterHandle;
+typedef unsigned int REPY_InterpreterIndex;
 #define REPY_MAIN_INTERPRETER 0
 
 /**
@@ -1868,10 +1868,10 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_handle));
  *  @{
  */
 
-REPY_IMPORT(REPY_InterpreterHandle REPY_RegisterSubinterpreter());
-REPY_IMPORT(void REPY_PushInterpreter(REPY_InterpreterHandle interpreter_handle));
+REPY_IMPORT(REPY_InterpreterIndex REPY_RegisterSubinterpreter());
+REPY_IMPORT(void REPY_PushInterpreter(REPY_InterpreterIndex interpreter_handle));
 REPY_IMPORT(void REPY_PopInterpreter());
-REPY_IMPORT(REPY_InterpreterHandle REPY_GetCurrentInterpreter());
+REPY_IMPORT(REPY_InterpreterIndex REPY_GetCurrentInterpreter());
 
 /** @}*/
 

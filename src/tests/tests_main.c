@@ -644,7 +644,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
         REPY_FN_CLEANUP;
     }
 
-    REPY_InterpreterHandle test_subinterp = REPY_RegisterSubinterpreter();
+    REPY_InterpreterIndex test_subinterp = REPY_RegisterSubinterpreter();
     REPY_PushInterpreter(test_subinterp);
     interpreter_test_suite();
 

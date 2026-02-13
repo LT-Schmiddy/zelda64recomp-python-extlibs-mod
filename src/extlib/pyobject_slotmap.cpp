@@ -65,7 +65,7 @@ REPY_HandleEntry* PyObjectSlotMap::get(REPY_Handle handle) {
     return entry;
 }
 
-REPY_Handle PyObjectSlotMap::add(py::object* object, REPY_InterpreterHandle sub_index) {
+REPY_Handle PyObjectSlotMap::add(py::object* object, REPY_InterpreterIndex sub_index) {
     ZoneScoped;
     REPY_Handle handle = get_next_handle();
     PY_SPLIT_HANDLE_DEFAULT(handle);

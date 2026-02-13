@@ -18,15 +18,15 @@ public:
     PyInterpreterController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
 
-    REPY_InterpreterHandle create_subcontroller();
-    REPY_InterpreterHandle get_current_subcontroller_handle();
+    REPY_InterpreterIndex create_subcontroller();
+    REPY_InterpreterIndex get_current_subcontroller_index();
     PySubController* get_current_subcontroller();
-    void push_subcontroller_handle(REPY_InterpreterHandle handle);
-    void pop_subcontroller_handle();
+    void push_subcontroller_index(REPY_InterpreterIndex handle);
+    void pop_subcontroller_index();
 
     // Handle Operations:
     REPY_Handle create_handle(py::object* obj);
-    REPY_InterpreterHandle get_py_object_interpreter(REPY_Handle handle);
+    REPY_InterpreterIndex get_py_object_interpreter(REPY_Handle handle);
     py::object* get_py_object(REPY_Handle handle);
     bool is_valid_handle(REPY_Handle handle);
     bool get_handle_suh(REPY_Handle handle);
@@ -62,7 +62,7 @@ private:
     PyThreadState* py_main_thread = NULL;
     PyObjectSlotMap py_objects_smap;
     std::queue<REPY_Handle> suh_release_queue;
-    std::stack<REPY_InterpreterHandle> subinterp_handle_stack;
+    std::stack<REPY_InterpreterIndex> subinterp_index_stack;
     std::vector<PySubController*> subinterpreters;
 
     plog::RollingFileAppender<plog::TxtFormatter>* file_appender = NULL;
