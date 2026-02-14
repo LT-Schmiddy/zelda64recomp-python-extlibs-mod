@@ -96,6 +96,13 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 
 PyInterpreterController::~PyInterpreterController() {
     ZoneScoped;
+    // First, deactivate whichever subinterpreter is active (in case GIL is reactivated).
+    for (int i = 0; i < subinterpreters.size(); i++) {
+        if(subinterpreters.at(i)->is_active()) {
+            subinterpreters.at(i)->deactivate();
+        }
+    }
+
     // Restores the GIL to this thread.
     PyEval_RestoreThread(py_main_thread);
     // Release all handles

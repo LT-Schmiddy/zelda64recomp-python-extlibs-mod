@@ -636,9 +636,9 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
             "import threading, time, repy_api\n"
             "def test_func():\n"
             "    print(f'thread {interp} started')\n"
-            "    time.sleep(5)\n"
+            "    time.sleep(20)\n"
             "    print(f'thread {interp} finished')\n"
-            "test_thread = threading.Thread(None, test_func)\n"
+            "test_thread = threading.Thread(None, test_func, daemon=True)\n"
             "test_thread.start()\n"
         );
         REPY_FN_CLEANUP;
@@ -655,9 +655,9 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
             "import threading, time, repy_api\n"
             "def test_func():\n"
             "    print(f'thread {interp} started')\n"
-            "    time.sleep(5)\n"
+            "    time.sleep(10)\n"
             "    print(f'thread {interp} finished')\n"
-            "test_thread = threading.Thread(None, test_func)\n"
+            "test_thread = threading.Thread(None, test_func, daemon=True)\n"
             "test_thread.start()\n"
         );
         REPY_FN_CLEANUP;
