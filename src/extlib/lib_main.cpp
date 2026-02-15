@@ -127,11 +127,18 @@ RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
 }
 
 // ======================================  Modules: ====================================== 
+RECOMP_DLL_FUNC(PythonNative_AddCStrToSysPath) {
+    ZoneScoped;
+    INTERP_API_HEADER;
+
+}
+
+
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::string module_name = RECOMP_ARG_STR(0);
-    std::string code_string = RECOMP_ARG_STR(1);
+    std::u8string module_name = RECOMP_ARG_U8STR(0);
+    std::u8string code_string = RECOMP_ARG_U8STR(1);
     uint32_t add_to_sys = RECOMP_ARG(uint32_t, 2);
 
     controller->construct_module(module_name, code_string, (bool)add_to_sys);
@@ -140,9 +147,9 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::string module_name = RECOMP_ARG_STR(0);
+    std::u8string module_name = RECOMP_ARG_U8STR(0);
     int32_t code_len = RECOMP_ARG(int32_t, 2);
-    std::string code_string = RECOMP_ARG_STR_N(1, code_len);
+    std::u8string code_string = RECOMP_ARG_U8STR_N(1, code_len);
     uint32_t add_to_sys = RECOMP_ARG(uint32_t, 3);
 
     controller->construct_module(module_name, code_string, (bool)add_to_sys);
@@ -151,7 +158,7 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
 RECOMP_DLL_FUNC(PythonNative_ImportModule) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::string module_name = RECOMP_ARG_STR(0);
+    std::u8string module_name = RECOMP_ARG_U8STR(0);
 
     try {
         py::module_ mod = py::module_::import(module_name.c_str());
