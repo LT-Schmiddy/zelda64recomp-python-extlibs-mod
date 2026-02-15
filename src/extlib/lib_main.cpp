@@ -496,7 +496,7 @@ RECOMP_DLL_FUNC(PythonNative_Next) {
 RECOMP_DLL_FUNC(PythonNative_CreateTuple) {
     ZoneScoped;
     INTERP_API_HEADER;
-    int32_t size = RECOMP_ARG(int32_t, 0);
+    uint32_t size = RECOMP_ARG(uint32_t, 0);
     REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 1);
     
     try {
@@ -570,7 +570,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateDict) {
     INTERP_API_HEADER;
     py::dict new_dict = py::dict();
 
-    int32_t size = RECOMP_ARG(int32_t, 0);
+    uint32_t size = RECOMP_ARG(uint32_t, 0);
     REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 1);
     try {
         for (int i = 0; i < size; i++) {
@@ -590,7 +590,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateDict) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_GetDict) {
+RECOMP_DLL_FUNC(PythonNative_DictGet) {
     ZoneScoped;
     INTERP_API_HEADER;
     try {
@@ -1116,6 +1116,8 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
     controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
+
+
 
 // Python Functions
 RECOMP_DLL_FUNC(PythonNative_Call) {

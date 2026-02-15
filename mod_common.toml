@@ -109,7 +109,7 @@ native_libraries = [
         
         # Dicts    
         "PythonNative_CreateDict",
-        "PythonNative_GetDict",
+        "PythonNative_DictGet",
         "PythonNative_DictGetCStr",
         "PythonNative_DictSet",
         "PythonNative_DictSetCStr",

@@ -421,7 +421,7 @@ RECOMP_EXPORT REPY_Handle REPY_CreateDict_SUH(u32 size, ...) {
 }
 
 RECOMP_EXPORT REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key) {
-    return PythonNative_GetDict(dict, key);
+    return PythonNative_DictGet(dict, key);
 }
 
 RECOMP_EXPORT REPY_Handle REPY_DictGetCStr(REPY_Handle dict, char* key) {

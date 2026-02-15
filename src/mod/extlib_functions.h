@@ -92,7 +92,7 @@ RECOMP_IMPORT(".", REPY_Handle PythonNative_CreatePairCStr(char* key, REPY_Handl
 
 // Dict Operations:
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateDict(u32 size, va_list va));
-RECOMP_IMPORT(".", REPY_Handle PythonNative_GetDict(REPY_Handle dict, REPY_Handle key));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_DictGet(REPY_Handle dict, REPY_Handle key));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_DictGetCStr(REPY_Handle dict, char* key));
 RECOMP_IMPORT(".", void PythonNative_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle value));
 RECOMP_IMPORT(".", void PythonNative_DictSetCStr(REPY_Handle dict, char* key, REPY_Handle value));
