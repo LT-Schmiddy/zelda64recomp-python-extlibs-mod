@@ -1872,6 +1872,7 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_RegisterSubinterpreter());
 REPY_IMPORT(void REPY_PushInterpreter(REPY_InterpreterIndex interpreter_handle));
 REPY_IMPORT(void REPY_PopInterpreter());
 REPY_IMPORT(REPY_InterpreterIndex REPY_GetCurrentInterpreter());
+REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle));
 
 /** @}*/
 

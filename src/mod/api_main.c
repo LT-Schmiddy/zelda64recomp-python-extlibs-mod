@@ -81,6 +81,10 @@ RECOMP_EXPORT REPY_InterpreterIndex REPY_GetCurrentInterpreter() {
     return PythonNative_GetCurrentInterpreter();
 }
 
+RECOMP_EXPORT REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle) {
+    return PythonNative_GetHandleInterpreter(handle);
+}
+
 // Modules:
 RECOMP_EXPORT void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys) {
     PythonNative_ConstructModuleFromCStr(identifier, code, (u32)add_to_sys);

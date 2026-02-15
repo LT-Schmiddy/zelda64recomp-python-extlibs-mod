@@ -10,23 +10,9 @@ extern "C" {
     DLLEXPORT uint32_t recomp_api_version = 1;
 }
 
-// class PyGilWrapper {
-// public:
-//     py::gil_scoped_acquire* _gil = NULL;
-//     PyGilWrapper() {
-//         ZoneScoped;
-//         _gil = new py::gil_scoped_acquire();
-//     }
-
-//     ~PyGilWrapper() {
-//         ZoneScoped;
-//         delete _gil;
-//     }
-// };
-
+// This used to be bigger, but I'm keeping it.
 #define INTERP_API_HEADER \
     controller->set_rdram(rdram); \
-    // py::gil_scoped_acquire gil; \
 
 
 static const char* code_type_strs[] = {

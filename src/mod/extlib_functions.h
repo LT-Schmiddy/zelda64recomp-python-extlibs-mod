@@ -20,6 +20,7 @@ RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_RegisterSubinterpreter());
 RECOMP_IMPORT(".", void PythonNative_PushInterpreter(REPY_InterpreterIndex interpreter_handle));
 RECOMP_IMPORT(".", void PythonNative_PopInterpreter());
 RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetCurrentInterpreter());
+RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetHandleInterpreter(REPY_Handle handle));
 
 // Modules:
 RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStr(const char* identifier, const char* code, u32 add_to_sys));
