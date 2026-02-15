@@ -161,7 +161,7 @@ RECOMP_DLL_FUNC(PythonNative_ImportModule) {
     std::u8string module_name = RECOMP_ARG_U8STR(0);
 
     try {
-        py::module_ mod = py::module_::import(module_name.c_str());
+        py::module_ mod = py::module_::import((const char *)module_name.c_str());
         REPY_Handle handle = controller->create_handle(&mod);
         RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {

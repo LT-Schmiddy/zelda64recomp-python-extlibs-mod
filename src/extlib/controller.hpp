@@ -34,7 +34,7 @@ public:
     void release_suh_handles();
     void release_handle(REPY_Handle handle);
 
-    py::module_ construct_module(std::string module_name, std::string module_code, bool add_to_sys); 
+    py::module_ construct_module(std::u8string module_name, std::u8string module_code, bool add_to_sys); 
     
     // retrieve py::function wrappers for special functions:
     py::function py_compile();

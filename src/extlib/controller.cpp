@@ -322,7 +322,7 @@ py::object PyInterpreterController::py_stop_iteration_type() {
     return get_current_subcontroller()->py_stop_iteration_type();
 }
 
-py::module_ PyInterpreterController::construct_module(std::string module_name, std::string module_code, bool add_to_sys) {
+py::module_ PyInterpreterController::construct_module(std::u8string module_name, std::u8string module_code, bool add_to_sys) {
     ZoneScoped;
     py::gil_scoped_acquire gil;
     
@@ -330,7 +330,7 @@ py::module_ PyInterpreterController::construct_module(std::string module_name, s
     auto new_mod = types.attr("ModuleType")(module_name);
 
     try {
-        py::exec(module_code, new_mod.attr("__dict__"));
+        py::exec((const char*)module_code.c_str(), new_mod.attr("__dict__"));
     } catch (py::error_already_set &e) {
         std::cout << e.what();
         return py::none();
@@ -339,7 +339,7 @@ py::module_ PyInterpreterController::construct_module(std::string module_name, s
     if (add_to_sys) {
         auto sys = py::module_::import("sys");
         py::dict sys_modules = sys.attr("modules");
-        sys_modules[module_name.c_str()] = new_mod;
+        sys_modules[(const char*)module_name.c_str()] = new_mod;
     }
 
     return new_mod;
