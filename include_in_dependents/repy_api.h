@@ -1881,6 +1881,8 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle))
  *  @{
  */
 
+REPY_IMPORT(void REPY_AddCStrToSysPath(const char* filepath));
+
 /**
  * @brief Construct a new Python module from a NULL-terminated code string, importable by name.
  * 

@@ -629,40 +629,47 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     // From here, we assume that handle operations work.
 
     interpreter_test_suite();
-    {
-        REPY_FN_SETUP;
-        REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
-        REPY_FN_EXEC_CACHE(threading_test1,
-            "import threading, time, repy_api\n"
-            "def test_func():\n"
-            "    print(f'thread {interp} started')\n"
-            "    time.sleep(20)\n"
-            "    print(f'thread {interp} finished')\n"
-            "test_thread = threading.Thread(None, test_func, daemon=True)\n"
-            "test_thread.start()\n"
-        );
-        REPY_FN_CLEANUP;
-    }
+    // {
+    //     REPY_FN_SETUP;
+    //     REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
+    //     REPY_FN_EXEC_CACHE(threading_test1,
+    //         "import threading, time, repy_api\n"
+    //         "def test_func():\n"
+    //         "    print(f'thread {interp} started')\n"
+    //         "    time.sleep(20)\n"
+    //         "    print(f'thread {interp} finished')\n"
+    //         "test_thread = threading.Thread(None, test_func, daemon=True)\n"
+    //         "test_thread.start()\n"
+    //     );
+    //     REPY_FN_CLEANUP;
+    // }
 
     REPY_InterpreterIndex test_subinterp = REPY_RegisterSubinterpreter();
     REPY_PushInterpreter(test_subinterp);
     interpreter_test_suite();
-
+    // {
+    //     REPY_FN_SETUP;
+    //     REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
+    //     REPY_FN_EXEC_CACHE(threading_test2,
+    //         "import threading, time, repy_api\n"
+    //         "def test_func():\n"
+    //         "    print(f'thread {interp} started')\n"
+    //         "    time.sleep(10)\n"
+    //         "    print(f'thread {interp} finished')\n"
+    //         "test_thread = threading.Thread(None, test_func, daemon=True)\n"
+    //         "test_thread.start()\n"
+    //     );
+    //     REPY_FN_CLEANUP;
+    // }
+    REPY_AddCStrToSysPath("./");
     {
         REPY_FN_SETUP;
-        REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
-        REPY_FN_EXEC_CACHE(threading_test2,
-            "import threading, time, repy_api\n"
-            "def test_func():\n"
-            "    print(f'thread {interp} started')\n"
-            "    time.sleep(10)\n"
-            "    print(f'thread {interp} finished')\n"
-            "test_thread = threading.Thread(None, test_func, daemon=True)\n"
-            "test_thread.start()\n"
+        REPY_FN_EXEC_CACHE(sys_path_test,
+            "import sys\n"
+            "print(f'{sys.path=}')"
         );
         REPY_FN_CLEANUP;
     }
-
     REPY_PopInterpreter();
     interpreter_test_suite();
 

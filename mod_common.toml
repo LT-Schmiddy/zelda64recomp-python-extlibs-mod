@@ -41,6 +41,7 @@ native_libraries = [
         "PythonNative_GetHandleInterpreter",
 
         # Modules
+        "PythonNative_AddCStrToSysPath",
         "PythonNative_ConstructModuleFromCStr",
         "PythonNative_ConstructModuleFromCStrN",
         "PythonNative_ImportModule",

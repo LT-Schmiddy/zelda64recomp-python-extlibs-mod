@@ -86,6 +86,11 @@ RECOMP_EXPORT REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle
 }
 
 // Modules:
+RECOMP_EXPORT void REPY_AddCStrToSysPath(const char* filepath) {
+    PythonNative_AddCStrToSysPath(filepath);
+}
+
+
 RECOMP_EXPORT void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys) {
     PythonNative_ConstructModuleFromCStr(identifier, code, (u32)add_to_sys);
 }

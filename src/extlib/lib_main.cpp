@@ -130,7 +130,10 @@ RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
 RECOMP_DLL_FUNC(PythonNative_AddCStrToSysPath) {
     ZoneScoped;
     INTERP_API_HEADER;
-
+    std::u8string new_path = RECOMP_ARG_U8STR(0);
+    auto sys = py::module_::import("sys");
+    py::list sys_path = sys.attr("path");
+    sys_path.append((const char*) new_path.c_str());
 }
 
 
