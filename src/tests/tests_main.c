@@ -664,9 +664,12 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_AddCStrToSysPath("./");
     {
         REPY_FN_SETUP;
+        REPY_Handle vl_handle = REPY_VL_SUH(3, REPY_CreateBool_SUH(true), REPY_CreateStr_SUH("Hello ALex"), REPY_CreateS32_SUH(34));
+        REPY_FN_SET("vl_handle", vl_handle);
         REPY_FN_EXEC_CACHE(sys_path_test,
             "import sys\n"
-            "print(f'{sys.path=}')"
+            "print(f'{sys.path=}')\n"
+            "print(f'{vl_handle=}')\n"
         );
         REPY_FN_CLEANUP;
     }

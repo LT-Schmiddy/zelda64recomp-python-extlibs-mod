@@ -128,6 +128,7 @@ native_libraries = [
         "PythonNative_Eval",
         "PythonNative_EvalCStr",
         "PythonNative_EvalCStrN",
+        "PythonNative_VL",
 
         # Varia
 

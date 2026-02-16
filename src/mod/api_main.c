@@ -523,6 +523,25 @@ RECOMP_EXPORT REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle 
     return PythonNative_EvalCStrN(code, len, global_scope, local_scope);
 }
 
+// Tuple Operations:
+RECOMP_EXPORT REPY_Handle REPY_VL(u32 size, ...) {
+    va_list va;
+    va_start(va, size);
+    REPY_Handle handle = PythonNative_VL(size, va);
+    va_end(va);
+
+    return handle;
+}
+
+RECOMP_EXPORT REPY_Handle REPY_VL_SUH(u32 size, ...) {
+    va_list va;
+    va_start(va, size);
+    REPY_Handle handle = PythonNative_VL(size, va);
+    va_end(va);
+
+    return PythonNative_MakeSUH(handle);
+}
+
 // Python Functions
 RECOMP_EXPORT bool REPY_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs) {
     return PythonNative_Call(func, args, kwargs);

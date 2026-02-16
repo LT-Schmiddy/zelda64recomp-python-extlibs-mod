@@ -16,19 +16,20 @@ RECOMP_IMPORT(".", u32 PythonNative_GetSUH(REPY_Handle py_object));
 RECOMP_IMPORT(".", void PythonNative_SetSUH(REPY_Handle py_object, u32 suh_status));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CopyHandle(REPY_Handle py_object));
 
+// Subinterpreters
 RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_RegisterSubinterpreter());
 RECOMP_IMPORT(".", void PythonNative_PushInterpreter(REPY_InterpreterIndex interpreter_handle));
 RECOMP_IMPORT(".", void PythonNative_PopInterpreter());
 RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetCurrentInterpreter());
 RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetHandleInterpreter(REPY_Handle handle));
 
-// Modules:
+// Modules
 RECOMP_IMPORT(".", void PythonNative_AddCStrToSysPath(const char* filepath));
 RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStr(const char* identifier, const char* code, u32 add_to_sys));
 RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, u32 add_to_sys));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_ImportModule(const char* identifier));
 
-// Casting Primatives:
+// Casting Primatives
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateBool(u32 value));
 RECOMP_IMPORT(".", u32 PythonNative_CastBool(REPY_Handle py_object));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateU8(u8 value));
@@ -46,7 +47,7 @@ RECOMP_IMPORT(".", s32 PythonNative_CastS32(REPY_Handle py_object));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateF32(f32 value));
 RECOMP_IMPORT(".", f32 PythonNative_CastF32(REPY_Handle py_object));
 
-// 64-bit Primatives:
+// 64-bit Primatives
 RECOMP_IMPORT(".", REPY_Handle PythonNative_U64Operation(u64* location, REPY_Handle handle));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_S64Operation(s64* location, REPY_Handle handle));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_F64Operation(f64* location, REPY_Handle handle));
@@ -57,6 +58,7 @@ RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateStrN(const char* string, u32 l
 RECOMP_IMPORT(".", u32 PythonNative_CastStr_Prepare(REPY_Handle py_object));
 RECOMP_IMPORT(".", void PythonNative_CastStr_Copy(u32 len, char* dst));
 
+// Casting Bytestrs
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateByteStr(const char* string));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateByteStrN(const char* string, u32 len));
 RECOMP_IMPORT(".", u32 PythonNative_CastByteStr_Prepare(REPY_Handle py_object));
@@ -85,12 +87,12 @@ RECOMP_IMPORT(".", void PythonNative_DelAttrCStr(REPY_Handle object,  char* key)
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Iter(REPY_Handle object));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Next(REPY_Handle iter, REPY_Handle default_obj, u32 process_stop_iteration));
 
-// Tuple:
+// Tuple
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateTuple(u32 size, va_list va));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_TupleGetIndexS32(REPY_Handle object, int index));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreatePairCStr(char* key, REPY_Handle value));
 
-// Dict Operations:
+// Dict Operations
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CreateDict(u32 size, va_list va));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_DictGet(REPY_Handle dict, REPY_Handle key));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_DictGetCStr(REPY_Handle dict, char* key));
@@ -101,8 +103,7 @@ RECOMP_IMPORT(".", u32 PythonNative_DictHasCStr(REPY_Handle dict, char* key));
 RECOMP_IMPORT(".", void PythonNative_DictDel(REPY_Handle dict, REPY_Handle key));
 RECOMP_IMPORT(".", void PythonNative_DictDelCStr(REPY_Handle dict, char* key));
 
-
-// Execution Operations:
+// Execution Operations
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Compile(REPY_Handle code, REPY_Handle itentifier, REPY_Handle mode));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CompileCStr(const char* code, const char* identifier, REPY_CodeMode mode));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CompileCStrN(const char* code, u32 len,  const char* identifier, REPY_CodeMode mode));
@@ -112,8 +113,9 @@ RECOMP_IMPORT(".", u32 PythonNative_ExecCStrN(const char* code, u32 len, REPY_Ha
 RECOMP_IMPORT(".", REPY_Handle PythonNative_Eval(REPY_Handle code, REPY_Handle global_scope, REPY_Handle local_scope));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalCStr(const char* code, REPY_Handle global_scope, REPY_Handle local_scope));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_EvalCStrN(const char* code, u32 len, REPY_Handle global_scope, REPY_Handle local_scope));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_VL(u32 size, va_list va));
 
-// Function Calling Operations:
+// Function Calling Operations
 RECOMP_IMPORT(".", u32 PythonNative_Call(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CallReturn(REPY_Handle func, REPY_Handle args, REPY_Handle kwargs));
 RECOMP_IMPORT(".", u32 PythonNative_CallAttr(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs));
@@ -121,13 +123,14 @@ RECOMP_IMPORT(".", u32 PythonNative_CallAttrCStr(REPY_Handle func, const char* n
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CallAttrReturn(REPY_Handle func, REPY_Handle name, REPY_Handle args, REPY_Handle kwargs));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CallAttrCStrReturn(REPY_Handle func, const char* name, REPY_Handle args, REPY_Handle kwargs));
 
-// Exception Handling:
+// Exception Handling
 RECOMP_IMPORT(".", u32 PythonNative_IsErrorSet());
 RECOMP_IMPORT(".", REPY_Handle PythonNative_GetErrorType());
 RECOMP_IMPORT(".", REPY_Handle PythonNative_GetErrorTrace());
 RECOMP_IMPORT(".", REPY_Handle PythonNative_GetErrorValue());
 RECOMP_IMPORT(".", void PythonNative_ClearError());
 
+// ZipFile Access:
 RECOMP_IMPORT(".", REPY_Handle PythonNative_GetZipFileFromPathCStr(const char* filepath));
 
 // Logging

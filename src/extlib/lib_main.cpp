@@ -1117,7 +1117,30 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
+RECOMP_DLL_FUNC(PythonNative_VL)  {
+    uint32_t size = RECOMP_ARG(uint32_t, 0);
+    REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 1);
 
+    try {
+        py::dict new_dict;
+
+        for (int i = 0; i < size; i++) {
+            py::object* obj = controller->get_py_object(va_args_ptr[i]);
+            new_dict[py::str(std::format("_{}", i))] = *obj;
+            FrameMark;
+        }
+
+        REPY_Handle new_handle = controller->create_handle(&new_dict);
+        controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, new_handle);
+
+    } catch (py::error_already_set &e) {
+        controller->handle_exception(&e);
+        controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
+
+}
 
 // Python Functions
 RECOMP_DLL_FUNC(PythonNative_Call) {

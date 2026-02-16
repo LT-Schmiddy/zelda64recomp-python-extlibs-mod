@@ -3042,6 +3042,9 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope
  */
 REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
 
+REPY_IMPORT(REPY_Handle REPY_VL(u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_VL_SUH(u32 size, ...));
+
 /** @}*/
 
 /** \defgroup repy_fn_call_funcs Python Function Calling
