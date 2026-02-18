@@ -90,7 +90,6 @@ RECOMP_EXPORT void REPY_AddCStrToSysPath(const char* filepath) {
     PythonNative_AddCStrToSysPath(filepath);
 }
 
-
 RECOMP_EXPORT void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys) {
     PythonNative_ConstructModuleFromCStr(identifier, code, (u32)add_to_sys);
 }
@@ -213,8 +212,6 @@ RECOMP_EXPORT REPY_Handle REPY_CreatePtr_SUH(void* value) {
 RECOMP_EXPORT void* REPY_CastPtr(REPY_Handle object) {
     return (void*) PythonNative_CastS32(object);
 }
-
-
 
 // 64-bit Primatives:
 RECOMP_EXPORT REPY_Handle REPY_CreateU64(u64 value) {
@@ -588,6 +585,6 @@ RECOMP_EXPORT void REPY_ClearError() {
     PythonNative_ClearError();
 }
 
-RECOMP_EXPORT REPY_Handle REPY_GetNrmZipFileFromPath(const char* filepath) {
-    return PythonNative_GetZipFileFromPathCStr(filepath);
+RECOMP_EXPORT REPY_Handle REPY_GetZipFileFromPath(const char* filepath) {
+    return PythonNative_GetFileFromPathCStr(filepath);
 }

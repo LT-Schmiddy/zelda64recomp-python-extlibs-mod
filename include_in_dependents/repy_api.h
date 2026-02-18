@@ -207,6 +207,20 @@ typedef struct REPY_IfStmtHelper {
  *  @{
  */
 
+#define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
+REPY_InterpreterIndex subinterp_identifier = 0; \
+REPY_ON_INIT void subinterp_identifier ## _init(int success) { \
+    if (!success) return; \
+    subinterp_identifier = REPY_RegisterSubinterpreter(); \
+    recomp_printf("Subinterpreter %s Initialized\n", #subinterp_identifier); \
+    REPY_PushInterpreter(subinterp_identifier); \
+    REPY_AddNrmToSysPath(); \
+    REPY_PopInterpreter(); \
+} \
+
+#define REPY_EXTERN_SUBINTERPRETER(subinterp_identifier) \
+extern REPY_InterpreterIndex subinterp_identifier; \
+
 /**
  * @brief Adds this .nrm file to Python's module search path.
  * 
@@ -214,7 +228,7 @@ typedef struct REPY_IfStmtHelper {
  * including them under the `additional_files` section of your mod.toml
  * 
  */
-#define PRE_INIT_ADD_NRM_TO_MODULE_PATH \
+#define REPY_PREINIT_ADD_NRM_TO_SYS_PATH \
 REPY_ON_PRE_INIT void _repy_register_nrm () { \
     const unsigned char* nrm_file_path = recomp_get_mod_file_path(); \
     REPY_PreInitAddToModuleSearchPath(nrm_file_path); \
@@ -1942,6 +1956,12 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle))
 
 REPY_IMPORT(void REPY_AddCStrToSysPath(const char* filepath));
 
+inline void REPY_AddNrmToSysPath() {
+    const char* filepath = (const char*) recomp_get_mod_file_path();
+    REPY_AddCStrToSysPath(filepath);
+    recomp_free((void*) filepath);
+}
+
 /**
  * @brief Construct a new Python module from a NULL-terminated code string, importable by name.
  * 
@@ -3265,11 +3285,11 @@ REPY_IMPORT(void REPY_ClearError());
  *  @{
  */
 
-REPY_IMPORT(REPY_Handle REPY_GetNrmZipFileFromPath(const char* filepath));
+REPY_IMPORT(REPY_Handle REPY_GetZipFileFromPath(const char* filepath));
 
 inline REPY_Handle REPY_GetNrmZipFile() {
     const char* filepath = (const char*) recomp_get_mod_file_path();
-    REPY_Handle retVal = REPY_GetNrmZipFileFromPath(filepath);
+    REPY_Handle retVal = REPY_GetZipFileFromPath(filepath);
     recomp_free((void*) filepath);
     return retVal;
 }

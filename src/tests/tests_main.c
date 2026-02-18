@@ -6,8 +6,8 @@
 #include "repy_api.h"
 #include "test_utils.h"
 
-// REPY_INCBIN_MODULE(test_module, "test_module.py");
-PRE_INIT_ADD_NRM_TO_MODULE_PATH;
+REPY_PREINIT_ADD_NRM_TO_SYS_PATH;
+REPY_REGISTER_SUBINTERPRETER(test_subinterp);
 
 int _test_cases = 0;
 int _test_cases_passed = 0; 
@@ -604,9 +604,6 @@ void load_repl() {
 REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_PushInterpreter(REPY_MAIN_INTERPRETER);
 
-    // REPY_Handle builtins = REPY_ImportModule("builtins");
-    // bui
-
     // Testing Handle Operations:
     REPY_Handle testbool = REPY_CreateBool(true);
     validate("First assigned handle (testbool) == 1", testbool == 1);
@@ -642,7 +639,6 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     //     REPY_FN_CLEANUP;
     // }
 
-    REPY_InterpreterIndex test_subinterp = REPY_RegisterSubinterpreter();
     REPY_PushInterpreter(test_subinterp);
     interpreter_test_suite();
     // {

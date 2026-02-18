@@ -134,6 +134,7 @@ RECOMP_DLL_FUNC(PythonNative_AddCStrToSysPath) {
     auto sys = py::module_::import("sys");
     py::list sys_path = sys.attr("path");
     sys_path.append((const char*) new_path.c_str());
+    PLOGI.printf("Adding '%s' to sys.path", new_path.c_str());
 }
 
 
@@ -1326,7 +1327,7 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
 
 // ====================================== Zipfile: ====================================== 
 // Quickly generates ZipFile
-RECOMP_DLL_FUNC(PythonNative_GetZipFileFromPathCStr) {
+RECOMP_DLL_FUNC(PythonNative_GetFileFromPathCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
     std::u8string filepath = RECOMP_ARG_U8STR(0);

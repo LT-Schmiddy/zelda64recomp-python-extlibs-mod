@@ -131,7 +131,7 @@ RECOMP_IMPORT(".", REPY_Handle PythonNative_GetErrorValue());
 RECOMP_IMPORT(".", void PythonNative_ClearError());
 
 // ZipFile Access:
-RECOMP_IMPORT(".", REPY_Handle PythonNative_GetZipFileFromPathCStr(const char* filepath));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_GetFileFromPathCStr(const char* filepath));
 
 // Logging
 RECOMP_IMPORT(".", void PythonNative_SetLogMetaData(u32 log_level, const char* func, u32 line_number, const char* file_name));
