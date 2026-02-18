@@ -1118,21 +1118,30 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_VL)  {
-    uint32_t size = RECOMP_ARG(uint32_t, 0);
-    REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 1);
+    py::dict new_dict;
+    py::dict* target_dict = &new_dict;
 
+    // use the provided dict, if one exists.
+    REPY_Handle retVal = RECOMP_ARG(REPY_Handle, 0);
+    if (retVal) {
+        target_dict = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+    }
+
+    uint32_t size = RECOMP_ARG(uint32_t, 1);
+    REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 2);
     try {
-        py::dict new_dict;
-
         for (int i = 0; i < size; i++) {
             py::object* obj = controller->get_py_object(va_args_ptr[i]);
-            new_dict[py::str(std::format("_{}", i))] = *obj;
+            (*target_dict)[py::str(std::format("_{}", i))] = *obj;
             FrameMark;
         }
 
-        REPY_Handle new_handle = controller->create_handle(&new_dict);
+        // if a dict was provided, don't make a new handle. return the old one.
+        if (target_dict == &new_dict) {
+            retVal = controller->create_handle(target_dict);
+        }
         controller->release_suh_handles();
-        RECOMP_RETURN(REPY_Handle, new_handle);
+        RECOMP_RETURN(REPY_Handle, retVal);
 
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);

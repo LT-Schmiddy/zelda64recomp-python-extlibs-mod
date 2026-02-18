@@ -524,19 +524,19 @@ RECOMP_EXPORT REPY_Handle REPY_EvalCStrN(const char* code, u32 len, REPY_Handle 
 }
 
 // Tuple Operations:
-RECOMP_EXPORT REPY_Handle REPY_VL(u32 size, ...) {
+RECOMP_EXPORT REPY_Handle REPY_VL(REPY_Handle dict, u32 size, ...) {
     va_list va;
     va_start(va, size);
-    REPY_Handle handle = PythonNative_VL(size, va);
+    REPY_Handle handle = PythonNative_VL(dict, size, va);
     va_end(va);
 
     return handle;
 }
 
-RECOMP_EXPORT REPY_Handle REPY_VL_SUH(u32 size, ...) {
+RECOMP_EXPORT REPY_Handle REPY_VL_SUH(REPY_Handle dict, u32 size, ...) {
     va_list va;
     va_start(va, size);
-    REPY_Handle handle = PythonNative_VL(size, va);
+    REPY_Handle handle = PythonNative_VL(dict, size, va);
     va_end(va);
 
     return PythonNative_MakeSUH(handle);
