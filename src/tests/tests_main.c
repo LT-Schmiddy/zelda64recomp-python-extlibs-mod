@@ -20,8 +20,6 @@ void validate(char* case_name, bool case_stmt) {
     } else {
         recomp_printf("Case %s %s\n", case_stmt ? "Passed:" : "Failed!", case_name);
     }
-
-
 }
 
 // These will streamline the process of testing the primatives create/cast.
@@ -661,7 +659,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     //     );
     //     REPY_FN_CLEANUP;
     // }
-    REPY_AddCStrToSysPath("./");
+    // REPY_AddCStrToSysPath("./");
     {
         REPY_FN_SETUP;
         REPY_Handle vl_handle = REPY_VL_SUH(0, 3, REPY_CreateBool_SUH(true), REPY_CreateStr_SUH("Hello Alex"), REPY_CreateS32_SUH(34));
@@ -688,7 +686,18 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
         );
         REPY_FN_CLEANUP;
     }
-    
+
+    {
+        REPY_FN_SETUP;
+        REPY_FN_FOREACH_CACHE(foreach_test1, "i", "[1, 2, 3, 4, 5]") {
+            REPY_FN_EXEC_CACHE(
+                foreach_print_test,
+                "print(i)\n"
+            );
+        }
+        REPY_FN_CLEANUP;
+    }
+
     if (recomp_get_config_u32("load_repl")) {
         // REPY_PushInterpreter(test_subinterp);
         // load_repl();
