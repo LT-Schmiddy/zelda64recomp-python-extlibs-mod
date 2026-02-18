@@ -90,11 +90,11 @@ RECOMP_EXPORT REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char*
 }
 
 RECOMP_EXPORT void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain) {
+    PythonNative_Release(chain->eval_expression_bytecode);
     // Destroy helper chain recursively.
     if (chain->next != NULL) {
         REPY_IfStmtChain_Destroy(chain->next);
     }
-    PythonNative_Release(chain->eval_expression_bytecode);
     recomp_free(chain);
 }
 
