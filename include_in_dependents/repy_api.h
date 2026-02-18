@@ -553,7 +553,7 @@ REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_CreateDict(0) \
  * @param interp_index a valid interpreter index. Should be of the type `REPY_InterpreterIndex`.
  * @param globals The Python `dict` to use as a global and local scope.
  */
-#define REPY_FN_SETUP_GLOBALS_ONLY(interp_index, globals) \
+#define REPY_FN_SETUP_INTERP_GLOBALS_ONLY(interp_index, globals) \
 REPY_PushInterpreter(interp_index); \
 REPY_Handle REPY_FN_GLOBAL_SCOPE = globals; \
 REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE \
@@ -1745,7 +1745,7 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
  * using the variable name of `var_name`.
  * 
  * Much like `REPY_FOREACH`, A `REPY_IteratorHelper` object is created to manage the iteration process. The variable name for this helper
- * in the format of `bytecode_handle ## _iter). So if your `bytecode_handle` is `a`, the iterator will be called `a_iter`. In addition to
+ * in the format of `bytecode_handle ## _iter)`. So if your `bytecode_handle` is `a`, the iterator will be called `a_iter`. In addition to
  * being added to the scope, the current object of the loop can be accessed via `iter_identifier->curr`, and the index of that object 
  * can be accessed via `iter_identifier->index`. See the `REPY_IteratorHelper` documentation for more information.
  * 
