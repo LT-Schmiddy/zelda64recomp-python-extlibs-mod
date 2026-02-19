@@ -695,10 +695,6 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     }
 
     if (recomp_get_config_u32("load_repl")) {
-        // REPY_PushInterpreter(test_subinterp);
-        // load_repl();
-        // REPY_PopInterpreter();
-
         load_repl();
     }
     REPY_PopInterpreter();

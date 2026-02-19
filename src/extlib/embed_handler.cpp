@@ -7,7 +7,7 @@
 // It contains all the .py files of the Python standard library.
 INCBIN(python_stdlib, "python_stdlib.zip");
 
-// Interestingly, MSVC has trouble using the incbin macro. And by default, clang
+// Interestingly, MSVC has trouble using the INCBIN macro. And by default, clang
 // Seems to have the same issue when running on windows. Not entirely sure why.
 // However, zig is able to properly compile and include this in windows builds.
 // For that reason, zig is critical for compiling this project on Windows,

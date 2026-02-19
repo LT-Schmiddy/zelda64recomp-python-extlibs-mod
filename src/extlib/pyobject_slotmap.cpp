@@ -102,7 +102,7 @@ void PyObjectSlotMap::del(REPY_Handle handle) {
     REPY_Handle page_max_handle = page->pos + 0xFFFF;
     bool preserve_page = false;
 
-    // Don't delete if we KNOW we're gonna allocate on this level4 again. 
+    // Don't delete if we KNOW we're gonna allocate on this page again. 
     if (page->pos <= next_handle_val && next_handle_val <= page_max_handle) {
         preserve_page = true;
     }
