@@ -3,6 +3,7 @@ target_sources(${TARGET_NAME} PUBLIC
     "embed_handler.cpp"
     "lib_main.cpp"
     "pyobject_slotmap.cpp"
-    "recomp_mem.cpp"
     "subinterpreter.cpp"
 )
+
+add_subdirectory("./embedded_modules")

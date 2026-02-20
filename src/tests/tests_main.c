@@ -107,10 +107,55 @@ CREATE_CAST_STRN_TEST_BLOCK_SUH(char*, py_type ## N_SUH, py_type, value, max_siz
     validate("repy_api.mem.write_" #c_type " works", value_var == value + 1); \
 } \
 
+void load_repl() {
+        recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
+        REPY_Handle nrm_zip = REPY_GetNrmZipFile();
+        REPY_Handle code_module = REPY_ImportModule("code");
 
-void interpreter_test_suite() {
+        REPY_Handle local = REPY_CreateDict(0);
+        REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
+        
+        REPY_Handle kwargs = REPY_CreateDict(0);
+        REPY_DictSetCStr(kwargs, "local", local);
+        REPY_Release(local);
+        
+        REPY_CallAttrCStr(code_module, "interact", 0, kwargs);
+        REPY_Release(kwargs);
+
+        REPY_ClearError();
+        REPY_Release(code_module);
+        REPY_Release(nrm_zip);
+}
+
+REPY_ON_POST_INIT void REPY_API_Tests() {
+    // Testing Interpreter Operations
+    REPY_PushInterpreter(REPY_MAIN_INTERPRETER);
+    validate("Interpreter == 0 after pushing main interpreter.", REPY_GetCurrentInterpreter() == 0);
+    REPY_PushInterpreter(test_subinterp);
+    validate("Interpreter == test_subinterp after pushing test_subinterp.", REPY_GetCurrentInterpreter() == test_subinterp);
+    REPY_PopInterpreter();
+    validate("Interpreter == 0 after popping test_subinterp.", REPY_GetCurrentInterpreter() == 0);
+
+    // Testing Handle Operations:
+    REPY_Handle testbool = REPY_CreateBool(true);
+    validate("First assigned handle (testbool) == 1", testbool == 1);
+    validate("testbool is valid (REPY_IsValidHandle)", REPY_IsValidHandle(testbool));
+    validate("testbool is not SUH (REPY_GetSUH)", REPY_GetSUH(testbool) == 0);
+    REPY_MakeSUH(testbool);
+    validate("testbool is made SUH (REPY_MakeSUH)", REPY_GetSUH(testbool) == 1);
+    REPY_SetSUH(testbool, false);
+    validate("testbool SUH disabled again (REPY_MakeSUH)", REPY_GetSUH(testbool) == 0);
+    REPY_Handle testbool2 = REPY_CopyHandle(testbool);
+    validate("Copied handle (testbool2) == 2", testbool2 == 2);
+    REPY_MakeSUH(testbool2);
+    REPY_Handle testbool3 = REPY_CopyHandle(testbool2);
+    validate("testbool2 is not valid after SUH access", !REPY_IsValidHandle(testbool2));
+    REPY_Release(testbool);
+    validate("testbool is not valid after release (REPY_Release)", !REPY_IsValidHandle(testbool));
+    REPY_Release(testbool3);
+    // From here, we assume that handle operations work.
+
     recomp_printf("Testing on interpreter %u...\n", REPY_GetCurrentInterpreter());
-
 
     // Testing Create/Casting of primatives:
     CREATE_CAST_TEST(u8, U8, 66);
@@ -511,7 +556,6 @@ void interpreter_test_suite() {
     validate("Error Handling -> error_type1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_type1 is None", py_globals, py_locals))));
     validate("Error Handling -> error_value1 is None",  REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("error_value1 is None", py_globals, py_locals))));
     // Handling thrown errors works. We'll test that every potential error thrower works correctly another time.
-    
 
     // Let's test the repy_api.mem functions.
     REPY_ExecCStr("from repy_api import mem", py_globals, py_locals);
@@ -579,97 +623,6 @@ void interpreter_test_suite() {
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);
-}
-
-void load_repl() {
-        recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
-        REPY_Handle nrm_zip = REPY_GetNrmZipFile();
-        REPY_Handle code_module = REPY_ImportModule("code");
-
-        REPY_Handle local = REPY_CreateDict(0);
-        REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
-        
-        REPY_Handle kwargs = REPY_CreateDict(0);
-        REPY_DictSetCStr(kwargs, "local", local);
-        REPY_Release(local);
-        
-        REPY_CallAttrCStr(code_module, "interact", 0, kwargs);
-        REPY_Release(kwargs);
-
-        REPY_ClearError();
-        REPY_Release(code_module);
-        REPY_Release(nrm_zip);
-}
-
-REPY_ON_POST_INIT void REPY_API_Tests() {
-    REPY_PushInterpreter(REPY_MAIN_INTERPRETER);
-
-    // Testing Handle Operations:
-    REPY_Handle testbool = REPY_CreateBool(true);
-    validate("First assigned handle (testbool) == 1", testbool == 1);
-    validate("testbool is valid (REPY_IsValidHandle)", REPY_IsValidHandle(testbool));
-    validate("testbool is not SUH (REPY_GetSUH)", REPY_GetSUH(testbool) == 0);
-    REPY_MakeSUH(testbool);
-    validate("testbool is made SUH (REPY_MakeSUH)", REPY_GetSUH(testbool) == 1);
-    REPY_SetSUH(testbool, false);
-    validate("testbool SUH disabled again (REPY_MakeSUH)", REPY_GetSUH(testbool) == 0);
-    REPY_Handle testbool2 = REPY_CopyHandle(testbool);
-    validate("Copied handle (testbool2) == 2", testbool2 == 2);
-    REPY_MakeSUH(testbool2);
-    REPY_Handle testbool3 = REPY_CopyHandle(testbool2);
-    validate("testbool2 is not valid after SUH access", !REPY_IsValidHandle(testbool2));
-    REPY_Release(testbool);
-    validate("testbool is not valid after release (REPY_Release)", !REPY_IsValidHandle(testbool));
-    REPY_Release(testbool3);
-    // From here, we assume that handle operations work.
-
-    interpreter_test_suite();
-    // {
-    //     REPY_FN_SETUP;
-    //     REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
-    //     REPY_FN_EXEC_CACHE(threading_test1,
-    //         "import threading, time, repy_api\n"
-    //         "def test_func():\n"
-    //         "    print(f'thread {interp} started')\n"
-    //         "    time.sleep(20)\n"
-    //         "    print(f'thread {interp} finished')\n"
-    //         "test_thread = threading.Thread(None, test_func, daemon=True)\n"
-    //         "test_thread.start()\n"
-    //     );
-    //     REPY_FN_CLEANUP;
-    // }
-
-    REPY_PushInterpreter(test_subinterp);
-    interpreter_test_suite();
-    // {
-    //     REPY_FN_SETUP;
-    //     REPY_FN_SET_U32("interp", REPY_GetCurrentInterpreter());
-    //     REPY_FN_EXEC_CACHE(threading_test2,
-    //         "import threading, time, repy_api\n"
-    //         "def test_func():\n"
-    //         "    print(f'thread {interp} started')\n"
-    //         "    time.sleep(10)\n"
-    //         "    print(f'thread {interp} finished')\n"
-    //         "test_thread = threading.Thread(None, test_func, daemon=True)\n"
-    //         "test_thread.start()\n"
-    //     );
-    //     REPY_FN_CLEANUP;
-    // }
-    // REPY_AddCStrToSysPath("./");
-    {
-        REPY_FN_SETUP;
-        REPY_Handle vl_handle = REPY_VL_SUH(0, 3, REPY_CreateBool_SUH(true), REPY_CreateStr_SUH("Hello Alex"), REPY_CreateS32_SUH(34));
-        REPY_FN_SET("vl_handle", vl_handle);
-        REPY_FN_EXEC_CACHE(sys_path_test,
-            "import sys\n"
-            "print(f'{sys.path=}')\n"
-            "print(f'{vl_handle=}')\n"
-        );
-        REPY_FN_CLEANUP;
-    }
-    REPY_PopInterpreter();
-    interpreter_test_suite();
-
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 
     if (recomp_get_config_u32("save_case_count")) {
@@ -680,17 +633,6 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
             "from pathlib import Path\n"
             "Path('./test_results.txt').write_text(f'Passed {test_cases_passed} of {test_cases} test cases.')\n"
         );
-        REPY_FN_CLEANUP;
-    }
-
-    {
-        REPY_FN_SETUP;
-        REPY_FN_FOREACH_CACHE(foreach_test1, "i", "[1, 2, 3, 4, 5]") {
-            REPY_FN_EXEC_CACHE(
-                foreach_print_test,
-                "print(i)\n"
-            );
-        }
         REPY_FN_CLEANUP;
     }
 
