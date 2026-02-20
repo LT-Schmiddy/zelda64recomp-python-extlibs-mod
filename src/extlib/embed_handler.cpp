@@ -51,6 +51,7 @@ static const char* dll_modules[] = {
     "_multiprocessing.dll",
     "_overlapped.dll",
     "_queue.dll",
+    "_remote_debugging.dll",
     "_socket.dll",
     "_sqlite3.dll",
     "_ssl.dll",
@@ -68,6 +69,7 @@ static const char* dll_modules[] = {
     "_uuid.dll",
     "_wmi.dll",
     "_zoneinfo.dll",
+    "_zstd.dll",
     NULL
 };
 
@@ -78,6 +80,7 @@ static const char* other_dlls[] = {
     "sqlite3.dll",
     "tcl86t.dll",
     "tk86t.dll",
+    "zlib1.dll",
     NULL
 };
 
