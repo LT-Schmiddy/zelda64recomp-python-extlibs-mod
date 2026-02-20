@@ -4,6 +4,14 @@
 
 PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_interpreters::per_interpreter_gil()) {
     ZoneScoped;
+    m.def("create_memoryview_raw", [](int32_t ptr, uint32_t size){
+        ZoneScopedN("_recomp_mem.create_memoryview_raw");
+
+        void* rptr = RDRAM_TO_PTR(controller->get_rdram(), void, ptr);
+        return py::memoryview::from_memory(rptr, size);
+    });
+
+    ZoneScoped;
     m.def("read_u8", [](int32_t ptr){
         ZoneScopedN("_recomp_mem.read_u8");
         uint8_t val;
