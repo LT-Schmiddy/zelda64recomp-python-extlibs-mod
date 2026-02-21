@@ -97,12 +97,9 @@ def write_byte_str_n(*args, **kwargs):
 def read_bytes_n(*args, **kwargs):
     ...
     
-def write_bytes_n(*args, **kwargs):
-    ...
-    
 def read_bytearray_n(*args, **kwargs):
     ...
     
-def write_bytearray_n(*args, **kwargs):
+def write_buffer_n(*args, **kwargs):
     ...
     
