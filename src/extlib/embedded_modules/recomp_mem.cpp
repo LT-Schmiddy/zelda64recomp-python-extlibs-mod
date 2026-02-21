@@ -4,11 +4,6 @@
 
 PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_interpreters::per_interpreter_gil()) {
     ZoneScoped;
-    m.def("create_memoryview_raw", [](int32_t ptr, uint32_t size){
-        ZoneScopedN("_recomp_mem.create_memoryview_raw");
-        void* rptr = RDRAM_TO_PTR(controller->get_rdram(), void, ptr);
-        return py::memoryview::from_memory(rptr, size);
-    });
 
     m.def("read_u8", [](int32_t ptr){
         ZoneScopedN("_recomp_mem.read_u8");
@@ -235,35 +230,22 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
 
     
     // Memory Blocks:
+    m.def("create_raw_memoryview", [](int32_t ptr, uint32_t size){
+        ZoneScopedN("_recomp_mem.create_raw_memoryview");
+        void* rptr = RDRAM_TO_PTR(controller->get_rdram(), void, ptr);
+        return py::memoryview::from_memory(rptr, size);
+    });
+
     m.def("read_bytes_n", [](int32_t ptr, uint32_t size) {
         ZoneScopedN("_recomp_mem.read_bytes_n");
         uint8_t* rdram = controller->get_rdram();
-
         uint8_t* buf = new uint8_t[size];
 
         memcpy_from_recomp(rdram, buf, ptr, size);
-
         py::bytes retVal = py::bytes((char*)buf, size);
         delete[] buf;
 
         return retVal;
-    });
-
-    m.def("write_bytes_n", [](int32_t ptr, py::bytes bytes, uint32_t size) {
-        ZoneScopedN("_recomp_mem.write_bytes_n");
-        uint8_t* rdram = controller->get_rdram(); // Used by MEM_B
-
-        uint32_t index = 0;
-        for (auto byte : bytes) {
-            if (index == size) {
-                break;
-            } else {
-                index++;
-            }
-            
-            MEM_B(ptr++, 0) = byte.cast<uint8_t>();
-            FrameMark;
-        }
     });
 
     m.def("read_bytearray_n", [](int32_t ptr, uint32_t size) {
@@ -280,19 +262,21 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
         return retVal;
     });
 
-    m.def("write_bytearray_n", [](int32_t ptr, py::bytearray bytes, uint32_t size) {
-        ZoneScopedN("_recomp_mem.write_bytearray_n");
+    m.def("write_buffer_n", [](int32_t ptr, py::buffer bytes, uint32_t size) {
+        ZoneScopedN("_recomp_mem.write_buffer_n");
         uint8_t* rdram = controller->get_rdram(); // Used by MEM_B
+        
+        // Accessing underlying byte array.
+        py::buffer_info info = bytes.request();
+        uint8_t* buf_data = (uint8_t*)info.ptr;
+        py::ssize_t buf_size = info.size; 
 
-        uint32_t index = 0;
-        for (auto byte : bytes) {
-            if (index == size) {
+        for (py::ssize_t i = 0; i < buf_size; i++) {
+            if (i == size) {
                 break;
-            } else {
-                index++;
             }
 
-            MEM_B(ptr++, 0) = byte.cast<uint8_t>();
+            MEM_B(ptr++, 0) = buf_data[i];
             FrameMark;
         }
     });
