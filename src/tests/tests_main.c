@@ -17,7 +17,9 @@ void validate(char* case_name, bool case_stmt) {
 
     if (case_stmt) {
         _test_cases_passed++;
-    } else {
+    }
+    
+    if ((!case_stmt) || recomp_get_config_u32("print_success_cases")) {
         recomp_printf("Case %s %s\n", case_stmt ? "Passed:" : "Failed!", case_name);
     }
 }
@@ -562,8 +564,8 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
 
     REPY_MEM_TEST(u8, U8, 66);
     REPY_MEM_TEST(u16, U16, 700);
-    REPY_MEM_TEST(u32, U32, 80000);
-    REPY_MEM_TEST(u64, U64, 9000000000);
+    REPY_MEM_TEST(u32, U32, 0x11223344);
+    REPY_MEM_TEST(u64, U64, 0x1122334455667788);
     
     REPY_MEM_TEST(s8, S8, -66);
     REPY_MEM_TEST(s16, S16, -700);
@@ -613,13 +615,15 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_DictSetCStr(py_locals, "mem_bytes_ptr", REPY_CreatePtr_SUH((void*)&mem_bytes));
     REPY_DictSetCStr(py_locals, "mem_bytes_value", REPY_MakeSUH(REPY_MemcpyToBytes(mem_bytes, 20, false)));
     validate("repy_api.mem.read_bytes_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytes_n(mem_bytes_ptr, 20) == mem_bytes_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_bytes_n(mem_bytes_ptr, b'hello recomp', 20)", py_globals, py_locals);
-    validate("repy_api.mem.write_bytes_n matches target", strncmp((const char*)mem_bytes, "hello recomp", 20) == 0);
+    REPY_ExecCStr("mem.write_buffer_n(mem_bytes_ptr, b'hello recomp', 20)", py_globals, py_locals);
+    validate("repy_api.mem.write_buffer_n matches target when using `bytes`", strncmp((const char*)mem_bytes, "hello recomp", 20) == 0);
     
     REPY_DictSetCStr(py_locals, "mem_bytearray_value", REPY_MakeSUH(REPY_MemcpyToByteArray(mem_bytes, 20, false)));
     validate("repy_api.mem.read_bytearray_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytearray_n(mem_bytes_ptr, 20) == mem_bytearray_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_bytearray_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
-    validate("repy_api.mem.write_bytearray_n matches target", strncmp((const char*)string_byte_str, "hello recomp", 20) == 0);
+    REPY_ExecCStr("mem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
+    validate("repy_api.mem.write_buffer_n matches target when using `bytearray`", strncmp((const char*)string_byte_str, "hello recomp", 20) == 0);
+
+    REPY_ExecCStr("for i in range(0, 1000):\n\tmem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);

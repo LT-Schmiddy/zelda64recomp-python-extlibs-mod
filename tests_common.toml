@@ -23,6 +23,16 @@ native_libraries = [
 ]
 
 [[manifest.config_options]]
+id = "print_success_cases"
+name = "Print Successful Test Cases"
+description = """
+Print successful test cases along with the failures.
+"""
+type = "Enum"
+options = [ "Off", "On"]
+default = "Off"
+
+[[manifest.config_options]]
 id = "save_case_count"
 name = "Save Test Case Count"
 description = """
