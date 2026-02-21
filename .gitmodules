@@ -21,3 +21,6 @@
 [submodule "extern/tracy"]
 	path = extern/tracy
 	url = https://github.com/wolfpld/tracy
+[submodule "syms/MarioKart64RecompSyms"]
+	path = syms/MarioKart64RecompSyms
+	url = https://github.com/sonicdcer/MarioKart64RecompSyms

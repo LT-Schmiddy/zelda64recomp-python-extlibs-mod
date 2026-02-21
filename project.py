@@ -79,6 +79,19 @@ sf64_toml_data = {
     }
 }
 
+mk64_toml_data = {
+    "manifest": {
+        "game_id": "mk64",
+        "minimum_recomp_version": "0.0.9"
+    },
+    "inputs": {
+        "func_reference_syms_file": str(root_dir.joinpath("./syms/MarioKart64RecompSyms/mk64.us.syms.toml")),
+        "data_reference_syms_files": [ 
+            str(root_dir.joinpath("./syms/MarioKart64RecompSyms/mk64.us.datasyms.toml"))
+        ]
+    }
+}
+
 mod_toml_data = {
     "manifest": {
         "id": project_name,
@@ -287,9 +300,11 @@ populate_repy_api_file_injection(repy_api_files, repy_api_src, Path("repy_api"))
 mm_mod_toml, mm_mod_nrm = add_toml_and_nrm_job("mm", "mod", mod_build_dir, [mod_common_data, mm_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
 bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", mod_build_dir, [mod_common_data, bk_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
 sf64_mod_toml, sf64_mod_nrm = add_toml_and_nrm_job("sf64", "mod", mod_build_dir, [mod_common_data, sf64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
+mk64_mod_toml, mk64_mod_nrm = add_toml_and_nrm_job("mk64", "mod", mod_build_dir, [mod_common_data, mk64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
 mm_tests_toml, mm_tests_nrm = add_toml_and_nrm_job("mm", "tests", tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 bk_tests_toml, bk_tests_nrm = add_toml_and_nrm_job("bk", "tests", tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 sf64_tests_toml, sf64_tests_nrm = add_toml_and_nrm_job("sf64", "tests", tests_build_dir, [tests_common_data, sf64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+mk64_tests_toml, mk64_tests_nrm = add_toml_and_nrm_job("mk64", "tests", tests_build_dir, [tests_common_data, mk64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 
 # Extlib Compilation
 extlib_name = "RecompPythonNative"
@@ -523,6 +538,7 @@ cmake_debug_builds = [i for i in cmake_build_groups["Debug"].values()]
 add_build_output("zelda_debug", "test_env/zelda/mods", [mm_mod_nrm, mm_tests_nrm] + cmake_debug_builds)
 add_build_output("bk_debug", "test_env/bk/mods", [bk_mod_nrm, bk_tests_nrm] + cmake_debug_builds)
 add_build_output("sf64_debug", "test_env/sf64/mods", [sf64_mod_nrm, sf64_tests_nrm] + cmake_debug_builds)
+add_build_output("mk64_debug", "test_env/mk64/mods", [mk64_mod_nrm, mk64_tests_nrm] + cmake_debug_builds)
 
 def package_url_from_git() -> str:
     result = subprocess.run(
@@ -564,6 +580,7 @@ cmake_release_builds = [i for i in cmake_build_groups["Release"].values()]
 add_thunderstore_package("mm", "RecompExternalPython_for_Zelda64Recompiled", project_version_string, [mm_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("bk", "RecompExternalPython_for_BanjoRecompiled", project_version_string, [bk_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled", project_version_string, [sf64_mod_nrm] + cmake_release_builds)
+add_thunderstore_package("mk64", "RecompExternalPython_for_MarioKart64Recompiled", project_version_string, [mk64_mod_nrm] + cmake_release_builds)
 
 clean_paths: list[Path] = [
     build_dir
