@@ -10,7 +10,6 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
         return py::memoryview::from_memory(rptr, size);
     });
 
-    ZoneScoped;
     m.def("read_u8", [](int32_t ptr){
         ZoneScopedN("_recomp_mem.read_u8");
         uint8_t val;

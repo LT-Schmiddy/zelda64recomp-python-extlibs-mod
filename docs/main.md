@@ -5,4 +5,4 @@ the de facto solution is to compile an external shared library (commonly referre
 This solution does work, but has several major drawbacks for mod developers:
 
 * Shared libraries need to be natively compiled for each platform that the mod developer wants to support. That means producing a `.dll` file for Windows, a `.dylib` file for MacOS, and a `.so` file for Linux users. Mod templates and build scripts to facilitate cross-compilation do exist, but it's still not perfect.
-* Exchanging data between the recompiled game memory and the extlib memory
+* Exchanging data between the recompiled game memory and the extlib memory.
