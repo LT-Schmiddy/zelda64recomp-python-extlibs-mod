@@ -20,6 +20,12 @@ PySubController::~PySubController() {
     if (_is_active) {
         deactivate();
     }
+
+    // If index is 0, then this is the main interp and no subinterp was ever initialized.
+    if (_index) {
+        _subinterp.disarm(); // Disarm seems to resolve some of the freezing issues I've been having on shutdown. I think? I'll leave it for now.
+    }
+
 }
 
 REPY_InterpreterIndex PySubController::get_index() {
