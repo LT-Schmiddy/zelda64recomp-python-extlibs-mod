@@ -2,6 +2,7 @@
 #include <random>
 #include <queue>
 #include <format>
+#include <algorithm>
 #include <plog/Log.h> // Step1: include the headers
 
 #include "lib_main.hpp"
@@ -362,27 +363,17 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
     uint32_t reverse = RECOMP_ARG(uint32_t, 2);
     py::bytes* bytes_obj = (py::bytes*)RECOMP_ARG_PYOBJECT(3);
 
-    char* mem_block = new char[data_size];
-    uint32_t iter = 0;
-    uint32_t bytes_size = py::len(*bytes_obj);
-    
-    for (auto byte : *bytes_obj) {
-        if (iter >= data_size) {
-            break;
-        }
-        mem_block[iter] = byte.cast<uint8_t>();
-        iter++;
-    }
-
+    py::buffer_info info = py::buffer(*bytes_obj).request();
+    uint8_t* buf_data = (uint8_t*)info.ptr;
+    py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
     if (reverse) {
-        memcpy_rev_to_recomp(rdram, data_ptr, mem_block, data_size);
+        memcpy_rev_to_recomp(rdram, data_ptr, buf_data, buf_size);
     } else {
-        memcpy_to_recomp(rdram, data_ptr, mem_block, data_size);
+        memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
     }
 
-    delete[] mem_block;
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, iter);
+    RECOMP_RETURN(uint32_t, buf_size);
 }
 
 RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
@@ -415,26 +406,17 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
     uint32_t reverse = RECOMP_ARG(uint32_t, 2);
     py::bytearray* bytes_obj = (py::bytearray*)RECOMP_ARG_PYOBJECT(3);
 
-    char* mem_block = new char[data_size];
-    uint32_t iter = 0;
-    uint32_t bytes_size = py::len(*bytes_obj);
-    for (auto byte : *bytes_obj) {
-        if (iter >= data_size) {
-            break;
-        }
-        mem_block[iter] = byte.cast<uint8_t>();
-        iter++;
-    }
-
+    py::buffer_info info = py::buffer(*bytes_obj).request();
+    uint8_t* buf_data = (uint8_t*)info.ptr;
+    py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
     if (reverse) {
-        memcpy_rev_to_recomp(rdram, data_ptr, mem_block, data_size);
+        memcpy_rev_to_recomp(rdram, data_ptr, buf_data, buf_size);
     } else {
-        memcpy_to_recomp(rdram, data_ptr, mem_block, data_size);
+        memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
     }
 
-    delete[] mem_block;
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, iter);
+    RECOMP_RETURN(uint32_t, buf_size);
 }
 
 // ====================================== Indexing and Slicing Operations: ====================================== 

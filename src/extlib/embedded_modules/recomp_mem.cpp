@@ -2,6 +2,8 @@
 #include "controller.hpp"
 #include "lib_recomp.hpp"
 
+#include <algorithm>
+
 // Internal module for recomp memory with automatic byteswapping.
 PYBIND11_EMBEDDED_MODULE(_recomp_mem_managed, m, py::mod_gil_not_used(), py::multiple_interpreters::per_interpreter_gil()) {
     ZoneScoped;
@@ -256,23 +258,15 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem_managed, m, py::mod_gil_not_used(), py::mul
         return retVal;
     });
 
-    m.def("write_buffer_n", [](int32_t ptr, py::buffer bytes, uint32_t size) {
+    m.def("write_buffer_n", [](int32_t ptr, py::buffer buffer, uint32_t size) {
         ZoneScopedN("_recomp_mem_managed.write_buffer_n");
         uint8_t* rdram = controller->get_rdram(); // Used by MEM_B
         
         // Accessing underlying byte array.
-        py::buffer_info info = bytes.request();
+        py::buffer_info info = buffer.request();
         uint8_t* buf_data = (uint8_t*)info.ptr;
-        py::ssize_t buf_size = info.size; 
-
-        for (py::ssize_t i = 0; i < buf_size; i++) {
-            if (i == size) {
-                break;
-            }
-
-            MEM_B(ptr, i) = buf_data[i];
-            FrameMark;
-        }
+        py::ssize_t buf_size = std::min(info.size, (py::ssize_t)size); 
+        memcpy_to_recomp(rdram, ptr, buf_data, buf_size);
     });
 }
 
