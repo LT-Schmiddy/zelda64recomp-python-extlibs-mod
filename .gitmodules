@@ -24,3 +24,6 @@
 [submodule "syms/MarioKart64RecompSyms"]
 	path = syms/MarioKart64RecompSyms
 	url = https://github.com/sonicdcer/MarioKart64RecompSyms
+[submodule "syms/Goemon64RecompSyms"]
+	path = syms/Goemon64RecompSyms
+	url = https://github.com/klorfmorf/Goemon64RecompSyms
