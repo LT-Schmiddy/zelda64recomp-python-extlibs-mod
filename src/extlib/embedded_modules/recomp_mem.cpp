@@ -232,25 +232,34 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem_managed, m, py::mod_gil_not_used(), py::mul
     });
     
     // Memory Blocks:
-    m.def("read_bytes_n", [](int32_t ptr, uint32_t size) {
+    m.def("read_bytes_n", [](int32_t ptr, uint32_t size, bool reverse) {
         ZoneScopedN("_recomp_mem_managed.read_bytes_n");
         uint8_t* rdram = controller->get_rdram();
         uint8_t* buf = new uint8_t[size];
 
-        memcpy_from_recomp(rdram, buf, ptr, size);
+        if (reverse) {
+            memcpy_rev_from_recomp(rdram, buf, ptr, size);
+        } else {
+            memcpy_from_recomp(rdram, buf, ptr, size);
+        }
+
         py::bytes retVal = py::bytes((char*)buf, size);
         delete[] buf;
 
         return retVal;
     });
 
-    m.def("read_bytearray_n", [](int32_t ptr, uint32_t size) {
+    m.def("read_bytearray_n", [](int32_t ptr, uint32_t size, bool reverse) {
         ZoneScopedN("_recomp_mem_managed.read_bytearray_n");
         uint8_t* rdram = controller->get_rdram();
 
         uint8_t* buf = new uint8_t[size];
 
-        memcpy_from_recomp(rdram, buf, ptr, size);
+        if (reverse) {
+            memcpy_rev_from_recomp(rdram, buf, ptr, size);
+        } else {
+            memcpy_from_recomp(rdram, buf, ptr, size);
+        }
 
         py::bytearray retVal = py::bytearray((char*)buf, size);
         delete[] buf;
@@ -258,7 +267,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem_managed, m, py::mod_gil_not_used(), py::mul
         return retVal;
     });
 
-    m.def("write_buffer_n", [](int32_t ptr, py::buffer buffer, uint32_t size) {
+    m.def("write_buffer_n", [](int32_t ptr, py::buffer buffer, uint32_t size, bool reverse) {
         ZoneScopedN("_recomp_mem_managed.write_buffer_n");
         uint8_t* rdram = controller->get_rdram(); // Used by MEM_B
         
@@ -266,7 +275,12 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem_managed, m, py::mod_gil_not_used(), py::mul
         py::buffer_info info = buffer.request();
         uint8_t* buf_data = (uint8_t*)info.ptr;
         py::ssize_t buf_size = std::min(info.size, (py::ssize_t)size); 
-        memcpy_to_recomp(rdram, ptr, buf_data, buf_size);
+
+        if (reverse) {
+            memcpy_rev_to_recomp(rdram, ptr, buf_data, buf_size);
+        } else {
+            memcpy_to_recomp(rdram, ptr, buf_data, buf_size);
+        }
     });
 }
 
