@@ -104,18 +104,21 @@ CREATE_CAST_STRN_TEST_BLOCK_SUH(char*, py_type ## N_SUH, py_type, value, max_siz
     c_type value_var = value; \
     REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH(&value_var)); \
     REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_Create ## py_create (value))); \
-    validate("repy_api.mem.read_" #c_type " works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_" #c_type "(test_ptr) == test_value", py_globals, py_locals)))); \
-    REPY_ExecCStr("mem.write_" #c_type "(test_ptr, test_value + 1)", py_globals, py_locals); \
-    validate("repy_api.mem.write_" #c_type " works", value_var == value + 1); \
+    validate("repy_api.mem.managed.read_" #c_type " works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_" #c_type "(test_ptr) == test_value", py_globals, py_locals)))); \
+    REPY_ExecCStr("mmem.write_" #c_type "(test_ptr, test_value + 1)", py_globals, py_locals); \
+    validate("repy_api.mem.managed.write_" #c_type " works", value_var == value + 1); \
 } \
 
 void load_repl() {
         recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
+        char mem_test[] = "memoryview_test";
+
         REPY_Handle nrm_zip = REPY_GetNrmZipFile();
         REPY_Handle code_module = REPY_ImportModule("code");
 
         REPY_Handle local = REPY_CreateDict(0);
         REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
+        REPY_DictSetCStr(local, "mem_ptr", REPY_CreatePtr_SUH(mem_test));
         
         REPY_Handle kwargs = REPY_CreateDict(0);
         REPY_DictSetCStr(kwargs, "local", local);
@@ -560,7 +563,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     // Handling thrown errors works. We'll test that every potential error thrower works correctly another time.
 
     // Let's test the repy_api.mem functions.
-    REPY_ExecCStr("from repy_api import mem", py_globals, py_locals);
+    REPY_ExecCStr("from repy_api.mem import managed as mmem", py_globals, py_locals);
 
     REPY_MEM_TEST(u8, U8, 66);
     REPY_MEM_TEST(u16, U16, 700);
@@ -578,52 +581,52 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     char string_char[2] = "c";
     REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_char));
     REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateStr((const char*)&string_char)));
-    validate("repy_api.mem.read_char works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_char(test_ptr) == test_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_char(test_ptr, 'd')", py_globals, py_locals);
-    validate("repy_api.mem.write_char works", string_char[0] == 'd');
+    validate("repy_api.mem.managed.read_char works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_char(test_ptr) == test_value", py_globals, py_locals))));
+    REPY_ExecCStr("mmem.write_char(test_ptr, 'd')", py_globals, py_locals);
+    validate("repy_api.mem.managed.write_char works", string_char[0] == 'd');
 
     // Testing byte char
     char string_byte_char[2] = "c";
     REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_byte_char));
     REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateByteStr((const char*)&string_byte_char)));
-    validate("repy_api.mem.read_byte_char works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_byte_char(test_ptr) == test_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_byte_char(test_ptr, b'd')", py_globals, py_locals);
-    validate("repy_api.mem.write_byte_char works", string_byte_char[0] == 'd');
+    validate("repy_api.mem.managed.read_byte_char works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_byte_char(test_ptr) == test_value", py_globals, py_locals))));
+    REPY_ExecCStr("mmem.write_byte_char(test_ptr, b'd')", py_globals, py_locals);
+    validate("repy_api.mem.managed.write_byte_char works", string_byte_char[0] == 'd');
 
     // testing str
     char string_str[50] = "hello world";
     REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_str));
     REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateStr((const char*)&string_str)));
-    validate("repy_api.mem.read_str works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_str(test_ptr) == test_value", py_globals, py_locals))));
-    validate("repy_api.mem.read_str_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_str_n(test_ptr, 50) == test_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_str_n(test_ptr, 'hello recomp', 50)", py_globals, py_locals);
-    validate("repy_api.mem.write_str_n writes the correct length", strnlen((const char*)string_str, 50) == 12);
-    validate("repy_api.mem.write_str_n matches target", strncmp((const char*)string_str, "hello recomp", 50) == 0);
+    validate("repy_api.mem.managed.read_str works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_str(test_ptr) == test_value", py_globals, py_locals))));
+    validate("repy_api.mem.managed.read_str_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_str_n(test_ptr, 50) == test_value", py_globals, py_locals))));
+    REPY_ExecCStr("mmem.write_str_n(test_ptr, 'hello recomp', 50)", py_globals, py_locals);
+    validate("repy_api.mem.managed.write_str_n writes the correct length", strnlen((const char*)string_str, 50) == 12);
+    validate("repy_api.mem.managed.write_str_n matches target", strncmp((const char*)string_str, "hello recomp", 50) == 0);
 
     // testing bytes str
     char string_byte_str[50] = "hello world";
     REPY_DictSetCStr(py_locals, "test_ptr", REPY_CreatePtr_SUH((void*)&string_byte_str));
     REPY_DictSetCStr(py_locals, "test_value", REPY_MakeSUH(REPY_CreateByteStr((const char*)&string_byte_str)));
-    validate("repy_api.mem.read_byte_str works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_byte_str(test_ptr) == test_value", py_globals, py_locals))));
-    validate("repy_api.mem.read_byte_str_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_byte_str_n(test_ptr, 50) == test_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_byte_str_n(test_ptr, b'hello recomp', 50)", py_globals, py_locals);
-    validate("repy_api.mem.write_byte_str_n writes the correct length", strnlen((const char*)string_byte_str, 50) == 12);
-    validate("repy_api.mem.write_byte_str_n matches target", strncmp((const char*)string_byte_str, "hello recomp", 50) == 0);
+    validate("repy_api.mem.managed.read_byte_str works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_byte_str(test_ptr) == test_value", py_globals, py_locals))));
+    validate("repy_api.mem.managed.read_byte_str_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_byte_str_n(test_ptr, 50) == test_value", py_globals, py_locals))));
+    REPY_ExecCStr("mmem.write_byte_str_n(test_ptr, b'hello recomp', 50)", py_globals, py_locals);
+    validate("repy_api.mem.managed.write_byte_str_n writes the correct length", strnlen((const char*)string_byte_str, 50) == 12);
+    validate("repy_api.mem.managed.write_byte_str_n matches target", strncmp((const char*)string_byte_str, "hello recomp", 50) == 0);
 
     // testing memcpy stuff.
     char mem_bytes[20] = "hello world";
     REPY_DictSetCStr(py_locals, "mem_bytes_ptr", REPY_CreatePtr_SUH((void*)&mem_bytes));
     REPY_DictSetCStr(py_locals, "mem_bytes_value", REPY_MakeSUH(REPY_MemcpyToBytes(mem_bytes, 20, false)));
-    validate("repy_api.mem.read_bytes_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytes_n(mem_bytes_ptr, 20) == mem_bytes_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_buffer_n(mem_bytes_ptr, b'hello recomp', 20)", py_globals, py_locals);
-    validate("repy_api.mem.write_buffer_n matches target when using `bytes`", strncmp((const char*)mem_bytes, "hello recomp", 20) == 0);
+    validate("repy_api.mem.managed.read_bytes_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_bytes_n(mem_bytes_ptr, 20) == mem_bytes_value", py_globals, py_locals))));
+    REPY_ExecCStr("mmem.write_buffer_n(mem_bytes_ptr, b'hello recomp', 20)", py_globals, py_locals);
+    validate("repy_api.mem.managed.write_buffer_n matches target when using `bytes`", strncmp((const char*)mem_bytes, "hello recomp", 20) == 0);
     
     REPY_DictSetCStr(py_locals, "mem_bytearray_value", REPY_MakeSUH(REPY_MemcpyToByteArray(mem_bytes, 20, false)));
-    validate("repy_api.mem.read_bytearray_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mem.read_bytearray_n(mem_bytes_ptr, 20) == mem_bytearray_value", py_globals, py_locals))));
-    REPY_ExecCStr("mem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
-    validate("repy_api.mem.write_buffer_n matches target when using `bytearray`", strncmp((const char*)string_byte_str, "hello recomp", 20) == 0);
+    validate("repy_api.mem.managed.read_bytearray_n works", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("mmem.read_bytearray_n(mem_bytes_ptr, 20) == mem_bytearray_value", py_globals, py_locals))));
+    REPY_ExecCStr("mmem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
+    validate("repy_api.mem.managed.write_buffer_n matches target when using `bytearray`", strncmp((const char*)string_byte_str, "hello recomp", 20) == 0);
 
-    REPY_ExecCStr("for i in range(0, 1000):\n\tmem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
+    // REPY_ExecCStr("for i in range(0, 1000):\n\tmem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);

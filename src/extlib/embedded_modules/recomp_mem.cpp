@@ -2,180 +2,181 @@
 #include "controller.hpp"
 #include "lib_recomp.hpp"
 
-PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_interpreters::per_interpreter_gil()) {
+// Internal module for recomp memory with automatic byteswapping.
+PYBIND11_EMBEDDED_MODULE(_recomp_mem_managed, m, py::mod_gil_not_used(), py::multiple_interpreters::per_interpreter_gil()) {
     ZoneScoped;
 
     m.def("read_u8", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_u8");
+        ZoneScopedN("_recomp_mem_managed.read_u8");
         uint8_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(uint8_t));
         return py::int_(val);
     });
 
     m.def("write_u8", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_u8");
+        ZoneScopedN("_recomp_mem_managed.write_u8");
         uint8_t val = obj.cast<uint8_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(uint8_t));
     });
     
     m.def("read_u16", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_u16");
+        ZoneScopedN("_recomp_mem_managed.read_u16");
         uint16_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(uint16_t));
         return py::int_(val);
     });
 
     m.def("write_u16", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_u16");
+        ZoneScopedN("_recomp_mem_managed.write_u16");
         uint16_t val = obj.cast<uint16_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(uint16_t));
     });
 
     m.def("read_u32", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_u32");
+        ZoneScopedN("_recomp_mem_managed.read_u32");
         uint32_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(uint32_t));
         return py::int_(val);
     });
 
     m.def("write_u32", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_u32");
+        ZoneScopedN("_recomp_mem_managed.write_u32");
         uint32_t val = obj.cast<uint32_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(uint32_t));
     });
 
     m.def("read_u64", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_u64");
+        ZoneScopedN("_recomp_mem_managed.read_u64");
         uint64_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(uint64_t));
         return py::int_(val);
     });
 
     m.def("write_u64", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_u64");
+        ZoneScopedN("_recomp_mem_managed.write_u64");
         uint64_t val = obj.cast<uint64_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(uint64_t));
     });
 
     m.def("read_s8", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_s8");
+        ZoneScopedN("_recomp_mem_managed.read_s8");
         int8_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(int8_t));
         return py::int_(val);
     });
 
     m.def("write_s8", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_s8");
+        ZoneScopedN("_recomp_mem_managed.write_s8");
         int8_t val = obj.cast<int8_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(int8_t));
     });
     
     m.def("read_s16", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_s16");
+        ZoneScopedN("_recomp_mem_managed.read_s16");
         int16_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(int16_t));
         return py::int_(val);
     });
 
     m.def("write_s16", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_s16");
+        ZoneScopedN("_recomp_mem_managed.write_s16");
         int16_t val = obj.cast<int16_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(int16_t));
     });
 
     m.def("read_s32", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_s32");
+        ZoneScopedN("_recomp_mem_managed.read_s32");
         int32_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(int32_t));
         return py::int_(val);
     });
 
     m.def("write_s32", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_s32");
+        ZoneScopedN("_recomp_mem_managed.write_s32");
         int32_t val = obj.cast<int32_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(int32_t));
     });
     
     m.def("read_s64", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_s64");
+        ZoneScopedN("_recomp_mem_managed.read_s64");
         int64_t val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(int64_t));
         return py::int_(val);
     });
 
     m.def("write_s64", [](int32_t ptr, py::int_ obj){
-        ZoneScopedN("_recomp_mem.write_s64");
+        ZoneScopedN("_recomp_mem_managed.write_s64");
         int64_t val = obj.cast<int64_t>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(int64_t));
     });
     
     m.def("read_f32", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_f32");
+        ZoneScopedN("_recomp_mem_managed.read_f32");
         float val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(float));
         return py::float_(val);
     });
 
     m.def("write_f32", [](int32_t ptr, py::float_ obj){
-        ZoneScopedN("_recomp_mem.write_f32");
+        ZoneScopedN("_recomp_mem_managed.write_f32");
         float val = obj.cast<float>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(float));
     });
     
     m.def("read_f64", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_f64");
+        ZoneScopedN("_recomp_mem_managed.read_f64");
         double val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(double));
         return py::float_(val);
     });
 
     m.def("write_f64", [](int32_t ptr, py::float_ obj){
-        ZoneScopedN("_recomp_mem.write_f64");
+        ZoneScopedN("_recomp_mem_managed.write_f64");
         double val = obj.cast<double>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(double));
     });
     
     // Text
     m.def("read_char", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_char");
+        ZoneScopedN("_recomp_mem_managed.read_char");
         char val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(char));
         return py::str(&val, 1);
     });
 
     m.def("write_char", [](int32_t ptr, py::str obj){
-        ZoneScopedN("_recomp_mem.write_char");
+        ZoneScopedN("_recomp_mem_managed.write_char");
         char val = obj.cast<char>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(char));
     });
 
     m.def("read_byte_char", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_byte_char");
+        ZoneScopedN("_recomp_mem_managed.read_byte_char");
         char val;
         memcpy_rev_from_recomp(controller->get_rdram(), &val, ptr, sizeof(char));
         return py::bytes(&val, 1);
     });
 
     m.def("write_byte_char", [](int32_t ptr, py::bytes obj){
-        ZoneScopedN("_recomp_mem.write_byte_char");
+        ZoneScopedN("_recomp_mem_managed.write_byte_char");
         char val = obj.cast<char>();
         memcpy_rev_to_recomp(controller->get_rdram(), ptr, &val, sizeof(char));
     });
 
     m.def("read_str", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_str");
+        ZoneScopedN("_recomp_mem_managed.read_str");
         std::u8string str = ptr_to_u8string(controller->get_rdram(), ptr);
         return py::str(str);
     });
 
     m.def("read_str_n", [](int32_t ptr, uint32_t size){
-        ZoneScopedN("_recomp_mem.read_str_n");
+        ZoneScopedN("_recomp_mem_managed.read_str_n");
         std::u8string str = ptr_to_u8string_n(controller->get_rdram(), size, ptr);
         return py::str(str);
     });
 
     m.def("write_str_n", [](int32_t ptr, py::str str, uint32_t size){
-        ZoneScopedN("_recomp_mem.write_str_n");
+        ZoneScopedN("_recomp_mem_managed.write_str_n");
         uint8_t* rdram = controller->get_rdram(); // Used by MEM_B
         
         // write_size
@@ -196,19 +197,19 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
     });
 
     m.def("read_byte_str", [](int32_t ptr){
-        ZoneScopedN("_recomp_mem.read_byte_str");
+        ZoneScopedN("_recomp_mem_managed.read_byte_str");
         std::string str = ptr_to_string(controller->get_rdram(), ptr);
         return py::bytes(str);
     });
 
     m.def("read_byte_str_n", [](int32_t ptr, uint32_t size){
-        ZoneScopedN("_recomp_mem.read_byte_str_n");
+        ZoneScopedN("_recomp_mem_managed.read_byte_str_n");
         std::string str = ptr_to_string_n(controller->get_rdram(), size, ptr);
         return py::bytes(str);
     });
 
     m.def("write_byte_str_n", [](int32_t ptr, py::bytes str, uint32_t size){
-        ZoneScopedN("_recomp_mem.write_byte_str_n");
+        ZoneScopedN("_recomp_mem_managed.write_byte_str_n");
         uint8_t* rdram = controller->get_rdram(); // Used by MEM_B
         
         // write_size
@@ -227,17 +228,10 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
             FrameMark;
         }
     });
-
     
     // Memory Blocks:
-    m.def("create_raw_memoryview", [](int32_t ptr, uint32_t size){
-        ZoneScopedN("_recomp_mem.create_raw_memoryview");
-        void* rptr = RDRAM_TO_PTR(controller->get_rdram(), void, ptr);
-        return py::memoryview::from_memory(rptr, size);
-    });
-
     m.def("read_bytes_n", [](int32_t ptr, uint32_t size) {
-        ZoneScopedN("_recomp_mem.read_bytes_n");
+        ZoneScopedN("_recomp_mem_managed.read_bytes_n");
         uint8_t* rdram = controller->get_rdram();
         uint8_t* buf = new uint8_t[size];
 
@@ -249,7 +243,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
     });
 
     m.def("read_bytearray_n", [](int32_t ptr, uint32_t size) {
-        ZoneScopedN("_recomp_mem.read_bytearray_n");
+        ZoneScopedN("_recomp_mem_managed.read_bytearray_n");
         uint8_t* rdram = controller->get_rdram();
 
         uint8_t* buf = new uint8_t[size];
@@ -263,7 +257,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
     });
 
     m.def("write_buffer_n", [](int32_t ptr, py::buffer bytes, uint32_t size) {
-        ZoneScopedN("_recomp_mem.write_buffer_n");
+        ZoneScopedN("_recomp_mem_managed.write_buffer_n");
         uint8_t* rdram = controller->get_rdram(); // Used by MEM_B
         
         // Accessing underlying byte array.
@@ -276,8 +270,20 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem, m, py::mod_gil_not_used(), py::multiple_in
                 break;
             }
 
-            MEM_B(ptr++, 0) = buf_data[i];
+            MEM_B(ptr, i) = buf_data[i];
             FrameMark;
         }
+    });
+}
+
+
+// Direct access to recomp memory without byteswapping.
+PYBIND11_EMBEDDED_MODULE(_recomp_mem_raw, m, py::mod_gil_not_used(), py::multiple_interpreters::per_interpreter_gil()) {
+    ZoneScoped
+
+    m.def("create_raw_memoryview", [](int32_t ptr, uint32_t size){
+        ZoneScopedN("_recomp_mem_raw.create_raw_memoryview");
+        void* rptr = RDRAM_TO_PTR(controller->get_rdram(), void, ptr);
+        return py::memoryview::from_memory(rptr, size);
     });
 }
