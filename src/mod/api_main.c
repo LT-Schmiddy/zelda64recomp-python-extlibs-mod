@@ -7,9 +7,8 @@
 #include "mod_logging.h"
 
 RECOMP_DECLARE_EVENT(REPY_OnPreInit());
-RECOMP_DECLARE_EVENT(REPY_OnLoadModules(int success));
-RECOMP_DECLARE_EVENT(REPY_OnInit(int success));
-RECOMP_DECLARE_EVENT(REPY_OnPostInit(int success));
+RECOMP_DECLARE_EVENT(REPY_OnInit());
+RECOMP_DECLARE_EVENT(REPY_OnPostInit());
 
 RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
     const unsigned char* nrm_file_path = recomp_get_mod_file_path();
@@ -28,9 +27,8 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
         LOGF("There was an error initializing the Python interpreter.\n");
     }
 
-    REPY_OnLoadModules(py_init);
-    REPY_OnInit(py_init);
-    REPY_OnPostInit(py_init);
+    REPY_OnInit();
+    REPY_OnPostInit();
 }
 
 // === EXPORTED FUNCTIONS === 

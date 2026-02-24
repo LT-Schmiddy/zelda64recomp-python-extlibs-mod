@@ -8,4 +8,8 @@ This solution does work, but has several major drawbacks for mod developers:
 * Exchanging data between the recompiled game memory and the system memory suffers from multiple restrictions, including the inability to allocate mod-accessable memory from the extlib code, the byte-swapping required when translating between recompiled memory and regular memory, the restriction on extlib functions (the ones exposed to mod memory) can only have four 32-bit arguments.
 * Extlib code cannot call recompiled functions, be they functions from the original game or functions created by the mod. Navigating this restriction necessitates creating very awkward code paths and complicated application architecture that can become difficult to maintain.
 
-This API attempts to mitigate these problems for mod developers, and pro 
+This API attempts to mitigate these problems for mod developers...
+
+## Basic Usage
+
+Simply include the `repy_api.h` header in your code files, and add `RecompExternalPython:2.0.0` as a dependency for your mod.

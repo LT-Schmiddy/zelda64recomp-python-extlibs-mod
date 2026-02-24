@@ -108,7 +108,7 @@ typedef unsigned int REPY_Handle;
 #define REPY_NO_OBJECT 0
 
 
-typedef unsigned int REPY_InterpreterIndex;
+typedef int REPY_InterpreterIndex;
 #define REPY_MAIN_INTERPRETER 0
 
 /**
@@ -209,8 +209,7 @@ typedef struct REPY_IfStmtHelper {
 
 #define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
 REPY_InterpreterIndex subinterp_identifier = 0; \
-REPY_ON_INIT void subinterp_identifier ## _init(int success) { \
-    if (!success) return; \
+REPY_ON_INIT void subinterp_identifier ## _init() { \
     subinterp_identifier = REPY_RegisterSubinterpreter(); \
     recomp_printf("Subinterpreter %s Initialized\n", #subinterp_identifier); \
     REPY_PushInterpreter(subinterp_identifier); \
@@ -302,8 +301,8 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
  */
 #define REPY_GLOBAL_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
-    if (success && bytecode_identifier == 0) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+    if (bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_GLOBAL_COMPILE_CACHE", __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
         recomp_free(iden_str); \
@@ -321,8 +320,8 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
  */
 #define REPY_STATIC_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
 static REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
-    if (success && bytecode_identifier == 0) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+    if (bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_CACHE", __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
         recomp_free(iden_str); \
@@ -343,8 +342,8 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
 #define REPY_GLOBAL_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
 REPY_INCBIN(bytecode_identifier ## _code_str, filename); \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
-    if (success && bytecode_identifier == 0) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+    if (bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_GLOBAL_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
             (const char*)iden_str, REPY_CODE_EXEC); \
@@ -365,8 +364,8 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
 #define REPY_STATIC_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
 REPY_INCBIN(bytecode_identifier ## _code_str, filename); \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier (int success) { \
-    if (success && bytecode_identifier == 0) { \
+REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+    if (bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
             (const char*)iden_str, REPY_CODE_EXEC); \
