@@ -630,8 +630,8 @@ REPY_PopInterpreter() \
  * 
  * The global scope is only released if the global and local scopes are the same.
  */
-#define REPY_FN_RETURN(retVal) \
-REPY_Handle __repy_retVal = retVal; \
+#define REPY_FN_RETURN(retType, retVal) \
+retType __repy_retVal = retVal; \
 REPY_Release(REPY_FN_LOCAL_SCOPE); \
 REPY_PopInterpreter(); \
 return retVal \
@@ -1805,8 +1805,8 @@ REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier); break
  * 
  * @param bytecode_identifier The name for a static Python bytecode variable. Used to get the the `REPY_IteratorHelper` variable name.
  */
-#define REPY_FN_FOREACH_CACHE_RETURN(bytecode_identifier, retVal) \
-REPY_Handle __repy_retVal = retVal; \
+#define REPY_FN_FOREACH_CACHE_RETURN(bytecode_identifier, retType, retVal) \
+retType __repy_retVal = retVal; \
 REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier); \
 REPY_FN_CLEANUP; \
 return
