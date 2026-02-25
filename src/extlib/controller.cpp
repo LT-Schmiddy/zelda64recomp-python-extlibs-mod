@@ -130,15 +130,18 @@ REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {
 REPY_InterpreterIndex PyInterpreterController::get_current_subcontroller_index() {
     ZoneScoped;
     if (subinterp_index_stack.empty()) {
-        PLOGF.printf("No interpreter selected. Make sure you are using REPY_PushInterpreter and REPY_PopInterpreter correctly");
+        return -1;
     }
-    assert(!subinterp_index_stack.empty());
-    
     return subinterp_index_stack.top();
 }
 
 PySubController* PyInterpreterController::get_current_subcontroller() {
     ZoneScoped;
+    if (subinterp_index_stack.empty()) {
+        PLOGF.printf("No interpreter selected. Make sure you are using REPY_PushInterpreter and REPY_PopInterpreter correctly");
+    }
+    assert(!subinterp_index_stack.empty());
+
     return subinterpreters.at(get_current_subcontroller_index());
 }
 
