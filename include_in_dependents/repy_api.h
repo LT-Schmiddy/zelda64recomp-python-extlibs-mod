@@ -3500,7 +3500,7 @@ REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename,
  * 
  * @param py_object a `REPY_Handle` for the Python object to iterate through.
  * @param py_scope_nullable a `REPY_Handle` to a Python `dict` being used a local scope. Can be `REPY_NO_OBJECT`.
- * @param var_name the variable name for the `REPY_IteratorHelper` pointer. If `py_scope_nullable` is set to `REPY_NO_OBJECT`,
+ * @param var_name the variable name for the `REPY_IteratorHelper` pointer. If `py_scope_nullable` is set to `REPY_NO_OBJECT`, use `NULL`.
  * @return A pointer to the new `REPY_IteratorHelper` on the heap.
  */
 REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name));
