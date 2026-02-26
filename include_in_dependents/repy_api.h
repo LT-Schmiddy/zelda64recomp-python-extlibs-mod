@@ -130,6 +130,14 @@ typedef signed int REPY_InterpreterIndex;
 #define REPY_MAIN_INTERPRETER 0
 
 /**
+ * @brief A value indicating that the interpreter stack is empty.
+ * 
+ * A more readable alternative to simply entering -1.
+ * 
+ */
+#define REPY_INTERPRETER_STACK_EMPTY -1
+
+/**
  * @brief Used to set the type of code-string being compiled, in line with how Python's
  * built-in `compile` function operates.
  * 
@@ -260,7 +268,7 @@ extern REPY_InterpreterIndex subinterp_identifier; \
 #define REPY_PREINIT_ADD_NRM_TO_SYS_PATH \
 REPY_ON_PRE_INIT void _repy_register_nrm () { \
     const unsigned char* nrm_file_path = recomp_get_mod_file_path(); \
-    REPY_PreInitAddToModuleSearchPath(nrm_file_path); \
+    REPY_PreInitAddSysPath(nrm_file_path); \
     recomp_free((void*)nrm_file_path); \
 };
 
@@ -1916,7 +1924,7 @@ for ( \
   * 
   * @param nrm_file_path 
   */
-REPY_IMPORT(void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file_path));
+REPY_IMPORT(void REPY_PreInitAddSysPath(const unsigned char* nrm_file_path));
 
 /** @}*/
 
@@ -2000,20 +2008,66 @@ REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_handle_no_release, REPY_bool value))
  * @param py_handle_no_release A handle for an object you need another handle to.
  * @return A new handle to the same object.
  */
-REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle py_handle));
+REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release));
 
 /** @}*/
 
 /** \defgroup repy_interpreter_funcs Module Functions
  * \brief Functions Used for Python interpreter/subinterpreter operations.
+ * 
+ * REPY manages the lifetime of the main Python interpreter and subinterpreters for you, keeping track of each interpreter via a
+ * `REPY_InterpreterIndex` value.
+ * 
+ * See \ref subinterpreters for more information on what they are, and REPY's usage of them.
+ * 
  *  @{
  */
 
+/**
+ * @brief Register a new Python subinterpreter, and return a `REPY_InterpreterIndex corresponding to it.
+ * 
+ * Note that initializing a subinterpreter and establishing it within REPY's internal control stuctures. As a result,
+ * you should make sure to run this on startup and not while the game is playing to avoid a significant lag spike.
+ * 
+ * @return the index of the new interpreter.
+ */
 REPY_IMPORT(REPY_InterpreterIndex REPY_RegisterSubinterpreter());
+
+/**
+ * @brief Pushes an interpreter index to the interpreter stack, and switching the active interpreter if necessary.
+ * 
+ * See \ref subinterpreter_stack for more information.
+ * 
+ * @param interpreter_handle The index to push to the subinterpreter stack.
+ */
 REPY_IMPORT(void REPY_PushInterpreter(REPY_InterpreterIndex interpreter_handle));
+
+/**
+ * @brief Pops an interpreter index from the interpreter stack, switching active interpreters if necessary.
+ * 
+ * See \ref subinterpreter_stack for more information.
+ */
 REPY_IMPORT(void REPY_PopInterpreter());
+
+/**
+ * @brief Gets the interpreter index at the top of the interpreter stack.
+ * 
+ * Returns `REPY_INTERPRETER_STACK_EMPTY` when the interpreter stack is empty.
+ * See \ref subinterpreter_stack for more information.
+ * 
+ * @return the interpreter index at the top of the stack.
+ */
 REPY_IMPORT(REPY_InterpreterIndex REPY_GetCurrentInterpreter());
-REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle));
+
+/**
+ * @brief Gets the index of the interpreter a specific `REPY_Handle` object is associated with.
+ * 
+ * This function will not release Single-Use handles.
+ * 
+ * @param handle_no_release a `REPY_Handle` for get the interpreter for. 
+ * @return the interpreter index corresponding to this `REPY_Handle`.
+ */
+REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle_no_release));
 
 /** @}*/
 
@@ -2022,8 +2076,27 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle))
  *  @{
  */
 
+ /**
+  * @brief Casts a null-terminated C-string to a Python `str` and appends it to the current interpreter's `sys.path`
+  * 
+  * Unlike `REPY_PreInitAddToSysPath`, this will only add a path to the current interpreter. The `sys.path` values of any
+  * other interpreters defined before this point will be unaffected.
+  * 
+  * This function primarily exists to server as support for `REPY_AddCStrToSysPath`.
+  * 
+  * @param filepath 
+  */
 REPY_IMPORT(void REPY_AddCStrToSysPath(const char* filepath));
 
+/**
+ * @brief Adds this NRM to the current interpreter's `sys.path. 
+ * 
+ *  Unlike `REPY_PreInitAddToSysPath`, this will only add a path to the current interpreter. The `sys.path` values of any
+  * other interpreters defined before this point will be unaffected.
+  * 
+  * This function is defined as `inline` in the `repy_api.h` header in order to be able to grab this mod's nrm path, and
+  * is primarily a wrapper for `REPY_AddCStrToSysPath`.
+ */
 inline void REPY_AddNrmToSysPath() {
     const char* filepath = (const char*) recomp_get_mod_file_path();
     REPY_AddCStrToSysPath(filepath);
@@ -3183,8 +3256,49 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope
  */
 REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
 
-REPY_IMPORT(REPY_Handle REPY_VL(REPY_Handle dict_no_release, u32 size, ...));
-REPY_IMPORT(REPY_Handle REPY_VL_SUH(REPY_Handle dict_no_release, u32 size, ...));
+/**
+ * @brief Adds the Python object represented by a set of `REPY_handle`s to a dict, using the keys following the scheme `_0`, `_1`, `_2`, etc.
+ * These keys serve as valid Python variable names to be used in code strings.
+ * 
+ * This is a convienience function for quick `REPY_Exec` and `REPY_Eval` statements where establishing a scope or managing a whole dict is inconvenient.
+ * These keys serve as valid Python variable names to be used in code strings.
+ * 
+ * This function has slightly different behavior depending on whether or not `dict_nullable` is a valid dictionary.
+ * If `dict_nullable` is `REPY_NO_OBJECT`, then a new dictionary will be created, and a new handle returned. Otherwise, the provided
+ * `dict` will have new key-value pairs added to it, and **provided** handle is returned (that is to say, no new handle is created). 
+ * Be advised that this will cause issues if `dict_nullable` is Single-Use.
+ * 
+ * @param dict_no_release Should be either a valid `REPY_Handle for a dictionary, or `REPY_NO_OBJECT`.
+ * @param size the number of Python objects to add to the `dict`
+ * @param ... The Python objects to add to the dict. 
+ * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
+ * `REPY_NO_OBJECT`
+ */
+REPY_IMPORT(REPY_Handle REPY_VL(REPY_Handle dict_nullable, u32 size, ...));
+
+
+/**
+ * @brief Adds the Python object represented by a set of `REPY_handle`s to a dict, using the keys following the scheme `_0`, `_1`, `_2`, etc.
+ * These keys serve as valid Python variable names to be used in code strings. This function also marks the resulting handle as Single-Use.
+ * 
+ * This is a convienience function for quick `REPY_Exec` and `REPY_Eval` statements where establishing a scope or managing a whole dict is inconvenient.
+ * These keys serve as valid Python variable names to be used in code strings.
+ * 
+ * This function has slightly different behavior depending on whether or not `dict_nullable_no_release` is a valid dictionary.
+ * If `dict_nullable` is `REPY_NO_OBJECT`, then a new dictionary will be created, and a new handle returned. Otherwise, the provided
+ * `dict` will have new key-value pairs added to it, and **provided** handle is returned (that is to say, no new handle is created).
+ * Be advised that this will cause issues if `dict_nullable` is Single-Use.
+ * 
+ * Also important, because this function marks the returned `REPY_Handle` as single use, but can potentially return the same handle as it was given,
+ * the handle for `dict_nullable` will become Single-Use if it was previously permanent.
+ * 
+ * @param dict_no_release Should be either a valid `REPY_Handle for a dictionary, or `REPY_NO_OBJECT`.
+ * @param size the number of Python objects to add to the `dict`
+ * @param ... The Python objects to add to the dict. 
+ * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
+ * `REPY_NO_OBJECT`
+ */
+REPY_IMPORT(REPY_Handle REPY_VL_SUH(REPY_Handle dict_nullable, u32 size, ...));
 
 /** @}*/
 

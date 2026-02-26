@@ -33,7 +33,7 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
 
 // === EXPORTED FUNCTIONS === 
 // Preinit:
-RECOMP_EXPORT void REPY_PreInitAddToModuleSearchPath(const unsigned char* nrm_file_path ) {
+RECOMP_EXPORT void REPY_PreInitAddSysPath(const unsigned char* nrm_file_path ) {
     PythonNative_Preinit_RegisterNrmInModuleSearchPath(nrm_file_path);
 }
 
@@ -46,20 +46,20 @@ RECOMP_EXPORT REPY_Handle REPY_MakeSUH(REPY_Handle py_object) {
     return PythonNative_MakeSUH(py_object);
 }
 
-RECOMP_EXPORT bool REPY_IsValidHandle(REPY_Handle py_object) {
-    return PythonNative_IsValidHandle(py_object);
+RECOMP_EXPORT bool REPY_IsValidHandle(REPY_Handle handle_no_release) {
+    return PythonNative_IsValidHandle(handle_no_release);
 }
 
-RECOMP_EXPORT bool REPY_GetSUH(REPY_Handle py_object) {
-    return PythonNative_GetSUH(py_object);
+RECOMP_EXPORT bool REPY_GetSUH(REPY_Handle handle_no_release) {
+    return PythonNative_GetSUH(handle_no_release);
 }
 
-RECOMP_EXPORT void REPY_SetSUH(REPY_Handle py_object, bool value) {
-    PythonNative_SetSUH(py_object, value);
+RECOMP_EXPORT void REPY_SetSUH(REPY_Handle handle_no_release, bool value) {
+    PythonNative_SetSUH(handle_no_release, value);
 }
 
-RECOMP_EXPORT REPY_Handle REPY_CopyHandle(REPY_Handle py_object) {
-    return PythonNative_CopyHandle(py_object);
+RECOMP_EXPORT REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release) {
+    return PythonNative_CopyHandle(handle_no_release);
 }
 
 // Subinterpreters:
@@ -79,8 +79,8 @@ RECOMP_EXPORT REPY_InterpreterIndex REPY_GetCurrentInterpreter() {
     return PythonNative_GetCurrentInterpreter();
 }
 
-RECOMP_EXPORT REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle) {
-    return PythonNative_GetHandleInterpreter(handle);
+RECOMP_EXPORT REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle_no_release) {
+    return PythonNative_GetHandleInterpreter(handle_no_release);
 }
 
 // Modules:
