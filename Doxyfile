@@ -992,7 +992,8 @@ WARN_LOGFILE           =
 
 INPUT                  = "./include_in_dependents" \
                             "./docs" \
-                            "./src/repy_api"
+                            "./src/repy_api/" \
+                            "./src/repy_api/mem"
                         
 
 # This tag can be used to specify the character encoding of the source files
