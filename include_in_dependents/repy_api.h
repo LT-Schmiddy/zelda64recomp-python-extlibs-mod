@@ -11,6 +11,7 @@
     \
  */
 
+
 // Ultratypes used by the Python API:
 typedef signed char            REPY_s8;
 typedef unsigned char          REPY_u8;
@@ -61,6 +62,13 @@ typedef double REPY_f64;
 #endif
 
 #endif
+/**
+ * \defgroup mod_code_c_api Mod Code C API
+ * REPY C API for mod code
+ * @{
+ */
+
+
 /** \defgroup repy_types Types
  * \brief All of the C types that REPY defines.
  *  @{
@@ -227,6 +235,10 @@ typedef struct REPY_IfStmtHelper {
 #define REPY_ON_POST_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnPostInit)
 
 /** @}*/
+
+/** \defgroup repy_macros Macros
+ *  @{
+ */
 
 /** \defgroup repy_init_macros Initialization Macros
  *  @{
@@ -1901,7 +1913,7 @@ for ( \
 ) 
 
 /** @}*/
-
+/** @}*/
 /** @}*/
 
 /** \defgroup repy_funcs API Functions
@@ -2082,9 +2094,9 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle_n
   * Unlike `REPY_PreInitAddToSysPath`, this will only add a path to the current interpreter. The `sys.path` values of any
   * other interpreters defined before this point will be unaffected.
   * 
-  * This function primarily exists to server as support for `REPY_AddCStrToSysPath`.
+  * This function primarily exists to support for `REPY_AddCStrToSysPath`, since that needs to be `inline` in order to work.
   * 
-  * @param filepath 
+  * @param filepath a null-terminated path string to be added to `sys.path`
   */
 REPY_IMPORT(void REPY_AddCStrToSysPath(const char* filepath));
 
@@ -2832,7 +2844,7 @@ REPY_IMPORT(void REPY_DelAttr(REPY_Handle object, REPY_Handle key));
 REPY_IMPORT(void REPY_DelAttrCStr(REPY_Handle object, char* key));
 /** @}*/
 
-/** \defgroup repy_iteration_funcs Module Functions
+/** \defgroup repy_iteration_funcs Iteration Functions
  * \brief Functions that operate on `REPY_Handle` values directly, rather than the Python objects they represent.
  * 
  * The same DLL mechanisms used by these functions are used internally by `REPY_IteratorHelper`.
@@ -3260,8 +3272,8 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Hand
  * @brief Adds the Python object represented by a set of `REPY_handle`s to a dict, using the keys following the scheme `_0`, `_1`, `_2`, etc.
  * These keys serve as valid Python variable names to be used in code strings.
  * 
- * This is a convienience function for quick `REPY_Exec` and `REPY_Eval` statements where establishing a scope or managing a whole dict is inconvenient.
- * These keys serve as valid Python variable names to be used in code strings.
+ * "VL" is short for "Variadic Locals". This is a convienience function for quick `REPY_Exec` and `REPY_Eval` statements where establishing a
+ * scope or managing a whole dict is inconvenient. These keys serve as valid Python variable names to be used in code strings.
  * 
  * This function has slightly different behavior depending on whether or not `dict_nullable` is a valid dictionary.
  * If `dict_nullable` is `REPY_NO_OBJECT`, then a new dictionary will be created, and a new handle returned. Otherwise, the provided
@@ -3461,8 +3473,25 @@ REPY_IMPORT(void REPY_ClearError());
  *  @{
  */
 
+/**
+ * @brief Opens a read-only instance of `zipfile.ZipFile` as indicated by `filepath`.
+ * 
+ * This function primarily exists to support the function `REPY_GetNrmZipFile`, since that needs to be `inline` in order to work, 
+ * and having this implemented directly in the REPY external library is slightly more performant than making the corresponding API calls.
+ * 
+ * @param filepath a null-terminated path string to a zip file.
+ * @return a REPY_Handle to a Python `zipfile.ZipFile` instance.
+ */
 REPY_IMPORT(REPY_Handle REPY_GetZipFileFromPath(const char* filepath));
 
+/**
+ * @brief Opens a read-only instance of `zipfile.ZipFile` for this `.nrm` file. Provides an easy way to access additional files inside the mod.
+ * 
+ * This function is implemented as `inline` within the `repy_api.h` header in order to get the path for the current `.nrm` file. 
+ * It wraps the API function `REPY_GetZipFileFromPath`.
+ * 
+ * @return REPY_Handle 
+ */
 inline REPY_Handle REPY_GetNrmZipFile() {
     const char* filepath = (const char*) recomp_get_mod_file_path();
     REPY_Handle retVal = REPY_GetZipFileFromPath(filepath);
@@ -3583,6 +3612,7 @@ REPY_IMPORT(void REPY_IfStmtHelper_InitInPlace(REPY_IfStmtHelper* helper, REPY_I
  * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
  */
 REPY_IMPORT(REPY_bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, REPY_u32 line_number, char* identifier));
+/** @}*/
 /** @}*/
 /** @}*/
 #endif
