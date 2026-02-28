@@ -1,3 +1,8 @@
+## \ingroup py_mem
+## @{
+## \defgroup py_mem_managed repy_api.mem.managed
+## @{
+
 """
 repy_api.mem.managed: This module provides easy access and wrappers to data inside N64Recompiled memory.
 

@@ -1,5 +1,11 @@
+## \ingroup py_mem
+## @{
+## \defgroup py_mem_raw repy_api.mem.raw
+## @{
+
+
 """
-repy_api.mem.managed: This module provides direct access to data N64Recompiled memory.
+repy_api.mem.raw: This module provides direct access to data N64Recompiled memory.
 
 """
 
