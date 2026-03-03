@@ -63,7 +63,7 @@ typedef double REPY_f64;
 
 #endif
 /**
- * \defgroup mod_code_c_api Mod Code C API
+ * \defgroup mod_code_c_api C API - N64Recompiled Mod Code
  * REPY C API for mod code
  * @{
  */
@@ -2024,7 +2024,7 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release));
 
 /** @}*/
 
-/** \defgroup repy_interpreter_funcs Module Functions
+/** \defgroup repy_interpreter_funcs (Sub)Interpreter Functions
  * \brief Functions Used for Python interpreter/subinterpreter operations.
  * 
  * REPY manages the lifetime of the main Python interpreter and subinterpreters for you, keeping track of each interpreter via a
@@ -2032,7 +2032,7 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release));
  * 
  * See \ref subinterpreters for more information on what they are, and REPY's usage of them.
  * 
- *  @{
+ * @{
  */
 
 /**
@@ -2083,7 +2083,7 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle_n
 
 /** @}*/
 
-/** \defgroup repy_handle_funcs Module Functions
+/** \defgroup repy_module_funcs Module Functions
  * \brief Functions Used for Python module operations.
  *  @{
  */
@@ -2737,7 +2737,7 @@ REPY_IMPORT(void* REPY_AllocAndCopyByteArray(REPY_u32 reverse, REPY_Handle bytes
 
 /** @}*/
 
-/** \defgroup repy_general_funcs General Object Functions
+/** \defgroup repy_general_funcs Object Attribute Functions
  * \brief Functions related to accessing the members and propertied of objects.
  *  @{
  */
@@ -2882,7 +2882,7 @@ REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_
 
 /** @}*/
 
-/** \defgroup repy_tuple_funcs Module Functions
+/** \defgroup repy_tuple_funcs Tuple Functions
  * \brief Functions that operate on Python `tuple` objects.
  *  @{
  */
@@ -2987,7 +2987,7 @@ REPY_IMPORT(REPY_Handle REPY_CreatePairCStr_SUH(char* key, REPY_Handle value));
 REPY_IMPORT(REPY_Handle REPY_TupleGetIndexS32(REPY_Handle tuple, int index));
 /** @}*/
 
-/** \defgroup repy_dict_funcs Module Functions
+/** \defgroup repy_dict_funcs Dict Functions
  * \brief Functions that operate on Python `dict` objects.
  *  @{
  */
