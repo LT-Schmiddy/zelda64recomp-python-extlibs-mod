@@ -377,3 +377,24 @@ def distclean(c: Context):
             shutil.rmtree(path)
         else:
             print_fl(f"Could not delete {path}")
+
+@task
+def doxyzip(c: Context):
+    """
+    Generates the Doxygen documentation and put it in a zip file.
+    """
+    print_task_header("Generating Doxygen Zip...")
+    doxygen_path = shutil.which("doxygen")
+        
+    invoke_subprocess_run(c, True, 
+        [
+            doxygen_path,
+        ], 
+        cwd=p.root_dir
+    )
+    
+    shutil.make_archive(p.root_dir.joinpath(f"doxygen/{p.project_name}"),"zip", p.root_dir.joinpath("doxygen/html"), Path("."), verbose=True)
+    
+    
+    
+    
