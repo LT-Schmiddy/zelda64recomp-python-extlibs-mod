@@ -3,6 +3,7 @@
 #include "recomputils.h"
 #include "recompconfig.h"
 
+#define REPY_INTERNALS_EXPOSED
 #include "repy_api.h"
 #include "test_utils.h"
 
@@ -468,18 +469,18 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
 
     // Testing the IfStmtHelper:
     static REPY_IfStmtChain* if_helper_chain_root = NULL;
-    REPY_IfStmtHelper if_helper1;
-    REPY_IfStmtHelper_InitInPlace(&if_helper1, &if_helper_chain_root);
+    REPY_IfStmtHelper* if_helper1 = REPY_IfStmtHelper_Create(&if_helper_chain_root);
+    REPY_IfStmtHelper_Reset(if_helper1, &if_helper_chain_root);
 
     int step_result1 = -1;
 
-    if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 0", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+    if (REPY_IfStmtHelper_Step(if_helper1, py_globals, py_locals, "if_check == 0", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
         step_result1 = 0;
-    } else if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 1", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+    } else if (REPY_IfStmtHelper_Step(if_helper1, py_globals, py_locals, "if_check == 1", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
         step_result1 = 1;
-    } else if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 2", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+    } else if (REPY_IfStmtHelper_Step(if_helper1, py_globals, py_locals, "if_check == 2", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
         step_result1 = 2;
-    } else if (REPY_IfStmtHelper_Step(&if_helper1, py_globals, py_locals, "if_check == 3", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
+    } else if (REPY_IfStmtHelper_Step(if_helper1, py_globals, py_locals, "if_check == 3", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper1")) {
         step_result1 = 3;
     }
 
@@ -510,7 +511,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     }
 
     REPY_IfStmtHelper if_helper2;
-    REPY_IfStmtHelper_InitInPlace(&if_helper2, &if_helper_chain_root);
+    REPY_IfStmtHelper_Reset(&if_helper2, &if_helper_chain_root);
 
     int step_result2 = -1;
     if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 0", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {

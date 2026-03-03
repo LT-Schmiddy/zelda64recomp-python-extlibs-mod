@@ -7,6 +7,8 @@
 #include "extlib_functions.h"
 #include "mod_logging.h"
 
+#include "./api_helpers/if_stmt_helper.h"
+
 
 #define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s -> "
 
@@ -76,58 +78,29 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool 
     }
 }
 
-
-
-// If Statement Helper -
 RECOMP_EXPORT REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
-    REPY_IfStmtChain* retVal = recomp_alloc(sizeof(REPY_IfStmtChain));
-    char* id_str = REPY_InlineCodeSourceStrHelper("IfStmtHelper", filename, function_name, line_number, identifier);
-    retVal->eval_expression_bytecode = PythonNative_CompileCStr(expr_string, id_str, REPY_CODE_EVAL);
-    recomp_free(id_str);
-    retVal->next = NULL;
-
-    return retVal;
+    return (REPY_IfStmtChain*) IfStmtChainInternal_Create(expr_string, filename, function_name, line_number, identifier);
 }
 
 RECOMP_EXPORT void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain) {
-    PythonNative_Release(chain->eval_expression_bytecode);
-    // Destroy helper chain recursively.
-    if (chain->next != NULL) {
-        REPY_IfStmtChain_Destroy(chain->next);
-    }
-    recomp_free(chain);
+    IfStmtChainInternal_Destroy((REPY_IfStmtChainInternal*) chain);
 }
 
-RECOMP_EXPORT void REPY_IfStmtHelper_InitInPlace(REPY_IfStmtHelper* helper, REPY_IfStmtChain** root) {
-    helper->index = 0;
-    helper->root = root;
-    helper->curr = NULL;
-    helper->_first_step = true;
+// Helper stuff:
+// Initializer values:
+
+RECOMP_EXPORT REPY_IfStmtHelper* REPY_IfStmtHelper_Create(REPY_IfStmtChain** chain_root) {
+    return (REPY_IfStmtHelper*) IfStmtHelperInternal_Create((REPY_IfStmtChainInternal**) chain_root);
 }
 
-RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
-    // First time setup of the helper:
-    if (helper->_first_step) {
-        helper->_first_step = false;
-        
-        if (*(helper->root) == NULL) {
-            // No chain was ever created. Starting one now.
-            (*(helper->root)) = REPY_IfStmtChain_Create(expr_string, filename, function_name, line_number, identifier);
-        }
-        helper->curr = (*(helper->root));
-    } else {
-        if (helper->curr->next == NULL) {
-            // The next link in the clain doesn't exist. Let's create it.
-            helper->curr->next = REPY_IfStmtChain_Create(expr_string, filename, function_name, line_number, identifier);
-        }
-        // Move down the chain:
-        helper->curr = helper->curr->next;
-        helper->index++;
-    }
-    return PythonNative_CastBool(PythonNative_MakeSUH(PythonNative_Eval(helper->curr->eval_expression_bytecode, global_scope, local_scope)));
+RECOMP_EXPORT void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper) {
+    IfStmtHelperInternal_Destroy((REPY_IfStmtHelperInternal*) helper);
+}
+
+RECOMP_EXPORT void REPY_IfStmtHelper_Reset(REPY_IfStmtHelper* p_helper, REPY_IfStmtChain** root) {
+    IfStmtHelperInternal_Reset((REPY_IfStmtHelperInternal*)p_helper, (REPY_IfStmtChainInternal**) root);
+}
+
+RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* p_helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
+    return IfStmtHelperInternal_Step((REPY_IfStmtHelperInternal*) p_helper, global_scope, local_scope, expr_string, filename, function_name, line_number, identifier);
 };
-
-
-int hello() {
-    return 1;
-}

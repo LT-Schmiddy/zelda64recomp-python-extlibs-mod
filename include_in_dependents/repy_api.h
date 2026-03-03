@@ -52,7 +52,7 @@ typedef double REPY_f64;
 // For internal use only. This flag is set when building RecompExternalPython from source to disable importing.
 #elif RECOMP_PY_BUILD_MODE
 #define REPY_IMPORT(func) func
-
+#define REPY_INTERNALS_EXPOSED
 #else 
 #define REPY_IMPORT(func) RECOMP_IMPORT(REPY_MOD_ID_STR, func)
 
@@ -175,6 +175,22 @@ typedef struct REPY_IteratorHelper {
     REPY_bool _first_update; ///< Internal flag used to determine if the iterator has been updated for the first time.
 } REPY_IteratorHelper;
 
+
+#ifdef REPY_INTERNALS_EXPOSED
+typedef struct REPY_IfStmtChainInternal {
+    REPY_Handle eval_expression_bytecode; ///< The bytecode for the Python expression to evaluate.
+    struct REPY_IfStmtChainInternal* next; ///< Pointer to the next link in the chain.
+} REPY_IfStmtChainInternal;
+
+typedef struct REPY_IfStmtHelperInternal {
+    REPY_u32 index; ///< The number of links down the chain we've gone.
+    REPY_IfStmtChainInternal** root; ///< The start of the chain. A double pointer is used so that, the the chain doesn't exist yet, it can be initialized on the first call of `REPY_IfStmtHelper_Step`.
+    REPY_IfStmtChainInternal* curr; ///< The most recently evaluated link in the chain.
+    REPY_bool _first_step; ///< ///< Internal flag used to determine if the helper has been stepped for the first time.
+} REPY_IfStmtHelperInternal;
+
+#endif
+
 /**
  * @brief Helper object used to cache Python expressions as bytecode, so that they don't need to be re-parsed and compiled every time they're run.
  * 
@@ -185,21 +201,22 @@ typedef struct REPY_IteratorHelper {
  * that step is called.
  * 
  */
-typedef struct REPY_IfStmtChain {
-    REPY_Handle eval_expression_bytecode; ///< The bytecode for the Python expression to evaluate.
-    struct REPY_IfStmtChain* next; ///< Pointer to the next link in the chain.
-} REPY_IfStmtChain;
+#ifdef REPY_INTERNALS_EXPOSED
+typedef REPY_IfStmtChainInternal REPY_IfStmtChain;
+#else
+typedef void REPY_IfStmtChain;
+#endif
 
 /**
  * @brief Helper used to step through a `REPY_IfStmtChain` while it's being evaluated.
  * 
  */
-typedef struct REPY_IfStmtHelper {
-    REPY_u32 index; ///< The number of links down the chain we've gone.
-    REPY_IfStmtChain** root; ///< The start of the chain. A double pointer is used so that, the the chain doesn't exist yet, it can be initialized on the first call of `REPY_IfStmtHelper_Step`.
-    REPY_IfStmtChain* curr; ///< The most recently evaluated link in the chain.
-    REPY_bool _first_step; ///< ///< Internal flag used to determine if the helper has been stepped for the first time.
-} REPY_IfStmtHelper;
+#ifdef REPY_INTERNALS_EXPOSED
+typedef REPY_IfStmtHelperInternal REPY_IfStmtHelper;
+#else
+typedef void REPY_IfStmtHelper;
+#endif
+
 
 /** @}*/
 
@@ -1757,7 +1774,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBytes(va
 #define REPY_FN_IF_CACHE_INIT(helper_identifier) \
 static REPY_IfStmtChain* helper_identifier ## _chain_root = NULL; \
 REPY_IfStmtHelper helper_identifier; \
-REPY_IfStmtHelper_InitInPlace(&helper_identifier, &helper_identifier ## _chain_root); 
+REPY_IfStmtHelper_Reset(&helper_identifier, &helper_identifier ## _chain_root); 
 
 /**
  * @brief Constructs a `if` statement that uses a cached Python expression executed in the current scope.
@@ -3286,7 +3303,7 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Hand
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
  * `REPY_NO_OBJECT`
  */
-REPY_IMPORT(REPY_Handle REPY_VL(REPY_Handle dict_nullable, u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_VL(REPY_Handle dict_nullable, REPY_u32 size, ...));
 
 
 /**
@@ -3310,7 +3327,7 @@ REPY_IMPORT(REPY_Handle REPY_VL(REPY_Handle dict_nullable, u32 size, ...));
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
  * `REPY_NO_OBJECT`
  */
-REPY_IMPORT(REPY_Handle REPY_VL_SUH(REPY_Handle dict_nullable, u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_VL_SUH(REPY_Handle dict_nullable, REPY_u32 size, ...));
 
 /** @}*/
 
@@ -3579,6 +3596,9 @@ REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* f
  */
 REPY_IMPORT(void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain));
 
+REPY_IMPORT(REPY_IfStmtHelper* REPY_IfStmtHelper_Create(REPY_IfStmtChain** chain_root));
+REPY_IMPORT(void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper));
+
 /**
  * @brief Initializes a pre-allocated `REPY_IfStmtHelper` for controlling managing a Pythonic if/else block.
  * 
@@ -3589,7 +3609,7 @@ REPY_IMPORT(void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain));
  * will usually be a `static` variable. If value of the variable at `root` us NULL, that will be taken to mean that the chain has not been created yet
  * (IE, this is the first run of this if/else block).
  */
-REPY_IMPORT(void REPY_IfStmtHelper_InitInPlace(REPY_IfStmtHelper* helper, REPY_IfStmtChain** root));
+REPY_IMPORT(void REPY_IfStmtHelper_Reset(REPY_IfStmtHelper* helper, REPY_IfStmtChain** root));
 
 /**
  * @brief Steps through and evaluate the next link in the `REPY_IfStmtChain` chain provided to the `REPY_IfStmtHelper`, or creates a new link if one
