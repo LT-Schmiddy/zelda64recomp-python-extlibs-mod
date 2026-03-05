@@ -9,6 +9,7 @@
 
 #include "./api_helpers/if_stmt_chain.h"
 #include "./api_helpers/if_stmt_helper.h"
+#include "./api_helpers/iterator_helper.h"
 
 #define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s -> "
 
@@ -21,62 +22,25 @@ RECOMP_EXPORT char* REPY_InlineCodeSourceStrHelper(char* category, char* filenam
 
 
 RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name) {
-    REPY_IteratorHelper* helper = recomp_alloc(sizeof(REPY_IteratorHelper));
-    helper->_first_update = true;
-    helper->index = 0;
-    helper->iter = PythonNative_Iter(py_object);
-    helper->curr = 0;
-    helper->py_scope = PythonNative_CopyHandle(py_scope);
-    if (py_scope != 0) {
-        helper->var_name = PythonNative_CreateStr(var_name);
-    }
-
-    return helper;
+    return (REPY_IteratorHelper*) REPY_IteratorHelperInternal_Create(py_object, py_scope, var_name);
 }
 
 RECOMP_EXPORT void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper) {
-    PythonNative_Release(helper->iter);
-    if (PythonNative_IsValidHandle(helper->curr)) {
-        // Checking this is important, since curr valid until after the first update, and the iterator COULD be destroyed before then.
-        PythonNative_Release(helper->curr);
-    }
-
-    if (helper->py_scope != 0) {
-        PythonNative_Release(helper->py_scope);
-        PythonNative_Release(helper->var_name);
-    }
-
-    recomp_free(helper);
+    REPY_IteratorHelperInternal_Destroy((REPY_IteratorHelperInternal*) helper);
 }
 
 RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool auto_destroy) {
-    if (helper->_first_update) {
-        helper->_first_update = false;
-    } else {
-        helper->index++;
-        if (helper->curr != 0) {
-            PythonNative_Release(helper->curr);
-        } else {
-            LOGW("Warning: helper->curr should not be 0. You may be trying to update an REPY_IteratorHelper after the iterator is finished.\n");
-        }
-    }
-
-    helper->curr = PythonNative_Next(helper->iter, 0, true);
-    if (helper->curr) {
-        if (helper->py_scope) {
-            // If given a python scope, add current to the scope under the given variable name:
-            PythonNative_DictSet(helper->py_scope, helper->var_name, helper->curr);
-        }
-
-        return true;
-    } else {
-        // Iterator complete. Time to clean up.
-        if (auto_destroy) {
-            REPY_IteratorHelper_Destroy(helper);
-        }
-        return false;   
-    }
+    return REPY_IteratorHelperInternal_Update((REPY_IteratorHelperInternal*) helper, auto_destroy);
 }
+
+RECOMP_EXPORT u32 REPY_IteratorHelper_GetIndex(REPY_IteratorHelper* helper) {
+    return REPY_IteratorHelperInternal_GetIndex((REPY_IteratorHelperInternal*) helper);
+}
+
+RECOMP_EXPORT REPY_Handle REPY_IteratorHelper_BorrowCurrent(REPY_IteratorHelper* helper) {
+    return REPY_IteratorHelperInternal_BorrowCurrent((REPY_IteratorHelperInternal*) helper);
+}
+
 
 // ==== REPY_IfStmtChain ===
 RECOMP_EXPORT REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {

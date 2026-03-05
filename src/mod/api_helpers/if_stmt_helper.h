@@ -3,6 +3,7 @@
 
 #include "repy_api.h"
 #include "./if_stmt_chain.h"
+#include "global.h"
 
 typedef struct REPY_IfStmtHelperInternal {
     REPY_u32 index; ///< The number of links down the chain we've gone.

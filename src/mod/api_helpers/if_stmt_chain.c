@@ -1,6 +1,5 @@
 #include "if_stmt_chain.h"
 
-#include "global.h"
 #include "recomputils.h"
 #include "../extlib_functions.h"
 #include "../mod_logging.h"

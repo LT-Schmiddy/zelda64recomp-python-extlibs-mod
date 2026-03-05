@@ -52,7 +52,6 @@ typedef double REPY_f64;
 // For internal use only. This flag is set when building RecompExternalPython from source to disable importing.
 #elif RECOMP_PY_BUILD_MODE
 #define REPY_IMPORT(func) func
-#define REPY_INTERNALS_EXPOSED
 #else 
 #define REPY_IMPORT(func) RECOMP_IMPORT(REPY_MOD_ID_STR, func)
 
@@ -165,21 +164,9 @@ typedef enum REPY_CodeMode {
  * 
  * The lifetime of each REPY_Handle member is managed by IteratorHelper. Do not release them manually.
  * 
+ * For ABI compatability, the internals of these objects are managed by REPY. 
  */
-typedef struct REPY_IteratorHelper {
-    REPY_Handle iter; ///< Handle for the Python iterator object. 
-    REPY_u32 index; ///< The index of the current object from the iterator.
-    REPY_Handle curr; ///< Handle of the current object from the iterator. If you need to access this object outside of the current iteration, use `REPY_CopyHandle` to get a new handle.
-    REPY_Handle py_scope; ///< If this handle != 0, then the `curr` object will be added to this scope with a variable name set by `var_name`.
-    REPY_Handle var_name; ///< The variable name that will be used for `curr` when added to `py_scope`, if `py_scope` is not 0.
-    REPY_bool _first_update; ///< Internal flag used to determine if the iterator has been updated for the first time.
-} REPY_IteratorHelper;
-
-
-#ifdef REPY_INTERNALS_EXPOSED
-
-
-#endif
+typedef void REPY_IteratorHelper;
 
 /**
  * @brief Helper object used to cache Python expressions as bytecode, so that they don't need to be re-parsed and compiled every time they're run.
@@ -190,13 +177,15 @@ typedef struct REPY_IteratorHelper {
  * The chain is a singly-linked list with the bytecode for each Python expression from a `REPY_IfStmtHelper_Step` call. Each link is constructed the 
  * that step is called.
  * 
+ * For ABI compatability, the internals of these objects are managed by REPY.
  */
 typedef void REPY_IfStmtChain;
 
 
 /**
  * @brief Helper used to step through a `REPY_IfStmtChain` while it's being evaluated.
- * 
+ *
+ * For ABI compatability, the internals of these objects are managed by REPY.
  */
 typedef void REPY_IfStmtHelper;
 
@@ -3556,6 +3545,9 @@ REPY_IMPORT(void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper));
  * @return `true` if the iteration/loop should continue. `false` once it's time to end.
  */
 REPY_IMPORT(REPY_bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, REPY_bool auto_destroy));
+
+REPY_IMPORT(REPY_u32 REPY_IteratorHelper_GetIndex(REPY_IteratorHelper* helper));
+REPY_IMPORT(REPY_Handle REPY_IteratorHelper_BorrowCurrent(REPY_IteratorHelper* helper));
 
 /**
  * @brief Creates a new link in a `REPY_IfStmtChain` if statement chain.

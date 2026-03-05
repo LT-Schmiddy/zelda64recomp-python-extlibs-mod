@@ -2,7 +2,7 @@
 #define __IF_STMT_CHAIN__
 
 #include "repy_api.h"
-
+#include "global.h"
 // If Statement chains used to help with REPY_FN. Uses object-oriented design.
 
 // Main Struct:

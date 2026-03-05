@@ -418,48 +418,41 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     bool iter_curr_works = true;
     bool iter_scope_works = true;
     char* var_name = "val";
-    REPY_Handle iter_handles[10];
+    REPY_Handle iter_handles[7];
 
     for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name); REPY_IteratorHelper_Update(iter, true);) {
-        iter_index_works = iter_index_works && (iter_array[iter->index] == iter->index);
-        iter_curr_works = iter_curr_works && (iter_array[iter->index] == REPY_CastU32(iter->curr));
-        iter_scope_works = iter_scope_works && (iter_array[iter->index] == REPY_CastU32(REPY_MakeSUH(REPY_DictGetCStr(iter_test_dict, var_name))));
+        u32 index = REPY_IteratorHelper_GetIndex(iter);
+        iter_index_works = iter_index_works && (iter_array[index] == index);
 
-        iter_handles[iter->index] = iter->curr;
-        iter_handles[7] = iter->iter;
-        iter_handles[8] = iter->var_name;
-        iter_handles[9] = iter->py_scope;
+        REPY_Handle current = REPY_IteratorHelper_BorrowCurrent(iter);
+        iter_curr_works = iter_curr_works && (iter_array[index] == REPY_CastU32(current));
+        iter_scope_works = iter_scope_works && (iter_array[index] == REPY_CastU32(REPY_MakeSUH(REPY_DictGetCStr(iter_test_dict, var_name))));
+
+        iter_handles[index] = REPY_IteratorHelper_BorrowCurrent(iter);
     }
 
     validate("REPY_IteratorHelper -> index updated properly", iter_index_works);
     validate("REPY_IteratorHelper -> curr updated properly", iter_curr_works);
     validate("REPY_IteratorHelper -> scope updated properly", iter_scope_works);
     bool iter_released_all = true;
-    for (int i = 0; i < 10; i++) {
+    // Testing auto-destroy:
+    for (int i = 0; i < 7; i++) {
         iter_released_all = iter_released_all && !REPY_IsValidHandle(iter_handles[i]);
     }
     validate("REPY_IteratorHelper -> all handles released automatically", iter_released_all);
     // Checking what happens if we kill the handler early.
 
-    REPY_Handle check_iter;
+
     REPY_Handle check_curr;
-    REPY_Handle check_py_scope;
-    REPY_Handle check_var_name;
     bool iter_break_works = true;
     for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name); REPY_IteratorHelper_Update(iter, true);) {
-        check_iter = iter->iter;
-        check_curr = iter->curr;
-        check_py_scope = iter->var_name;
-        check_var_name = iter->py_scope;
+        check_curr = REPY_IteratorHelper_BorrowCurrent(iter);
 
         REPY_IteratorHelper_Destroy(iter);
         break;
     }
 
-    iter_break_works = iter_released_all && !REPY_IsValidHandle(check_iter);
     iter_break_works = iter_released_all && !REPY_IsValidHandle(check_curr);
-    iter_break_works = iter_released_all && !REPY_IsValidHandle(check_py_scope);
-    iter_break_works = iter_released_all && !REPY_IsValidHandle(check_var_name);
 
     validate("REPY_IteratorHelper -> early cleanup works", iter_break_works);
     // From here on, we assume the iterator helper works.
