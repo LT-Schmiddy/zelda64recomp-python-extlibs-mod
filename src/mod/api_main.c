@@ -79,6 +79,14 @@ RECOMP_EXPORT REPY_InterpreterIndex REPY_GetCurrentInterpreter() {
     return PythonNative_GetCurrentInterpreter();
 }
 
+RECOMP_EXPORT bool PythonNative_GetInterpreterAutoDisarm(REPY_InterpreterIndex index) {
+    return REPY_GetInterpreterAutoDisarm(index);
+}
+
+RECOMP_EXPORT void PythonNative_SetInterpreterAutoDisarm(REPY_InterpreterIndex index, bool value) {
+    PythonNative_SetInterpreterAutoDisarm(index, value);
+}
+
 RECOMP_EXPORT REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle_no_release) {
     return PythonNative_GetHandleInterpreter(handle_no_release);
 }

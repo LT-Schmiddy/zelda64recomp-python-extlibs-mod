@@ -2061,6 +2061,9 @@ REPY_IMPORT(void REPY_PopInterpreter());
  */
 REPY_IMPORT(REPY_InterpreterIndex REPY_GetCurrentInterpreter());
 
+REPY_IMPORT(REPY_bool REPY_GetInterpreterAutoDisarm(REPY_InterpreterIndex index));
+REPY_IMPORT(void REPY_SetInterpreterAutoDisarm(REPY_InterpreterIndex index, REPY_bool value));
+
 /**
  * @brief Gets the index of the interpreter a specific `REPY_Handle` object is associated with.
  * 
