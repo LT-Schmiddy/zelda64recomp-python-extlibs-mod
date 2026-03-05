@@ -725,7 +725,7 @@ REPY_ExecCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)
  */
 #define REPY_FN_EXEC_CACHE(identifier, code_str) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EXEC_CACHE", identifier, REPY_CODE_EXEC, code_str) \
-REPY_u32 identifier ## _success = REPY_FN_EXEC(identifier) 
+REPY_bool identifier ## _success = REPY_FN_EXEC(identifier) 
 
 /** @}*/
 
@@ -1155,7 +1155,7 @@ bool out_var = REPY_FN_EVAL_BOOL(bytecode_identifier)
  */
 #define REPY_FN_EVAL_CACHE_U8(bytecode_identifier, code_str, out_var) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_CACHE_U8", bytecode_identifier, REPY_CODE_EVAL, code_str) \
-REPY_u32 out_var = REPY_FN_EVAL_U8(bytecode_identifier)
+REPY_u8 out_var = REPY_FN_EVAL_U8(bytecode_identifier)
 
 /**
  * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
@@ -1174,7 +1174,7 @@ REPY_u32 out_var = REPY_FN_EVAL_U8(bytecode_identifier)
  */
 #define REPY_FN_EVAL_CACHE_S8(bytecode_identifier, code_str, out_var) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_CACHE_S8", bytecode_identifier, REPY_CODE_EVAL, code_str) \
-REPY_s32 out_var = REPY_FN_EVAL_S8(bytecode_identifier)
+REPY_s8 out_var = REPY_FN_EVAL_S8(bytecode_identifier)
 
 /**
  * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
@@ -1193,7 +1193,7 @@ REPY_s32 out_var = REPY_FN_EVAL_S8(bytecode_identifier)
  */
 #define REPY_FN_EVAL_CACHE_U16(bytecode_identifier, code_str, out_var) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_CACHE_U16", bytecode_identifier, REPY_CODE_EVAL, code_str) \
-REPY_u32 out_var = REPY_FN_EVAL_U16(bytecode_identifier)
+REPY_u16 out_var = REPY_FN_EVAL_U16(bytecode_identifier)
 
 /**
  * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
@@ -1212,7 +1212,7 @@ REPY_u32 out_var = REPY_FN_EVAL_U16(bytecode_identifier)
  */
 #define REPY_FN_EVAL_CACHE_S16(bytecode_identifier, code_str, out_var) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_CACHE_S16", bytecode_identifier, REPY_CODE_EVAL, code_str) \
-REPY_s32 out_var = REPY_FN_EVAL_S16(bytecode_identifier)
+REPY_s16 out_var = REPY_FN_EVAL_S16(bytecode_identifier)
 
 /**
  * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
@@ -2637,7 +2637,7 @@ REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
  * @param reverse Set to `false` to copy normally, or `true` to reverse the byte order of the memory being copied.
  * @return A `REPY_Handle` to the `bytes` obect created.
  */
-REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, REPY_u32 len, REPY_u32 reverse));
+REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, REPY_u32 len, REPY_bool reverse));
 
 /**
  * @brief Copy the content of a Python `bytes` object into mod memory.
@@ -2657,7 +2657,7 @@ REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, REPY_u32 len, REPY_u32 rev
  * @param bytes_obj The Python `bytes` object to copy from.
  * @return The number of bytes actually copied.
  */
-REPY_IMPORT(REPY_u32 REPY_MemcpyFromBytes(void* dst, REPY_u32 len, REPY_u32 reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(REPY_u32 REPY_MemcpyFromBytes(void* dst, REPY_u32 len, REPY_bool reverse, REPY_Handle bytes_obj));
 
 
 /**
@@ -2676,7 +2676,7 @@ REPY_IMPORT(REPY_u32 REPY_MemcpyFromBytes(void* dst, REPY_u32 len, REPY_u32 reve
  * @param write_size A pointer to a `u32`, where the number of bytes copied can be written to.
  * @return A `void*` to the data copied into mod memory.
  */
-REPY_IMPORT(void* REPY_AllocAndCopyBytes(REPY_u32 reverse, REPY_Handle bytes_obj, REPY_u32* write_size));
+REPY_IMPORT(void* REPY_AllocAndCopyBytes(REPY_bool reverse, REPY_Handle bytes_obj, REPY_u32* write_size));
 
 /**
  * @brief Create a Python `bytearray` object from a chunk of mod memory.
@@ -2688,7 +2688,7 @@ REPY_IMPORT(void* REPY_AllocAndCopyBytes(REPY_u32 reverse, REPY_Handle bytes_obj
  * @param reverse Set to `false` to copy normally, or `true` to reverse the byte order of the memory being copied.
  * @return A `REPY_Handle` to the `bytearray` obect created.
  */
-REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, REPY_u32 len, REPY_u32 reverse));
+REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, REPY_u32 len, REPY_bool reverse));
 
 /**
  * @brief Copy the content of a Python `bytearray` object into mod memory.
@@ -2708,7 +2708,7 @@ REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, REPY_u32 len, REPY_u32
  * @param bytes_obj The Python `bytearray` object to copy from.
  * @return The number of bytes actually copied.
  */
-REPY_IMPORT(REPY_u32 REPY_MemcpyFromByteArray(void* dst, REPY_u32 len, REPY_u32 reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(REPY_u32 REPY_MemcpyFromByteArray(void* dst, REPY_u32 len, REPY_bool reverse, REPY_Handle bytes_obj));
 
 /**
  * @brief Copy the content of a Python `bytearray` object into mod memory, automatically allocating the space for it
@@ -2726,7 +2726,7 @@ REPY_IMPORT(REPY_u32 REPY_MemcpyFromByteArray(void* dst, REPY_u32 len, REPY_u32 
  * @param write_size A pointer to a `u32`, where the number of bytes copied can be written to.
  * @return A `void*` to the data copied into mod memory.
  */
-REPY_IMPORT(void* REPY_AllocAndCopyByteArray(REPY_u32 reverse, REPY_Handle bytes_obj, REPY_u32* write_size));
+REPY_IMPORT(void* REPY_AllocAndCopyByteArray(REPY_bool reverse, REPY_Handle bytes_obj, REPY_u32* write_size));
 
 /** @}*/
 
@@ -2871,7 +2871,7 @@ REPY_IMPORT(REPY_Handle REPY_Iter(REPY_Handle object));
  * @return The next object from the iterator. Will be `REPY_NO_HANDLE` an error occured, or if `process_stop_iteration` is `true` and
  * iteration has ended
  */
-REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_nullable, REPY_u32 process_stop_iteration));
+REPY_IMPORT(REPY_Handle REPY_Next(REPY_Handle iterator, REPY_Handle default_obj_nullable, REPY_bool process_stop_iteration));
 
 /** @}*/
 

@@ -71,7 +71,7 @@ RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
     INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    RECOMP_RETURN(uint32_t, (uint32_t) controller->is_valid_handle(handle));
+    RECOMP_RETURN(bool, controller->is_valid_handle(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetSUH) {
@@ -79,7 +79,7 @@ RECOMP_DLL_FUNC(PythonNative_GetSUH) {
     INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    RECOMP_RETURN(uint32_t, (uint32_t) controller->get_handle_suh(handle));
+    RECOMP_RETURN(bool, controller->get_handle_suh(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_SetSUH) {
@@ -87,7 +87,7 @@ RECOMP_DLL_FUNC(PythonNative_SetSUH) {
     INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    REPY_Handle value = RECOMP_ARG(uint32_t, 1);
+    REPY_Handle value = RECOMP_ARG(bool, 1);
     controller->set_handle_suh(handle, value);
 }
 
@@ -172,9 +172,9 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
     INTERP_API_HEADER;
     std::u8string module_name = RECOMP_ARG_U8STR(0);
     std::u8string code_string = RECOMP_ARG_U8STR(1);
-    uint32_t add_to_sys = RECOMP_ARG(uint32_t, 2);
+    bool add_to_sys = RECOMP_ARG(bool, 2);
 
-    controller->construct_module(module_name, code_string, (bool)add_to_sys);
+    controller->construct_module(module_name, code_string, add_to_sys);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
@@ -183,9 +183,9 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
     std::u8string module_name = RECOMP_ARG_U8STR(0);
     int32_t code_len = RECOMP_ARG(int32_t, 2);
     std::u8string code_string = RECOMP_ARG_U8STR_N(1, code_len);
-    uint32_t add_to_sys = RECOMP_ARG(uint32_t, 3);
+    bool add_to_sys = RECOMP_ARG(bool, 3);
 
-    controller->construct_module(module_name, code_string, (bool)add_to_sys);
+    controller->construct_module(module_name, code_string, add_to_sys);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ImportModule) {
@@ -229,7 +229,7 @@ RECOMP_DLL_FUNC(fname) { \
 PYTHON_OBJECT_CREATE(PythonNative_Create ## fname, c_type, py_type); \
 PYTHON_OBJECT_CAST(PythonNative_Cast ## fname, c_type, py_type); \
 
-PYTHON_OBJECT_CREATECAST(Bool, uint32_t, py::bool_);
+PYTHON_OBJECT_CREATECAST(Bool, bool, py::bool_);
 PYTHON_OBJECT_CREATECAST(U8, uint8_t, py::int_);
 PYTHON_OBJECT_CREATECAST(S8, int8_t, py::int_);
 PYTHON_OBJECT_CREATECAST(U16, uint16_t, py::int_);
@@ -246,7 +246,7 @@ RECOMP_DLL_FUNC(name) { \
     INTERP_API_HEADER \
     PTR(c_type) location = RECOMP_ARG(PTR(c_type), 0); \
     /* 0 for read, 1 for write */ \
-    uint32_t op_mode = RECOMP_ARG(uint32_t, 1); \
+    bool op_mode = RECOMP_ARG(bool, 1); \
     if (op_mode) { \
         /* Writing: */ \
         /* We only need this if we're writing, and use while reading will give an error: */ \
@@ -367,7 +367,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
     INTERP_API_HEADER;
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
-    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
+    bool reverse = RECOMP_ARG(bool, 2);
 
 
     uint8_t* mem_block = new uint8_t[data_size];
@@ -388,7 +388,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
     INTERP_API_HEADER;
     PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
-    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
+    bool reverse = RECOMP_ARG(bool, 2);
     py::bytes* bytes_obj = (py::bytes*)RECOMP_ARG_PYOBJECT(3);
 
     py::buffer_info info = py::buffer(*bytes_obj).request();
@@ -409,7 +409,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
     INTERP_API_HEADER;
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
-    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
+    bool reverse = RECOMP_ARG(bool, 2);
 
 
     uint8_t* mem_block = new uint8_t[data_size];
@@ -431,7 +431,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
     INTERP_API_HEADER;
     PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
-    uint32_t reverse = RECOMP_ARG(uint32_t, 2);
+    bool reverse = RECOMP_ARG(bool, 2);
     py::bytearray* bytes_obj = (py::bytearray*)RECOMP_ARG_PYOBJECT(3);
 
     py::buffer_info info = py::buffer(*bytes_obj).request();
@@ -475,7 +475,7 @@ RECOMP_DLL_FUNC(PythonNative_Next) {
     ZoneScoped;
     INTERP_API_HEADER;
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
-    uint32_t process_stop_iteration = RECOMP_ARG(uint32_t, 2);
+    bool process_stop_iteration = RECOMP_ARG(bool, 2);
     py::object* default_obj; 
     py::object entry;
 
@@ -676,7 +676,7 @@ RECOMP_DLL_FUNC(PythonNative_DictSetCStr) {
 RECOMP_DLL_FUNC(PythonNative_DictHas) {
     ZoneScoped;
     INTERP_API_HEADER;
-    uint32_t retVal = 0;
+    bool retVal = false;
 
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -689,13 +689,13 @@ RECOMP_DLL_FUNC(PythonNative_DictHas) {
     }
 
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, retVal);
+    RECOMP_RETURN(bool, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictHasCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    uint32_t retVal = 0;
+    bool retVal = false;
 
     try {
         py::dict* d = (py::dict*)RECOMP_ARG_PYOBJECT(0);
@@ -708,7 +708,7 @@ RECOMP_DLL_FUNC(PythonNative_DictHasCStr) {
     }
 
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, retVal);
+    RECOMP_RETURN(bool, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictDel) {
@@ -751,7 +751,7 @@ RECOMP_DLL_FUNC(PythonNative_GetAttr) {
         
         py::object r;
         // If a default was passed:
-        if (RECOMP_ARG(uint32_t, 2)) {
+        if (RECOMP_ARG(REPY_Handle, 2)) {
             py::object* default_r = RECOMP_ARG_PYOBJECT(2);
             r = py::getattr(*obj, *key, *default_r);
         } else {
@@ -777,7 +777,7 @@ RECOMP_DLL_FUNC(PythonNative_GetAttrCStr) {
         
         py::object r;
         // If a default was passed:
-        if (RECOMP_ARG(uint32_t, 2)) {
+        if (RECOMP_ARG(REPY_Handle, 2)) {
             py::object* default_r = RECOMP_ARG_PYOBJECT(2);
             r = py::getattr(*obj, (char*)key.c_str(), *default_r);
         } else {
@@ -829,7 +829,7 @@ RECOMP_DLL_FUNC(PythonNative_SetAttrCStr) {
 RECOMP_DLL_FUNC(PythonNative_HasAttr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    uint32_t retVal = 0;
+    bool retVal = 0;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
         py::object* key = RECOMP_ARG_PYOBJECT(1);
@@ -839,13 +839,13 @@ RECOMP_DLL_FUNC(PythonNative_HasAttr) {
         controller->handle_exception(&e);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, retVal);
+    RECOMP_RETURN(bool, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_HasAttrCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    uint32_t retVal = 0;
+    bool retVal = 0;
     try {
         py::object* obj = RECOMP_ARG_PYOBJECT(0);
         std::u8string key = RECOMP_ARG_U8STR(1);
@@ -855,7 +855,7 @@ RECOMP_DLL_FUNC(PythonNative_HasAttrCStr) {
         controller->handle_exception(&e);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, retVal);
+    RECOMP_RETURN(bool, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_DelAttr) {
@@ -969,10 +969,10 @@ RECOMP_DLL_FUNC(PythonNative_Exec) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(uint32_t, 0);
+        RECOMP_RETURN(bool, false);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, 1);
+    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
@@ -998,10 +998,10 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(uint32_t, 0);
+        RECOMP_RETURN(bool, false);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, 1);
+    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
@@ -1027,10 +1027,10 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(uint32_t, 0);
+        RECOMP_RETURN(bool, false);
     }
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, 1);
+    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Eval) {
@@ -1183,11 +1183,11 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(uint32_t, 0);
+        RECOMP_RETURN(bool, false);
     }
 
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, 1);
+    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallReturn) {
@@ -1241,11 +1241,11 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(uint32_t, 0);
+        RECOMP_RETURN(bool, false);
     }
 
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, 1);
+    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
@@ -1269,11 +1269,11 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
         controller->release_suh_handles();
-        RECOMP_RETURN(uint32_t, 0);
+        RECOMP_RETURN(bool, false);
     }
 
     controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, 1);
+    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrReturn) {
