@@ -13,6 +13,7 @@ extern "C" {
 
 // This used to be bigger, but I'm keeping it.
 #define INTERP_API_HEADER \
+    controller->thread_check(); \
     controller->set_rdram(rdram); \
 
 

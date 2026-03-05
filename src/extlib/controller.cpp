@@ -36,6 +36,8 @@ static void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 // ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
     ZoneScoped;
+    main_thread_id = std::this_thread::get_id();
+    
     // Initialize Logging
     fs::path file_appender_path = fs::path(mod_dir).parent_path().append("REPY.log");
     log = &plog::init((plog::Severity)log_severity);
@@ -114,6 +116,13 @@ PyInterpreterController::~PyInterpreterController() {
     }
 
     PLOGI << "-> Python interpreter shutdown";
+}
+
+void PyInterpreterController::thread_check() {
+    if (main_thread_id != std::this_thread::get_id()) {
+        PLOGW.printf("A REPY API call was made from a thread other than the one used for initialization. This could potentially result in cross-talk between interperters.");
+    }
+    assert(main_thread_id == std::this_thread::get_id());
 }
 
 REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {

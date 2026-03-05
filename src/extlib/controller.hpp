@@ -3,6 +3,7 @@
 #include <queue>
 #include <stack>
 #include <vector>
+#include <thread>
 
 #include "globals.hpp"
 #include <plog/Formatters/TxtFormatter.h>// Step1: include the headers
@@ -17,6 +18,8 @@ class PyInterpreterController {
 public:
     PyInterpreterController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
+
+    void thread_check();
 
     REPY_InterpreterIndex create_subcontroller();
     REPY_InterpreterIndex get_current_subcontroller_index();
@@ -53,12 +56,11 @@ public:
 
     REPY_Handle get_zipfile_from_path(std::u8string filepath);
 
-    
-
     uint8_t* get_rdram();
     void set_rdram(uint8_t* p_rdram);
 
 private:
+    std::thread::id main_thread_id;
     PyThreadState* py_main_thread = NULL;
     PyObjectSlotMap py_objects_smap;
     std::queue<REPY_Handle> suh_release_queue;
