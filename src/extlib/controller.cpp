@@ -36,7 +36,7 @@ static void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 // ======================================  Handle Control: ====================================== 
 PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
     ZoneScoped;
-    main_thread_id = std::this_thread::get_id();
+    calling_thread_id = std::this_thread::get_id();
     
     // Initialize Logging
     fs::path file_appender_path = fs::path(mod_dir).parent_path().append("REPY.log");
@@ -119,10 +119,10 @@ PyInterpreterController::~PyInterpreterController() {
 }
 
 void PyInterpreterController::thread_check() {
-    if (main_thread_id != std::this_thread::get_id()) {
-        PLOGW.printf("A REPY API call was made from a thread other than the one used for initialization. This could potentially result in cross-talk between interperters.");
+    if (!subinterp_index_stack.empty() && calling_thread_id != std::this_thread::get_id()) {
+        PLOGW.printf("The thread making calls to the REPY API has changed while the interpreter stack wasn't empty. This could potentially result in cross-talk between interperters.");
     }
-    assert(main_thread_id == std::this_thread::get_id());
+    assert(subinterp_index_stack.empty() || calling_thread_id == std::this_thread::get_id());
 }
 
 REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {
@@ -159,6 +159,7 @@ void PyInterpreterController::push_subcontroller_index(REPY_InterpreterIndex ind
     if (subinterp_index_stack.empty()) {
         subinterp_index_stack.push(index);
         subinterpreters.at(index)->activate();
+        calling_thread_id = std::this_thread::get_id();
     } else {
         REPY_InterpreterIndex old_index = subinterp_index_stack.top();
         subinterp_index_stack.push(index);

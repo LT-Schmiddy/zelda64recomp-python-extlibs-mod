@@ -60,7 +60,7 @@ public:
     void set_rdram(uint8_t* p_rdram);
 
 private:
-    std::thread::id main_thread_id;
+    std::thread::id calling_thread_id;
     PyThreadState* py_main_thread = NULL;
     PyObjectSlotMap py_objects_smap;
     std::queue<REPY_Handle> suh_release_queue;
