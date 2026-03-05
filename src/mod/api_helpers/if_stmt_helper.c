@@ -5,21 +5,15 @@
 #include "../extlib_functions.h"
 #include "../mod_logging.h"
 
+REPY_IfStmtHelperInternal* IfStmtHelperInternal_Create(REPY_IfStmtChainInternal** chain_root) {
+    REPY_IfStmtHelperInternal* helper = recomp_alloc(sizeof(REPY_IfStmtHelperInternal));
 
-// Helper stuff:
-void IfStmtHelperInternal_Reset(REPY_IfStmtHelperInternal* helper, REPY_IfStmtChainInternal** root) {
     helper->index = 0;
-    helper->root = root;
+    helper->root = chain_root;
     helper->curr = NULL;
     helper->_first_step = true;
-}
 
-REPY_IfStmtHelperInternal* IfStmtHelperInternal_Create(REPY_IfStmtChainInternal** chain_root) {
-    REPY_IfStmtHelperInternal* retVal = recomp_alloc(sizeof(REPY_IfStmtHelperInternal));
-
-    IfStmtHelperInternal_Reset(retVal, chain_root);
-
-    return retVal;
+    return helper;
 }
 
 void IfStmtHelperInternal_Destroy(REPY_IfStmtHelperInternal* helper) {
