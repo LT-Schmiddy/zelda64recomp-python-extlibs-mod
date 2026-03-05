@@ -38,7 +38,8 @@
             "defines": [
                 "F3DEX_GBI_2",
                 "_LANGUAGE_C",
-                "MIPS"
+                "MIPS",
+                "REPY_INTERNALS_EXPOSED"
             ],
             "compilerPath": "clang",
             "cStandard": "c99"
