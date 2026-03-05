@@ -21,6 +21,9 @@ RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_RegisterSubinterpreter());
 RECOMP_IMPORT(".", void PythonNative_PushInterpreter(REPY_InterpreterIndex interpreter_handle));
 RECOMP_IMPORT(".", void PythonNative_PopInterpreter());
 RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetCurrentInterpreter());
+RECOMP_IMPORT(".", bool PythonNative_GetInterpreterAutoDisarm(REPY_InterpreterIndex index));
+RECOMP_IMPORT(".", void PythonNative_SetInterpreterAutoDisarm(REPY_InterpreterIndex index, bool value));
+RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetCurrentInterpreter());
 RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetHandleInterpreter(REPY_Handle handle));
 
 // Modules

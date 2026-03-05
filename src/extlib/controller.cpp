@@ -119,6 +119,7 @@ PyInterpreterController::~PyInterpreterController() {
 }
 
 void PyInterpreterController::thread_check() {
+    ZoneScoped;
     if (!subinterp_index_stack.empty() && calling_thread_id != std::this_thread::get_id()) {
         PLOGW.printf("The thread making calls to the REPY API has changed while the interpreter stack wasn't empty. This could potentially result in cross-talk between interperters.");
     }
@@ -142,6 +143,17 @@ REPY_InterpreterIndex PyInterpreterController::get_current_subcontroller_index()
         return -1;
     }
     return subinterp_index_stack.top();
+}
+
+PySubController* PyInterpreterController::get_subcontroller(REPY_InterpreterIndex index) {
+    ZoneScoped;
+
+    if (index < 0 || index > subinterpreters.size() - 1) {
+        PLOGF.printf("REPY_InterpreterIndex %i is out of range.", index);
+    }
+    assert(index > 0 && index < subinterpreters.size());
+
+    return subinterpreters.at(index);
 }
 
 PySubController* PyInterpreterController::get_current_subcontroller() {

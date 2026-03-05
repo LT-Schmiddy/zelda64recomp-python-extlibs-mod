@@ -17,6 +17,9 @@ public:
     void deactivate();
     bool is_active();
 
+    bool get_auto_disarm();
+    void set_auto_disarm(bool val);
+
     py::function py_compile();
     py::function py_exec();
     py::function py_eval();
@@ -33,6 +36,14 @@ public:
     py::object get_zipfile_from_path(std::u8string filepath);
 
 private:
+    REPY_InterpreterIndex _index;    
+    py::subinterpreter _subinterp;
+    py::gil_scoped_acquire* _gil = NULL;
+    py::subinterpreter_scoped_activate* _scope = NULL;
+    bool _is_active = false;
+
+    bool _auto_disarm = false;
+
     py::function _py_compile;
     py::function _py_exec;
     py::function _py_eval;
@@ -50,9 +61,5 @@ private:
 
     void init_py_objects();
 
-    REPY_InterpreterIndex _index;    
-    py::subinterpreter _subinterp;
-    py::gil_scoped_acquire* _gil = NULL;
-    py::subinterpreter_scoped_activate* _scope = NULL;
-    bool _is_active = false;
+
 };

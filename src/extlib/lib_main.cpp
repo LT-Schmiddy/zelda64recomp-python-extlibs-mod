@@ -58,6 +58,7 @@ RECOMP_DLL_FUNC(PythonNative_Release) {
 
 RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
     ZoneScoped;
+    INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     controller->set_handle_suh(handle, true);
@@ -67,6 +68,7 @@ RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
 
 RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
     ZoneScoped;
+    INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     RECOMP_RETURN(uint32_t, (uint32_t) controller->is_valid_handle(handle));
@@ -74,6 +76,7 @@ RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
 
 RECOMP_DLL_FUNC(PythonNative_GetSUH) {
     ZoneScoped;
+    INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     RECOMP_RETURN(uint32_t, (uint32_t) controller->get_handle_suh(handle));
@@ -81,6 +84,7 @@ RECOMP_DLL_FUNC(PythonNative_GetSUH) {
 
 RECOMP_DLL_FUNC(PythonNative_SetSUH) {
     ZoneScoped;
+    INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_Handle value = RECOMP_ARG(uint32_t, 1);
@@ -99,30 +103,53 @@ RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
 // ======================================  Subcontrollers/Subinterpreters: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
     ZoneScoped;
-    py::gil_scoped_acquire gil; 
+    INTERP_API_HEADER;
+    py::gil_scoped_acquire gil; // Still needed, since this can be used with an empty interpreter stack, and the GIL is needed for this.
     REPY_InterpreterIndex retVal = controller->create_subcontroller();
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PushInterpreter) {
     ZoneScoped;
+    INTERP_API_HEADER;
     REPY_InterpreterIndex interp = RECOMP_ARG(REPY_InterpreterIndex, 0);
     controller->push_subcontroller_index(interp);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PopInterpreter) {
     ZoneScoped;
+    INTERP_API_HEADER;
     controller->pop_subcontroller_index();
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
     ZoneScoped;
+    INTERP_API_HEADER;
     REPY_InterpreterIndex retVal = controller->get_current_subcontroller_index();
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
+RECOMP_DLL_FUNC(PythonNative_GetInterpreterAutoDisarm) {
+    ZoneScoped;
+    INTERP_API_HEADER;
+    REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
+    PySubController* sc = controller->get_subcontroller(index);
+    u32 retVal = sc->get_auto_disarm();
+    RECOMP_RETURN(u32, retVal);
+}
+
+RECOMP_DLL_FUNC(PythonNative_SetInterpreterAutoDisarm) {
+    ZoneScoped;
+    INTERP_API_HEADER;
+    REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
+    u32 val = RECOMP_ARG(u32, 1);
+    PySubController* sc = controller->get_subcontroller(index);
+    sc->set_auto_disarm(val);
+}
+
 RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
     ZoneScoped;
+    INTERP_API_HEADER;
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_InterpreterIndex retVal = controller->get_py_object_interpreter(handle);
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);

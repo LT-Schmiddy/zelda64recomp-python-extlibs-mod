@@ -22,7 +22,7 @@ PySubController::~PySubController() {
     }
 
     // If index is 0, then this is the main interp and no subinterp was ever initialized.
-    if (_index) {
+    if (_index && _auto_disarm) {
         _subinterp.disarm(); // Disarm seems to resolve some of the freezing issues I've been having on shutdown. I think? I'll leave it for now.
     }
 
@@ -76,6 +76,24 @@ void PySubController::deactivate() {
 bool PySubController::is_active() {
     ZoneScoped;
     return _is_active;
+}
+
+bool PySubController::get_auto_disarm() {
+    ZoneScoped;
+    if (!_index) {
+        return false;
+    }
+    return _auto_disarm;
+}
+
+void PySubController::set_auto_disarm(bool val) {
+    ZoneScoped;
+    if (!_index) {
+        PLOGW.printf("Setting Auto-Disarm on the main interpreter does nothing.");
+        return; 
+    }
+    _auto_disarm = val;
+    PLOGI.printf("Subinterpreter %i Auto-Disarm set to %u", _auto_disarm);
 }
 
 py::function PySubController::py_compile() {

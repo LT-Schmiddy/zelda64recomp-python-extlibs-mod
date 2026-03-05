@@ -23,6 +23,7 @@ public:
 
     REPY_InterpreterIndex create_subcontroller();
     REPY_InterpreterIndex get_current_subcontroller_index();
+    PySubController* get_subcontroller(REPY_InterpreterIndex index);
     PySubController* get_current_subcontroller();
     void push_subcontroller_index(REPY_InterpreterIndex handle);
     void pop_subcontroller_index();
