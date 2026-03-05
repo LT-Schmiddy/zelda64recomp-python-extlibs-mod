@@ -177,17 +177,7 @@ typedef struct REPY_IteratorHelper {
 
 
 #ifdef REPY_INTERNALS_EXPOSED
-typedef struct REPY_IfStmtChainInternal {
-    REPY_Handle eval_expression_bytecode; ///< The bytecode for the Python expression to evaluate.
-    struct REPY_IfStmtChainInternal* next; ///< Pointer to the next link in the chain.
-} REPY_IfStmtChainInternal;
 
-typedef struct REPY_IfStmtHelperInternal {
-    REPY_u32 index; ///< The number of links down the chain we've gone.
-    REPY_IfStmtChainInternal** root; ///< The start of the chain. A double pointer is used so that, the the chain doesn't exist yet, it can be initialized on the first call of `REPY_IfStmtHelper_Step`.
-    REPY_IfStmtChainInternal* curr; ///< The most recently evaluated link in the chain.
-    REPY_bool _first_step; ///< ///< Internal flag used to determine if the helper has been stepped for the first time.
-} REPY_IfStmtHelperInternal;
 
 #endif
 
@@ -201,22 +191,14 @@ typedef struct REPY_IfStmtHelperInternal {
  * that step is called.
  * 
  */
-#ifdef REPY_INTERNALS_EXPOSED
-typedef REPY_IfStmtChainInternal REPY_IfStmtChain;
-#else
 typedef void REPY_IfStmtChain;
-#endif
+
 
 /**
  * @brief Helper used to step through a `REPY_IfStmtChain` while it's being evaluated.
  * 
  */
-#ifdef REPY_INTERNALS_EXPOSED
-typedef REPY_IfStmtHelperInternal REPY_IfStmtHelper;
-#else
 typedef void REPY_IfStmtHelper;
-#endif
-
 
 /** @}*/
 
@@ -1773,8 +1755,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBytes(va
  */
 #define REPY_FN_IF_CACHE_INIT(helper_identifier) \
 static REPY_IfStmtChain* helper_identifier ## _chain_root = NULL; \
-REPY_IfStmtHelper helper_identifier; \
-REPY_IfStmtHelper_Reset(&helper_identifier, &helper_identifier ## _chain_root); 
+REPY_IfStmtHelper* helper_identifier = REPY_IfStmtHelper_Create(helper_identifier, &helper_identifier ## _chain_root); \
 
 /**
  * @brief Constructs a `if` statement that uses a cached Python expression executed in the current scope.
@@ -1788,7 +1769,7 @@ REPY_IfStmtHelper_Reset(&helper_identifier, &helper_identifier ## _chain_root);
  * when initializing this if/else block (using either `REPY_FN_IF_CACHE_INIT` or `REPY_FN_IF_CACHE`).
  * @param py_expression The Python expression to evaluate within the scope. Should be a NULL-terminated C string.
  */
-#define REPY_FN_IF_STMT_CACHE(helper_identifier, py_expression) \
+#define REPY_FN_IF_CACHE_STMT(helper_identifier, py_expression) \
 if ( \
     REPY_IfStmtHelper_Step( \
         &helper_identifier, \
@@ -1801,6 +1782,9 @@ if ( \
         #helper_identifier \
     ) \
 ) 
+
+#define REPY_FN_ENDIF(helper_identifier) \
+REPY_IfStmtHelper_Destroy(helper_identifier) \
 
 /**
  * @brief Initializes the helpers for a cached Pythonic `if/else` block, and constructs the first `if` statement,
@@ -1854,7 +1838,7 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
  * using the variable name of `var_name`.
  * 
  * Much like `REPY_FOREACH`, A `REPY_IteratorHelper` object is created to manage the iteration process. The variable name for this helper
- * in the format of `bytecode_handle ## _iter)`. So if your `bytecode_handle` is `a`, the iterator will be called `a_iter`. In addition to
+ * in the format of `bytecode_handle ## _iter`. So if your `bytecode_handle` is `a`, the iterator will be called `a_iter`. In addition to
  * being added to the scope, the current object of the loop can be accessed via `iter_identifier->curr`, and the index of that object 
  * can be accessed via `iter_identifier->index`. See the `REPY_IteratorHelper` documentation for more information.
  * 
@@ -3596,20 +3580,33 @@ REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* f
  */
 REPY_IMPORT(void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain));
 
-REPY_IMPORT(REPY_IfStmtHelper* REPY_IfStmtHelper_Create(REPY_IfStmtChain** chain_root));
-REPY_IMPORT(void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper));
+
+REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_BorrowNext(REPY_IfStmtChain* chain));
+REPY_IMPORT(void REPY_IfStmtChain_StealNext(REPY_IfStmtChain* chain, REPY_IfStmtChain* next));
+REPY_IMPORT(REPY_Handle REPY_IfStmtChain_BorrowEvalBytecode(REPY_IfStmtChain* chain));
+REPY_IMPORT(void REPY_IfStmtChain_StealEvalBytecode(REPY_IfStmtChain* chain, REPY_Handle eval_bytecode));
 
 /**
- * @brief Initializes a pre-allocated `REPY_IfStmtHelper` for controlling managing a Pythonic if/else block.
+ * @brief Initializes a `REPY_IfStmtHelper` for controlling managing a Pythonic if/else block.
  * 
  * Used by several of the various `REPY_FN_IF_CACHE` macros.
  * 
- * @param helper The a pointer to the `REPY_IfStmtHelper` to initialize.
  * @param root A pointer to the `REPY_IfStmtChain*` (ergo, a douple-pointer) variable for the first link in the if/else chain. For caching purposes, this
  * will usually be a `static` variable. If value of the variable at `root` us NULL, that will be taken to mean that the chain has not been created yet
  * (IE, this is the first run of this if/else block).
+ * @return A pointer to the new `REPY_IfStmtHelper`.
  */
-REPY_IMPORT(void REPY_IfStmtHelper_Reset(REPY_IfStmtHelper* helper, REPY_IfStmtChain** root));
+REPY_IMPORT(REPY_IfStmtHelper* REPY_IfStmtHelper_Create(REPY_IfStmtChain** chain_root));
+
+/**
+ * @brief Destroys and deallocates a `REPY_IfStmtHelper`
+ * 
+ * Note that the `REPY_IfStmtChain` attached to this helper will not be destroyed.
+ * 
+ * @param helper A pointer to the `REPY_IfStmtHelper` being destroyed.
+ */
+REPY_IMPORT(void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper));
+
 
 /**
  * @brief Steps through and evaluate the next link in the `REPY_IfStmtChain` chain provided to the `REPY_IfStmtHelper`, or creates a new link if one

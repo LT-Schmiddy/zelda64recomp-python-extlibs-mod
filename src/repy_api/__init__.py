@@ -1,5 +1,5 @@
 """
-\defgroup python_api Python API: The `repy_api` Module
+\\defgroup python_api Python API: The `repy_api` Module
 repy_api: This module access to certain N64Recomp information from Python code.
 
 @{

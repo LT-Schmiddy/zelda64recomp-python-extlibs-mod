@@ -7,8 +7,8 @@
 #include "extlib_functions.h"
 #include "mod_logging.h"
 
+#include "./api_helpers/if_stmt_chain.h"
 #include "./api_helpers/if_stmt_helper.h"
-
 
 #define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s -> "
 
@@ -78,27 +78,40 @@ RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool 
     }
 }
 
+// ==== REPY_IfStmtChain ===
 RECOMP_EXPORT REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
-    return (REPY_IfStmtChain*) IfStmtChainInternal_Create(expr_string, filename, function_name, line_number, identifier);
+    return (REPY_IfStmtChain*) REPY_IfStmtChainInternal_Create(expr_string, filename, function_name, line_number, identifier);
 }
 
 RECOMP_EXPORT void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain) {
-    IfStmtChainInternal_Destroy((REPY_IfStmtChainInternal*) chain);
+    REPY_IfStmtChainInternal_Destroy((REPY_IfStmtChainInternal*) chain);
 }
 
-// Helper stuff:
-// Initializer values:
+RECOMP_EXPORT REPY_IfStmtChain* REPY_IfStmtChain_BorrowNext(REPY_IfStmtChain* chain) {
+    return (REPY_IfStmtChain*) REPY_IfStmtChainInternal_BorrowNext((REPY_IfStmtChainInternal*) chain);
+}
 
+RECOMP_EXPORT void REPY_IfStmtChain_StealNext(REPY_IfStmtChain* chain, REPY_IfStmtChain* next) {
+    REPY_IfStmtChainInternal_StealNext((REPY_IfStmtChainInternal*) chain, (REPY_IfStmtChainInternal*) next);
+}
+
+// Get/Set Bytecode:
+RECOMP_EXPORT REPY_Handle REPY_IfStmtChain_BorrowEvalBytecode(REPY_IfStmtChain* chain) {
+    return REPY_IfStmtChainInternal_BorrowEvalBytecode((REPY_IfStmtChainInternal*) chain);
+}
+
+RECOMP_EXPORT void REPY_IfStmtChain_StealEvalBytecode(REPY_IfStmtChain* chain, REPY_Handle eval_bytecode) {
+    REPY_IfStmtChainInternal_StealEvalBytecode((REPY_IfStmtChainInternal*) chain, eval_bytecode);
+}
+
+
+// ==== REPY_IfStmtHelper ===
 RECOMP_EXPORT REPY_IfStmtHelper* REPY_IfStmtHelper_Create(REPY_IfStmtChain** chain_root) {
     return (REPY_IfStmtHelper*) IfStmtHelperInternal_Create((REPY_IfStmtChainInternal**) chain_root);
 }
 
 RECOMP_EXPORT void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper) {
     IfStmtHelperInternal_Destroy((REPY_IfStmtHelperInternal*) helper);
-}
-
-RECOMP_EXPORT void REPY_IfStmtHelper_Reset(REPY_IfStmtHelper* p_helper, REPY_IfStmtChain** root) {
-    IfStmtHelperInternal_Reset((REPY_IfStmtHelperInternal*)p_helper, (REPY_IfStmtChainInternal**) root);
 }
 
 RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* p_helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {

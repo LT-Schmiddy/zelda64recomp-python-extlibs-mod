@@ -470,7 +470,6 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     // Testing the IfStmtHelper:
     static REPY_IfStmtChain* if_helper_chain_root = NULL;
     REPY_IfStmtHelper* if_helper1 = REPY_IfStmtHelper_Create(&if_helper_chain_root);
-    REPY_IfStmtHelper_Reset(if_helper1, &if_helper_chain_root);
 
     int step_result1 = -1;
 
@@ -493,11 +492,12 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_IfStmtChain* if_helper_chain_current_link = if_helper_chain_root;
     while (if_helper_chain_current_link != NULL) {
         if_helper_chain_depth++;
-        no_invalid_bytcode_handles = no_invalid_bytcode_handles && REPY_IsValidHandle(if_helper_chain_current_link->eval_expression_bytecode);
-        if_helper_chain_current_link = if_helper_chain_current_link->next;
+        no_invalid_bytcode_handles = no_invalid_bytcode_handles && REPY_IsValidHandle(REPY_IfStmtChain_BorrowEvalBytecode(if_helper_chain_current_link));
+        if_helper_chain_current_link = REPY_IfStmtChain_BorrowNext(if_helper_chain_current_link);
     }
     validate("REPY_IfStmtHelper -> if_helper_chain_root has 3 links", if_helper_chain_depth == 3);
     validate("REPY_IfStmtHelper -> all eval expressions are valid", no_invalid_bytcode_handles);
+    REPY_IfStmtHelper_Destroy(if_helper1);
 
     // Checking that the chain isn't being reconstructed on repeated use:
     // Start by finding all the pointers and handles for each link:
@@ -506,21 +506,20 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     if_helper_chain_current_link = if_helper_chain_root; // we can reuse this variable.
     for (int i = 0; i < if_helper_chain_depth; i++) {
         if_helper_chain_link_array[i] = if_helper_chain_current_link;
-        if_helper_chain_handle_array[i] = if_helper_chain_current_link->eval_expression_bytecode;
-        if_helper_chain_current_link = if_helper_chain_current_link->next;
+        if_helper_chain_handle_array[i] = REPY_IfStmtChain_BorrowEvalBytecode(if_helper_chain_current_link);
+        if_helper_chain_current_link = REPY_IfStmtChain_BorrowNext(if_helper_chain_current_link);
     }
 
-    REPY_IfStmtHelper if_helper2;
-    REPY_IfStmtHelper_Reset(&if_helper2, &if_helper_chain_root);
+    REPY_IfStmtHelper* if_helper2 = REPY_IfStmtHelper_Create(&if_helper_chain_root);;
 
     int step_result2 = -1;
-    if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 0", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+    if (REPY_IfStmtHelper_Step(if_helper2, py_globals, py_locals, "if_check == 0", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
         step_result2 = 0;
-    } else if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 1", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+    } else if (REPY_IfStmtHelper_Step(if_helper2, py_globals, py_locals, "if_check == 1", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
         step_result2 = 1;
-    } else if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 2", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+    } else if (REPY_IfStmtHelper_Step(if_helper2, py_globals, py_locals, "if_check == 2", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
         step_result2 = 2;
-    } else if (REPY_IfStmtHelper_Step(&if_helper2, py_globals, py_locals, "if_check == 3", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
+    } else if (REPY_IfStmtHelper_Step(if_helper2, py_globals, py_locals, "if_check == 3", __FILE_NAME__, (char*)__func__, __LINE__, "if_helper2")) {
         step_result2 = 3;
     }
 
@@ -531,11 +530,12 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
         if_helper_same_chain = 
             if_helper_same_chain 
             && (if_helper_chain_current_link == if_helper_chain_link_array[i]) 
-            && (if_helper_chain_current_link->eval_expression_bytecode == if_helper_chain_handle_array[i])
+            && (REPY_IfStmtChain_BorrowEvalBytecode(if_helper_chain_current_link) == if_helper_chain_handle_array[i])
         ;
-        if_helper_chain_current_link = if_helper_chain_current_link->next;
+        if_helper_chain_current_link = REPY_IfStmtChain_BorrowNext(if_helper_chain_current_link);
     }
     validate("REPY_IfStmtHelper -> the if chain was not re-initialized after first use.", if_helper_same_chain);
+    REPY_IfStmtHelper_Destroy(if_helper2);
     // From here on, we can assume the REPY_IfStmtHelper works.
     // Checking error handling:
 
