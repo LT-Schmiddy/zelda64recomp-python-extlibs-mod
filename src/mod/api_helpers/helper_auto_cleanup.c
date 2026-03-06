@@ -60,7 +60,7 @@ void REPY_HelperAutoCleanupInternal_CleanNow(REPY_HelperAutoCleanupInternal* cle
 
         REPY_HelperAutoCleanupInternal_Link* next_link = this_link->next;
         recomp_free(this_link);
-        next_link = this_link;
+        this_link = next_link;
     }
 }
 

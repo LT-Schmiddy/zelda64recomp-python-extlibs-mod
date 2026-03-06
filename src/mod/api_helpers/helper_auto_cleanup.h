@@ -6,6 +6,7 @@
 #include "if_stmt_helper.h"
 #include "iterator_helper.h"
 
+
 typedef enum REPY_HelperAutoCleanupInternal_Type {
     REPY_AUTOCLEANUP_UNUSED = 0, // Reserved if I ever want to add generic deallocation via `recomp_free`
     REPY_AUTOCLEANUP_ITERATORHELPER = 1,
@@ -15,7 +16,7 @@ typedef enum REPY_HelperAutoCleanupInternal_Type {
 typedef struct REPY_HelperAutoCleanupInternal_Link {
     REPY_HelperAutoCleanupInternal_Type cleanup_type;
     void* helper;
-    REPY_HelperAutoCleanupInternal* next;
+    struct REPY_HelperAutoCleanupInternal_Link* next;
 } REPY_HelperAutoCleanupInternal_Link;
 
 typedef struct REPY_HelperAutoCleanupInternal {

@@ -4,7 +4,7 @@
 #include "../extlib_functions.h"
 #include "../mod_logging.h"
 
-REPY_IfStmtHelperInternal* IfStmtHelperInternal_Create(REPY_IfStmtChainInternal** chain_root) {
+REPY_IfStmtHelperInternal* REPY_IfStmtHelperInternal_Create(REPY_IfStmtChainInternal** chain_root) {
     REPY_IfStmtHelperInternal* helper = recomp_alloc(sizeof(REPY_IfStmtHelperInternal));
 
     helper->index = 0;
@@ -15,11 +15,11 @@ REPY_IfStmtHelperInternal* IfStmtHelperInternal_Create(REPY_IfStmtChainInternal*
     return helper;
 }
 
-void IfStmtHelperInternal_Destroy(REPY_IfStmtHelperInternal* helper) {
+void REPY_IfStmtHelperInternal_Destroy(REPY_IfStmtHelperInternal* helper) {
     recomp_free(helper);
 }
 
-bool IfStmtHelperInternal_Step(REPY_IfStmtHelperInternal* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
+bool REPY_IfStmtHelperInternal_Step(REPY_IfStmtHelperInternal* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
     // First time setup of the helper:
     if (helper->_first_step) {
         helper->_first_step = false;

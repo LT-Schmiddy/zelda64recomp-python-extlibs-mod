@@ -72,15 +72,15 @@ RECOMP_EXPORT void REPY_IfStmtChain_StealEvalBytecode(REPY_IfStmtChain* chain, R
 
 // ==== REPY_IfStmtHelper ===
 RECOMP_EXPORT REPY_IfStmtHelper* REPY_IfStmtHelper_Create(REPY_IfStmtChain** chain_root) {
-    return (REPY_IfStmtHelper*) IfStmtHelperInternal_Create((REPY_IfStmtChainInternal**) chain_root);
+    return (REPY_IfStmtHelper*) REPY_IfStmtHelperInternal_Create((REPY_IfStmtChainInternal**) chain_root);
 }
 
 RECOMP_EXPORT void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper) {
-    IfStmtHelperInternal_Destroy((REPY_IfStmtHelperInternal*) helper);
+    REPY_IfStmtHelperInternal_Destroy((REPY_IfStmtHelperInternal*) helper);
 }
 
 RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* p_helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
-    return IfStmtHelperInternal_Step((REPY_IfStmtHelperInternal*) p_helper, global_scope, local_scope, expr_string, filename, function_name, line_number, identifier);
+    return REPY_IfStmtHelperInternal_Step((REPY_IfStmtHelperInternal*) p_helper, global_scope, local_scope, expr_string, filename, function_name, line_number, identifier);
 };
 
 // === Helper Auto-Cleanup ===
@@ -100,5 +100,5 @@ RECOMP_EXPORT void REPY_HelperAutoCleanup_CleanNow(REPY_HelperAutoCleanup* clean
 }
 
 RECOMP_EXPORT void REPY_HelperAutoCleanup_Destroy(REPY_HelperAutoCleanup* cleanup, bool clean_now) {
-    REPY_HelperAutoCleanup_Destroy((REPY_HelperAutoCleanupInternal*) cleanup, clean_now);
+    REPY_HelperAutoCleanupInternal_Destroy((REPY_HelperAutoCleanupInternal*) cleanup, clean_now);
 }
