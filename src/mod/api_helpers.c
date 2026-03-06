@@ -10,6 +10,7 @@
 #include "./api_helpers/if_stmt_chain.h"
 #include "./api_helpers/if_stmt_helper.h"
 #include "./api_helpers/iterator_helper.h"
+#include "./api_helpers/helper_auto_cleanup.h"
 
 #define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s -> "
 
@@ -81,3 +82,23 @@ RECOMP_EXPORT void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper) {
 RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* p_helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, u32 line_number, char* identifier) {
     return IfStmtHelperInternal_Step((REPY_IfStmtHelperInternal*) p_helper, global_scope, local_scope, expr_string, filename, function_name, line_number, identifier);
 };
+
+// === Helper Auto-Cleanup ===
+RECOMP_EXPORT REPY_HelperAutoCleanup* REPY_HelperAutoCleanup_Create() {
+    return (REPY_HelperAutoCleanup*) REPY_HelperAutoCleanupInternal_Create();
+}
+
+RECOMP_EXPORT REPY_IteratorHelper* REPY_HelperAutoCleanup_AddIteratorHelper(REPY_HelperAutoCleanup* cleanup, REPY_IteratorHelper* iterator_helper) {
+    return (REPY_IteratorHelper*) REPY_HelperAutoCleanupInternal_AddIteratorHelper((REPY_HelperAutoCleanupInternal*)cleanup, (REPY_IteratorHelperInternal*)iterator_helper);
+}
+
+RECOMP_EXPORT REPY_IfStmtHelper* REPY_HelperAutoCleanup_AddIfStmtHelper(REPY_HelperAutoCleanup* cleanup, REPY_IfStmtHelper* if_stmt_helper) {
+    return (REPY_IfStmtHelper*) REPY_HelperAutoCleanupInternal_AddIfStmtHelper((REPY_HelperAutoCleanupInternal*) cleanup, (REPY_IfStmtHelperInternal*) if_stmt_helper);
+}
+RECOMP_EXPORT void REPY_HelperAutoCleanup_CleanNow(REPY_HelperAutoCleanup* cleanup) {
+    REPY_HelperAutoCleanupInternal_CleanNow((REPY_HelperAutoCleanupInternal*) cleanup);
+}
+
+RECOMP_EXPORT void REPY_HelperAutoCleanup_Destroy(REPY_HelperAutoCleanup* cleanup, bool clean_now) {
+    REPY_HelperAutoCleanup_Destroy((REPY_HelperAutoCleanupInternal*) cleanup, clean_now);
+}

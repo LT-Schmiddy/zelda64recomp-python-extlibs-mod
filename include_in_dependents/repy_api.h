@@ -189,6 +189,8 @@ typedef void REPY_IfStmtChain;
  */
 typedef void REPY_IfStmtHelper;
 
+typedef void REPY_HelperAutoCleanup;
+
 /** @}*/
 
 /** \defgroup repy_events Events
@@ -3624,6 +3626,13 @@ REPY_IMPORT(void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper));
  * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
  */
 REPY_IMPORT(REPY_bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, REPY_u32 line_number, char* identifier));
+
+REPY_IMPORT(REPY_HelperAutoCleanup* REPY_HelperAutoCleanup_Create());
+REPY_IMPORT(REPY_IteratorHelper* REPY_HelperAutoCleanup_AddIteratorHelper(REPY_HelperAutoCleanup* cleanup, REPY_IteratorHelper* iterator_helper));
+REPY_IMPORT(REPY_IfStmtHelper* REPY_HelperAutoCleanup_AddIfStmtHelper(REPY_HelperAutoCleanup* cleanup, REPY_IfStmtHelper* if_stmt_helper));
+REPY_IMPORT(void REPY_HelperAutoCleanup_CleanNow(REPY_HelperAutoCleanup* cleanup));
+REPY_IMPORT(void REPY_HelperAutoCleanup_Destroy(REPY_HelperAutoCleanup* cleanup, REPY_bool clean_now));
+
 /** @}*/
 /** @}*/
 /** @}*/
