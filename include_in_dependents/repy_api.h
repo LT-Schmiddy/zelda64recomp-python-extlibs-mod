@@ -857,7 +857,7 @@ REPY_CastStr(REPY_MakeSUH(REPY_Eval(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_L
  * @return The resultant Python object, cast to `char*`.
  */
 #define REPY_FN_EVAL_BYTESTR(code_handle) \
-REPY_CastBytes(REPY_MakeSUH(REPY_Eval(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)))
+REPY_CastByteStr(REPY_MakeSUH(REPY_Eval(code_handle, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)))
 
 /**
  * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result.
@@ -1000,7 +1000,7 @@ REPY_CastU64(REPY_MakeSUH(REPY_EvalCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_
  * @return The resultant Python object, cast to `s64`.
  */
 #define REPY_FN_EVAL_CSTR_S64(code_str) \
-REPY_CastS64(REPY_MakeSUH(REPY_EvalCStr(code,code_strREPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)))
+REPY_CastS64(REPY_MakeSUH(REPY_EvalCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)))
 
 /**
  * @brief Evaluates a Python expression code string within the current inline execution scope, and returns the result as a `f64`.
@@ -1047,7 +1047,7 @@ REPY_CastStr(REPY_MakeSUH(REPY_EvalCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_
  * @return The resultant Python object, cast to `char*`.
  */
 #define REPY_FN_EVAL_CSTR_BYTESTR(code_str) \
-REPY_CastBytes(REPY_MakeSUH(REPY_EvalCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)))
+REPY_CastByteStr(REPY_MakeSUH(REPY_EvalCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)))
 
 /**
  * @brief Evaluate a Python expression code string within the current inline execution scope, compiling it
@@ -1216,7 +1216,7 @@ REPY_s32 out_var = REPY_FN_EVAL_S32(bytecode_identifier)
  * This code string will only be parsed and compiled once.
  * @param out_var The name of a `f32` argument that will hold the expression result.
  */
-#define REPY_FN_EVAL_CACHE_F32(identifier, code_str, out_var) \
+#define REPY_FN_EVAL_CACHE_F32(bytecode_identifier, code_str, out_var) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_EVAL_CACHE_F32", bytecode_identifier, REPY_CODE_EVAL, code_str) \
 REPY_f32 out_var = REPY_FN_EVAL_F32(bytecode_identifier)
 
@@ -1636,7 +1636,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateStr(valu
  * @param len The length of `value` in bytes.
  */
 #define REPY_FN_SET_STR_N(var_name, value, len) \
-REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateStr(value, len)))
+REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateStrN(value, len)))
 
 /**
  * @brief Gets a variable from the local scope and casts it to a `char*`. Intended to be used when the variable object is a Python `bytes`. 
@@ -1649,7 +1649,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateStr(valu
  * @return The value of the variable as a `char*`.
  */
 #define REPY_FN_GET_BYTESTR(var_name) \
-REPY_CastBytes(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, REPY_MakeSUH(REPY_CreateBytes(var_name)))))
+REPY_CastByteStr(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)))
 
 /**
  * @brief Sets a variable of the Python type `str` in the the local scope, using a  NULL-terminated C string.
@@ -1660,7 +1660,7 @@ REPY_CastBytes(REPY_MakeSUH(REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, REPY_MakeSUH(R
  * @param value The value of the Python `str`. Should be a NULL-terminated C string.
  */
 #define REPY_FN_SET_BYTESTR(var_name, value) \
-REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBytes(value)))
+REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateByteStr(value)))
 
 /**
  * @brief Sets a variable of the Python type `bytes` in the the local scope, using `char` array of `N` length for the value.
@@ -1672,7 +1672,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBytes(va
  * @param len The length of `value` in bytes.
  */
 #define REPY_FN_SET_BYTESTR_N(var_name, value, len) \
-REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateBytes(value, len)))
+REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateByteStrN(value, len)))
 
 /** @}*/
 
@@ -1765,7 +1765,7 @@ else REPY_FN_IF_CACHE_STMT(helper_identifier, py_expression)
  * as a string literal. This code string will only be parsed and compiled once.
  */
 #define REPY_FN_WHILE_CACHE(bytecode_identifier, py_expression) \
-REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_WHILE_CACHE", identifier, REPY_CODE_EVAL, py_expression); \
+REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_WHILE_CACHE", bytecode_identifier, REPY_CODE_EVAL, py_expression); \
 while (REPY_FN_EVAL_BOOL(bytecode_identifier))
 
 /**
@@ -1793,41 +1793,14 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
  */
 #define REPY_FN_FOREACH_CACHE(bytecode_identifier, var_name, py_expression) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_FOREACH_CACHE", bytecode_identifier, REPY_CODE_EVAL, py_expression); \
-for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, false); REPY_IteratorHelper_Update(iter_identifier);)
-// REPY_FOREACH_BLOCK(bytecode_identifier ## _iter, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, var_name, false)
+for ( \
+    REPY_IteratorHelper* iter_identifier = REPY_HelperAutoCleanup_AddIteratorHelper( \
+        REPY_FN_AUTO_CLEANUP, \
+        REPY_IteratorHelper_Create(REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, var_name, false) \
+    ); \
+    REPY_IteratorHelper_Update(iter_identifier);\
+) \
 
-/**
- * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FN_FOREACH_CACHE` loop.
- * 
- * Once this had been called, you'll have a crash if you attempt another pass of the loop. Either call `break` or `return` to exit.
- * 
- * @param bytecode_identifier The name for a static Python bytecode variable. Used to get the the `REPY_IteratorHelper` variable name.
- */
-#define REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier) \
-REPY_IteratorHelper_Destroy(bytecode_identifier ## _iter)
-
-/**
- * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FN_FOREACH_CACHE` loop, and immediately break.
- * 
- * Looks cleaner than calling both.
- * 
- * @param bytecode_identifier The name for a static Python bytecode variable. Used to get the the `REPY_IteratorHelper` variable name.
- */
-#define REPY_FN_FOREACH_CACHE_BREAK(bytecode_identifier) \
-REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier); break
-
-/**
- * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FN_FOREACH_CACHE` loop, and immediately return.
- * 
- * Supports returning a value.
- * 
- * @param bytecode_identifier The name for a static Python bytecode variable. Used to get the the `REPY_IteratorHelper` variable name.
- */
-#define REPY_FN_FOREACH_CACHE_RETURN(bytecode_identifier, retType, retVal) \
-retType __repy_retVal = retVal; \
-REPY_FN_FOREACH_CACHE_CLEANUP_NOW(bytecode_identifier); \
-REPY_FN_CLEANUP; \
-return
 
 /**
  * @brief Constructs a C style for loop, using cached Python code.

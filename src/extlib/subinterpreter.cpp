@@ -50,9 +50,9 @@ void PySubController::activate() {
 
     if (_index != 0) {
         _scope = new py::subinterpreter_scoped_activate(_subinterp);
-        PLOGI.printf("Activated Python interpreter %u", _index);
+        PLOGD.printf("Activated Python interpreter %u", _index);
     } else {
-        PLOGI.printf("Activated Python interpreter %u (main interpreter)", _index);
+        PLOGD.printf("Activated Python interpreter %u (main interpreter)", _index);
     }
 }
 
@@ -64,9 +64,9 @@ void PySubController::deactivate() {
     if (_index != 0) {
         delete _scope;
         _scope = NULL;
-        PLOGI.printf("Deactivated Python interpreter %u", _index);
+        PLOGD.printf("Deactivated Python interpreter %u", _index);
     } else {
-        PLOGI.printf("Deactivated Python interpreter %u (main interpreter)", _index);
+        PLOGD.printf("Deactivated Python interpreter %u (main interpreter)", _index);
     }
 
     delete _gil;

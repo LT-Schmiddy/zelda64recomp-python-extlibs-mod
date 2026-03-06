@@ -294,17 +294,17 @@ void PyInterpreterController::set_handle_suh(REPY_Handle handle, bool is_single_
     assert(entry != NULL);
 
     entry->is_single_use = is_single_use;
-    PLOGD.printf("-> REPY_Handle %08X setting SUH = %i", handle, is_single_use);
+    PLOGD.printf("-> REPY_Handle 0x%08X setting SUH = %i", handle, is_single_use);
 }
 
 void PyInterpreterController::release_suh_handles() {
     ZoneScoped;
     while (suh_release_queue.size() > 0) {
         REPY_Handle handle = suh_release_queue.front();
-        PLOGD.printf("-> REPY_Handle %08X released (SUH)", handle);
+        PLOGD.printf("-> REPY_Handle 0x%08X released (SUH)", handle);
         IF_PLOG(plog::verbose) {
             std::u8string repr_str = py::repr(py_objects_smap.get(handle)->py_object).cast<std::u8string>();
-            PLOGV.printf("-> Handle %08X: %s", handle, repr_str.c_str());
+            PLOGV.printf("-> Handle 0x%08X: %s", handle, repr_str.c_str());
         }
         suh_release_queue.pop();
         py_objects_smap.del(handle);
@@ -313,10 +313,10 @@ void PyInterpreterController::release_suh_handles() {
 
 void PyInterpreterController::release_handle(REPY_Handle handle) {
     ZoneScoped;
-    PLOGD.printf("-> REPY_Handle %08X released", handle);
+    PLOGD.printf("-> REPY_Handle 0x%08X released", handle);
     IF_PLOG(plog::verbose) {
         std::u8string repr_str = py::repr(py_objects_smap.get(handle)->py_object).cast<std::u8string>();
-        PLOGV.printf("-> Handle %08X: %s", handle, repr_str.c_str());
+        PLOGV.printf("-> Handle 0x%08X: %s", handle, repr_str.c_str());
 
     }
     py_objects_smap.del(handle);

@@ -21,7 +21,7 @@ REPY_IteratorHelperInternal* REPY_HelperAutoCleanupInternal_AddIteratorHelper(RE
     new_link->next = cleanup->chain_start;
     cleanup->chain_start = new_link;
 
-    LOG_DEBUG("REPY_IteratorHelper at %p queued for auto-cleanup.", iterator_helper);
+    LOG_DEBUG("REPY_IteratorHelper at 0x%p queued for auto-cleanup.", iterator_helper);
     return iterator_helper;
 }
 
@@ -35,7 +35,7 @@ REPY_IfStmtHelperInternal* REPY_HelperAutoCleanupInternal_AddIfStmtHelper(REPY_H
     new_link->next = cleanup->chain_start;
     cleanup->chain_start = new_link;
 
-    LOG_DEBUG("REPY_IfStmtHelper at %p queued for auto-cleanup.", if_stmt_helper);
+    LOG_DEBUG("REPY_IfStmtHelper at 0x%p queued for auto-cleanup.", if_stmt_helper);
     return if_stmt_helper;
 }
 
@@ -46,15 +46,15 @@ void REPY_HelperAutoCleanupInternal_CleanNow(REPY_HelperAutoCleanupInternal* cle
     while(this_link != NULL) {
         switch (this_link->cleanup_type) {
             case REPY_AUTOCLEANUP_ITERATORHELPER:
-                LOGD("Running auto-cleanup for REPY_IteratorHelper at %p.", this_link->helper);
+                LOGD("Running auto-cleanup for REPY_IteratorHelper at 0x%p.", this_link->helper);
                 REPY_IteratorHelperInternal_Destroy((REPY_IteratorHelperInternal*)this_link->helper );
                 break;
             case REPY_AUTOCLEANUP_IFSTMTHELPER:
-                LOGD("Running auto-cleanup for REPY_IfStmtHelper at %p.", this_link->helper);
+                LOGD("Running auto-cleanup for REPY_IfStmtHelper at 0x%p.", this_link->helper);
                 REPY_IfStmtHelperInternal_Destroy((REPY_IfStmtHelperInternal*) this_link->helper);
                 break;
             default:
-                LOGW("Invalid auto-cleanup type %u for pointer %p. Doing nothing. This may result in a memory leak.", this_link->cleanup_type, this_link->helper);
+                LOGW("Invalid auto-cleanup type %u for pointer 0x%p. Doing nothing. This may result in a memory leak.", this_link->cleanup_type, this_link->helper);
                 break;
         }
 
