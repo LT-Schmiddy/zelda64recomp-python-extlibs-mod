@@ -1,4 +1,6 @@
 #include "tests_main.h"
+#include "tests_api.h"
+#include "tests_fn_macros.h"
 
 REPY_PREINIT_ADD_NRM_TO_SYS_PATH;
 
@@ -56,6 +58,9 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_SetInterpreterAutoDisarm(test_subinterp, true);
     validate("Interpreter 1 Auto Disarm settable", REPY_GetInterpreterAutoDisarm(test_subinterp) && !test_subinterp_old_autodisarm);
 
+    // Running Core API tests on interpreter 0:
+    run_api_tests();
+    run_main_fn_macro_tests();
     
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
 

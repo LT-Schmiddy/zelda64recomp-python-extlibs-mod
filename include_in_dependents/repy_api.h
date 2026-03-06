@@ -604,23 +604,6 @@ REPY_FN_SETUP_INTERP(REPY_MAIN_INTERPRETER)
 REPY_FN_SETUP_INTERP_WITH_GLOBALS(REPY_MAIN_INTERPRETER) 
 
 /**
- * @brief Create an inline execution scope for your function, using a pre-defined Python
- * `dict` as your global scope and local scope. Useful for initializing globals to use across multiple functions.
- * 
- * If the global scope `dict` doesn't have Python's built-ins predefined, they will be added to the `dict` whenever
- * Python code is first executed.
- * 
- * You should copy the `globals` handle with `REPY_CopyHandle` (or forgo cleaning up entirely) if you intend to use this
- * global scope dict elsewhere, since the clean up macros will release the scope `dict`.
- * 
- * This execution scope will use the main Python interpreter.
- * 
- * @param globals The Python `dict` to use as a global and local scope.
- */
-#define REPY_FN_SETUP_GLOBALS_ONLY(globals) \
-REPY_FN_SETUP_INTERP_GLOBALS_ONLY(REPY_MAIN_INTERPRETER)
-
-/**
  * @brief Clean up a inline execution scope by releasing the local scope and popping the last interpreter index.
  * 
  * The global scope is only released if the global and local scopes are the same.
