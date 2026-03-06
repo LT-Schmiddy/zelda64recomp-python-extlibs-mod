@@ -466,33 +466,6 @@ REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_INLINE_COMPILE_CACHE", bytecode_identifier
  */
 
 /**
- * @brief General macro to construct a `for` loop that uses `REPY_IteratorHelper`.
- * 
- * Serves as the basis for the `REPY_FOREACH` and `REPY_FN_FOREACH_CACHE` macros.
- * 
- * The arguments `py_scope_nullable` and `var_name` are used specifically by `REPY_FN_FOREACH_CACHE` for
- * scope management. Each call of `REPY_IteratorHelper_Update` the Python object for `iter_identifier->curr` will
- * be added to `py_scope_nullable` under a name set by the `var_name` argument. This behavior is disabled if 
- * `py_scope_nullable` is set to `REPY_NO_OBJECT`. Also, the `py_scope_nullable` handle is copied on initialization, 
- * meaning that it's safe to release the original. 
- * 
- * REPY_IteratorHelper doesn't hold onto the `py_object` handle you pass in, so it's safe to release it.
- * 
- * In this macro, `REPY_IteratorHelper_Update` is set to clean up the `REPY_IteratorHelper` automatically. once the iteration ends.
- * Ergo, you only have to clean up if you end the loop early, such as through a break or a return. The macros `REPY_FOREACH_CLEANUP_NOW`,
- * `REPY_FOREACH_BREAK`, and `REPY_FOREACH_RETURN` are provided to facillitate that. Failure to manually clean up the `REPY_IteratorHelper`
- * when exiting the loop early will result in a memory leak.
- * 
- * @param iter_identifier the variable name for the `REPY_IteratorHelper` pointer.
- * @param py_object a `REPY_Handle` for the Python object to iterate through.
- * @param py_scope_nullable a `REPY_Handle` to a Python `dict` being used a local scope. Can be `REPY_NO_OBJECT`.
- * @param var_name the variable name for the `REPY_IteratorHelper` pointer. If `py_scope_nullable` is set to `REPY_NO_OBJECT`,
- * this does nothing and should be set to NULL.
- */
-#define REPY_FOREACH_BLOCK(iter_identifier, py_object, py_scope_nullable, var_name) \
-for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object, py_scope_nullable, var_name); REPY_IteratorHelper_Update(iter_identifier, true);)
-
-/**
  * @brief Iterate through a Python object, the way Python's `for` loops do.
  * 
  * A `REPY_IteratorHelper` object is created to manage the iteration process. The current object of the loop can be
@@ -510,7 +483,8 @@ for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object
  * @param py_object a `REPY_Handle` for the Python object to iterate through.
  */
 #define REPY_FOREACH(iter_identifier, py_object) \
-REPY_FOREACH_BLOCK(iter_identifier, py_object, 0, NULL)
+for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object, REPY_NO_OBJECT, NULL, true); REPY_IteratorHelper_Update(iter_identifier);)
+
 
 /**
  * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FOREACH` loop.
@@ -563,6 +537,13 @@ REPY_FOREACH_CLEANUP_NOW(iter_identifier); return
 #define REPY_FN_LOCAL_SCOPE __repy_locals
 
 /**
+ * @brief The variable name for helper auto-cleanup object.
+ * 
+ */
+#define REPY_FN_AUTO_CLEANUP __repy_auto_cleanup
+
+
+/**
  * @brief Create an inline execution scope for your function without any globals.
  * 
  * The global and local scope `dict` objects will the same. Python's built-ins will be added
@@ -575,7 +556,8 @@ REPY_FOREACH_CLEANUP_NOW(iter_identifier); return
 #define REPY_FN_SETUP_INTERP(interp_index) \
 REPY_PushInterpreter(interp_index); \
 REPY_Handle REPY_FN_GLOBAL_SCOPE = REPY_CreateDict(0); \
-REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE \
+REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE; \
+REPY_HelperAutoCleanup* REPY_FN_AUTO_CLEANUP = REPY_HelperAutoCleanup_Create() \
 
 /**
  * @brief Create an inline execution scope for your function, using a pre-defined Python
@@ -594,26 +576,6 @@ REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE \
 REPY_PushInterpreter(interp_index); \
 REPY_Handle REPY_FN_GLOBAL_SCOPE = globals; \
 REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_CreateDict(0) \
-
-/**
- * @brief Create an inline execution scope for your function, using a pre-defined Python
- * `dict` as your global scope and local scope. Useful for initializing globals to use across multiple functions.
- * 
- * If the global scope `dict` doesn't have Python's built-ins predefined, they will be added to the `dict` whenever
- * Python code is first executed.
- * 
- * You should copy the `globals` handle with `REPY_CopyHandle` (or forgo cleaning up entirely) if you intend to use this
- * global scope dict elsewhere, since the clean up macros will release the scope `dict`.
- * 
- * The Python interpreter to use is defined by the `interp_index` argument.
- * 
- * @param interp_index a valid interpreter index. Should be of the type `REPY_InterpreterIndex`.
- * @param globals The Python `dict` to use as a global and local scope.
- */
-#define REPY_FN_SETUP_INTERP_GLOBALS_ONLY(interp_index, globals) \
-REPY_PushInterpreter(interp_index); \
-REPY_Handle REPY_FN_GLOBAL_SCOPE = globals; \
-REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE \
 
 /**
  * @brief Create an inline execution scope for your function without any globals.
@@ -664,6 +626,7 @@ REPY_FN_SETUP_INTERP_GLOBALS_ONLY(REPY_MAIN_INTERPRETER)
  * The global scope is only released if the global and local scopes are the same.
  */
 #define REPY_FN_CLEANUP \
+REPY_HelperAutoCleanup_Destroy(REPY_FN_AUTO_CLEANUP, true); \
 REPY_Release(REPY_FN_LOCAL_SCOPE); \
 REPY_PopInterpreter() \
 
@@ -676,6 +639,7 @@ REPY_PopInterpreter() \
  */
 #define REPY_FN_RETURN(retType, retVal) \
 retType __repy_retVal = retVal; \
+REPY_HelperAutoCleanup_Destroy(REPY_FN_AUTO_CLEANUP, true); \
 REPY_Release(REPY_FN_LOCAL_SCOPE); \
 REPY_PopInterpreter(); \
 return retVal \
@@ -1846,7 +1810,8 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
  */
 #define REPY_FN_FOREACH_CACHE(bytecode_identifier, var_name, py_expression) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_FOREACH_CACHE", bytecode_identifier, REPY_CODE_EVAL, py_expression); \
-REPY_FOREACH_BLOCK(bytecode_identifier ## _iter, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, var_name)
+for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, false); REPY_IteratorHelper_Update(iter_identifier);)
+// REPY_FOREACH_BLOCK(bytecode_identifier ## _iter, REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, var_name, false)
 
 /**
  * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FN_FOREACH_CACHE` loop.
@@ -3527,7 +3492,7 @@ REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename,
  * @param var_name the variable name for the `REPY_IteratorHelper` pointer. If `py_scope_nullable` is set to `REPY_NO_OBJECT`, use `NULL`.
  * @return A pointer to the new `REPY_IteratorHelper` on the heap.
  */
-REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name));
+REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name, REPY_bool auto_destroy));
 
 /**
  * @brief Destructs a `REPY_IteratorHelper` object from the heap.
@@ -3549,7 +3514,7 @@ REPY_IMPORT(void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper));
  * @param auto_destroy If true, the `REPY_IteratorHelper` will automatically be destroyed once the loop ends.
  * @return `true` if the iteration/loop should continue. `false` once it's time to end.
  */
-REPY_IMPORT(REPY_bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, REPY_bool auto_destroy));
+REPY_IMPORT(REPY_bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper));
 
 REPY_IMPORT(REPY_u32 REPY_IteratorHelper_GetIndex(REPY_IteratorHelper* helper));
 REPY_IMPORT(REPY_Handle REPY_IteratorHelper_BorrowCurrent(REPY_IteratorHelper* helper));

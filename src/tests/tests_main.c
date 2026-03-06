@@ -424,7 +424,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     char* var_name = "val";
     REPY_Handle iter_handles[7];
 
-    for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name); REPY_IteratorHelper_Update(iter, true);) {
+    for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name, true); REPY_IteratorHelper_Update(iter);) {
         u32 index = REPY_IteratorHelper_GetIndex(iter);
         iter_index_works = iter_index_works && (iter_array[index] == index);
 
@@ -449,7 +449,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
 
     REPY_Handle check_curr;
     bool iter_break_works = true;
-    for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name); REPY_IteratorHelper_Update(iter, true);) {
+    for (REPY_IteratorHelper* iter = REPY_IteratorHelper_Create(iter_test_tuple, iter_test_dict, var_name, true); REPY_IteratorHelper_Update(iter);) {
         check_curr = REPY_IteratorHelper_BorrowCurrent(iter);
 
         REPY_IteratorHelper_Destroy(iter);
@@ -534,6 +534,25 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     validate("REPY_IfStmtHelper -> the if chain was not re-initialized after first use.", if_helper_same_chain);
     REPY_IfStmtHelper_Destroy(if_helper2);
     // From here on, we can assume the REPY_IfStmtHelper works.
+
+    // Testing for REPY_HelperAutoCleanup:
+    REPY_HelperAutoCleanup* auto_cleanup = REPY_HelperAutoCleanup_Create();
+    REPY_Handle auto_cleanup_test_list = REPY_EvalCStr("[1, 2, 3]", REPY_NO_OBJECT, REPY_NO_OBJECT);
+    recomp_printf("list created, handle == %u\n", auto_cleanup_test_list);
+    
+    REPY_IteratorHelper* ac_test_iter = REPY_IteratorHelper_Create(REPY_MakeSUH(auto_cleanup_test_list), REPY_NO_OBJECT, NULL, false);
+    REPY_IteratorHelper* ac_test_iter2 = REPY_HelperAutoCleanup_AddIteratorHelper(auto_cleanup, ac_test_iter);
+    validate("REPY_HelperAutoCleanup_AddIteratorHelper returns the same iterator_helper it was given", ac_test_iter == ac_test_iter2);
+    
+    REPY_IteratorHelper_Update(ac_test_iter);
+    REPY_IteratorHelper_Update(ac_test_iter);
+    // The iterator's current object should be 2. 
+    REPY_Handle ac_test_iter_val2 = REPY_IteratorHelper_BorrowCurrent(ac_test_iter);
+    validate("ac_test_iter_val2 is valid and == 2", REPY_IsValidHandle(ac_test_iter_val2) && REPY_CastU32(ac_test_iter_val2) == 2);
+    REPY_HelperAutoCleanup_Destroy(auto_cleanup, true);
+    // That borrowed handle should have been made invalid by the auto cleanup.
+    validate("ac_test_iter_val2 was invalidated by auto-cleanup", !REPY_IsValidHandle(ac_test_iter_val2));
+
     // Checking error handling:
 
     // Execute Something that throws an error:

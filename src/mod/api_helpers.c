@@ -22,16 +22,16 @@ RECOMP_EXPORT char* REPY_InlineCodeSourceStrHelper(char* category, char* filenam
 }
 
 
-RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name) {
-    return (REPY_IteratorHelper*) REPY_IteratorHelperInternal_Create(py_object, py_scope, var_name);
+RECOMP_EXPORT REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name, bool auto_destroy) {
+    return (REPY_IteratorHelper*) REPY_IteratorHelperInternal_Create(py_object, py_scope_nullable, var_name, auto_destroy);
 }
 
 RECOMP_EXPORT void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper) {
     REPY_IteratorHelperInternal_Destroy((REPY_IteratorHelperInternal*) helper);
 }
 
-RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper, bool auto_destroy) {
-    return REPY_IteratorHelperInternal_Update((REPY_IteratorHelperInternal*) helper, auto_destroy);
+RECOMP_EXPORT bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper) {
+    return REPY_IteratorHelperInternal_Update((REPY_IteratorHelperInternal*) helper);
 }
 
 RECOMP_EXPORT u32 REPY_IteratorHelper_GetIndex(REPY_IteratorHelper* helper) {

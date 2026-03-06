@@ -4,17 +4,20 @@
 #include "../extlib_functions.h"
 #include "../mod_logging.h"
 
-REPY_IteratorHelperInternal* REPY_IteratorHelperInternal_Create(REPY_Handle py_object, REPY_Handle py_scope, const char* var_name) {
+REPY_IteratorHelperInternal* REPY_IteratorHelperInternal_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name, bool auto_destroy) {
     REPY_IteratorHelperInternal* helper = recomp_alloc(sizeof(REPY_IteratorHelperInternal));
     helper->_first_update = true;
     helper->index = 0;
-    helper->iter = PythonNative_Iter(py_object);
+    helper->iter = PythonNative_Iter(py_object); // If py_object is SUH, it gets consumed here.
     helper->curr = 0;
-    helper->py_scope = PythonNative_CopyHandle(py_scope);
-    if (py_scope != 0) {
+    if (py_scope_nullable != REPY_NO_OBJECT) {
+        helper->py_scope = PythonNative_CopyHandle(py_scope_nullable);
         helper->var_name = PythonNative_CreateStr(var_name);
+    } else {
+        helper->py_scope = REPY_NO_OBJECT;
+        helper->var_name = REPY_NO_OBJECT;
     }
-
+    helper->auto_destroy = auto_destroy;
     return helper;
 }
 
@@ -33,7 +36,7 @@ void REPY_IteratorHelperInternal_Destroy(REPY_IteratorHelperInternal* helper) {
     recomp_free(helper);
 }
 
-bool REPY_IteratorHelperInternal_Update(REPY_IteratorHelperInternal* helper, bool auto_destroy) {
+bool REPY_IteratorHelperInternal_Update(REPY_IteratorHelperInternal* helper) {
     if (helper->_first_update) {
         helper->_first_update = false;
     } else {
@@ -46,8 +49,8 @@ bool REPY_IteratorHelperInternal_Update(REPY_IteratorHelperInternal* helper, boo
     }
 
     helper->curr = PythonNative_Next(helper->iter, 0, true);
-    if (helper->curr) {
-        if (helper->py_scope) {
+    if (helper->curr != REPY_NO_OBJECT) {
+        if (helper->py_scope != REPY_NO_OBJECT) {
             // If given a python scope, add current to the scope under the given variable name:
             PythonNative_DictSet(helper->py_scope, helper->var_name, helper->curr);
         }
@@ -55,7 +58,7 @@ bool REPY_IteratorHelperInternal_Update(REPY_IteratorHelperInternal* helper, boo
         return true;
     } else {
         // Iterator complete. Time to clean up.
-        if (auto_destroy) {
+        if (helper->auto_destroy) {
             REPY_IteratorHelperInternal_Destroy(helper);
         }
         return false;   
