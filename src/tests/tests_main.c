@@ -142,6 +142,10 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     REPY_PopInterpreter();
     validate("Interpreter == 0 after popping test_subinterp.", REPY_GetCurrentInterpreter() == 0);
 
+    bool test_subinterp_old_autodisarm = REPY_GetInterpreterAutoDisarm(test_subinterp);
+    REPY_SetInterpreterAutoDisarm(test_subinterp, true);
+    validate("Interpreter 1 Auto Disarm settable", REPY_GetInterpreterAutoDisarm(test_subinterp) && !test_subinterp_old_autodisarm);
+
     // Testing Handle Operations:
     REPY_Handle testbool = REPY_CreateBool(true);
     validate("First assigned handle (testbool) == 1", testbool == 1);
