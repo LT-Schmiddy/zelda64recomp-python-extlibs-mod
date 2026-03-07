@@ -40,7 +40,7 @@ typedef enum {
 #define IF_LOG_VERBOSE IF_LOG_LEVEL(RECOMP_LOG_VERBOSE)
 
 #define LOG_FORMAT(log_level, ...) \
-mod_handle_log(log_level, __func__, __LINE__, __FILE_NAME__, __VA_ARGS__)
+IF_LOG_LEVEL(log_level) mod_handle_log(log_level, __func__, __LINE__, __FILE_NAME__, __VA_ARGS__)
 
 // Logging Macros:
 #define LOG_FATAL(...) LOG_FORMAT(RECOMP_LOG_FATAL, __VA_ARGS__)

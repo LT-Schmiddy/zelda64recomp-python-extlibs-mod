@@ -491,7 +491,7 @@ RECOMP_DLL_FUNC(PythonNative_Next) {
             controller->handle_exception(&e);
         } else {
             // Catching the exception already clears it from the interpreter. All we need to do now is let it die.
-            PLOGD.printf("REPY_Handle %u has ended iteration. StopIteration exception handled internally", RECOMP_ARG(REPY_Handle, 0));
+            PLOGD.printf("REPY_Handle 0x%08X has ended iteration. StopIteration exception handled internally", RECOMP_ARG(REPY_Handle, 0));
         }
         
         controller->release_suh_handles();
@@ -896,6 +896,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
 
     py::object bytecode;
     try {
+        PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
         bytecode = controller->py_compile()(code_str, identifier_str, type_str);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
@@ -916,6 +917,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
 
     py::object bytecode;
     try {
+        PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
         bytecode = controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
@@ -937,6 +939,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
 
     py::object bytecode;
     try {
+        PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
         bytecode = controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
@@ -1380,10 +1383,10 @@ RECOMP_DLL_FUNC(PythonNative_ClearError) {
 
 // ====================================== Logging: ====================================== 
 // The following enable the mod-code of this library to use PLOG for logging.
-static plog::Severity py_log_severity;
-static std::string py_log_func;
-static uint32_t py_log_line_number;
-static std::string py_log_file_name;
+thread_local static plog::Severity py_log_severity;
+thread_local static std::string py_log_func;
+thread_local static uint32_t py_log_line_number;
+thread_local static std::string py_log_file_name;
 
 RECOMP_DLL_FUNC(PythonNative_SetLogMetaData) {
     ZoneScoped;

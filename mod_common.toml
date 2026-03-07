@@ -167,7 +167,7 @@ description = """Log information about RecompExternalPython to console, and to R
 Only applied on game startup. Relaunch the game to change the value."""
 type = "Enum"
 options = [ "NONE", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG", "VERBOSE"]
-default = "ERROR"
+default = "WARNING"
 
 [[manifest.config_options]]
 id = "log_to_file"

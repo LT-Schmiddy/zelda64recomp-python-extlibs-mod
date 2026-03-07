@@ -1693,7 +1693,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateByteStrN
  */
 #define REPY_FN_IF_CACHE_INIT(helper_identifier) \
 static REPY_IfStmtChain* helper_identifier ## _chain_root = NULL; \
-REPY_IfStmtHelper* helper_identifier = REPY_IfStmtHelper_Create(helper_identifier, &helper_identifier ## _chain_root); \
+REPY_IfStmtHelper* helper_identifier = REPY_HelperAutoCleanup_AddIfStmtHelper(REPY_FN_AUTO_CLEANUP, REPY_IfStmtHelper_Create(&helper_identifier ## _chain_root)); \
 
 /**
  * @brief Constructs a `if` statement that uses a cached Python expression executed in the current scope.
@@ -1710,7 +1710,7 @@ REPY_IfStmtHelper* helper_identifier = REPY_IfStmtHelper_Create(helper_identifie
 #define REPY_FN_IF_CACHE_STMT(helper_identifier, py_expression) \
 if ( \
     REPY_IfStmtHelper_Step( \
-        &helper_identifier, \
+        helper_identifier, \
         REPY_FN_GLOBAL_SCOPE, \
         REPY_FN_LOCAL_SCOPE, \
         py_expression, \
@@ -1720,9 +1720,6 @@ if ( \
         #helper_identifier \
     ) \
 ) 
-
-#define REPY_FN_ENDIF(helper_identifier) \
-REPY_IfStmtHelper_Destroy(helper_identifier) \
 
 /**
  * @brief Initializes the helpers for a cached Pythonic `if/else` block, and constructs the first `if` statement,
@@ -1794,11 +1791,11 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
 #define REPY_FN_FOREACH_CACHE(bytecode_identifier, var_name, py_expression) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_FOREACH_CACHE", bytecode_identifier, REPY_CODE_EVAL, py_expression); \
 for ( \
-    REPY_IteratorHelper* iter_identifier = REPY_HelperAutoCleanup_AddIteratorHelper( \
+    REPY_IteratorHelper* bytecode_identifier ## _iter = REPY_HelperAutoCleanup_AddIteratorHelper( \
         REPY_FN_AUTO_CLEANUP, \
         REPY_IteratorHelper_Create(REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, var_name, false) \
     ); \
-    REPY_IteratorHelper_Update(iter_identifier);\
+    REPY_IteratorHelper_Update(bytecode_identifier ## _iter);\
 ) \
 
 

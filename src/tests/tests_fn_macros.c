@@ -185,9 +185,65 @@ void run_main_fn_macro_tests() {
     }
     validate("REPY_FN_FOR_CACHE for_test1 ran to completion correctly", REPY_FN_EVAL_CSTR_BOOL("x == -10 and i == 10") && wtf == 15 );
 
+    u32 foreach_loop_vals[5];
+    bool foreach_index_check = true;
+    bool foreach_handle_check = true;
+
     // Now for the scary part: The REPY_FN_FOREACH_CACHE loop:
     REPY_FN_FOREACH_CACHE(foreach_test1, "i", "[0, 1, 2, 3, 4, 5]") {
-
+        u32 index = REPY_IteratorHelper_GetIndex(foreach_test1_iter);
+        u32 current_val = REPY_FN_GET_U32("i");
+        foreach_index_check = foreach_index_check && (index == current_val);
+        
+        // This handle is managed internally by the iterator helper. Do not cleanup.
+        REPY_Handle current_handle = REPY_IteratorHelper_BorrowCurrent(foreach_test1_iter);
+        foreach_handle_check = foreach_handle_check && (current_val == REPY_CastU32(current_handle));
+        foreach_loop_vals[index] = current_val;
+        
     }
-    REPY_FN_CLEANUP;
+    validate("REPY_FN_FOREACH_CACHE foreach_test1 rano to completion correctly.", foreach_index_check && foreach_handle_check);
+
+    // Time to test the if statement helpers.
+    // lets make some setup.
+    REPY_FN_EXEC_CACHE(if_test1_prep,
+        "a = 5\n"
+        "b = 6\n"
+        "c = 7\n"
+        "d = 8\n"
+    );
+    bool if_test1_tracking[5];
+    for (int i = 0; i < 5; i++) {
+        if_test1_tracking[i] = false;
+    }
+
+    REPY_FN_IF_CACHE(if_test1, "a == 5") {
+        if_test1_tracking[0] = true;
+    }
+    
+    REPY_FN_IF_CACHE(if_test2, "b == 5") {
+        if_test1_tracking[1] = true; // Shouldn't run
+    }
+    REPY_FN_ELIF_CACHE(if_test2, "b == 6") {
+        if_test1_tracking[2] = true;
+    }
+
+    REPY_FN_IF_CACHE(if_test3, "c == 7") {
+        if_test1_tracking[3] = true;
+    }
+    
+    REPY_FN_ELIF_CACHE(if_test3, "d == 8") {
+        if_test1_tracking[4] = true; // Shouldn't run
+    }
+
+    validate("REPY_IfStmtHelper macros behaving as expected when flat",  
+        if_test1_tracking[0]
+        && !if_test1_tracking[1]
+        && if_test1_tracking[2]
+        && if_test1_tracking[3]
+        && !if_test1_tracking[4]
+    );
+
+    // Make sure these behave correctly when nested:
+
+    REPY_FN_CLEANUP; 
 }

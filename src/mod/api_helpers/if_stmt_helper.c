@@ -6,7 +6,8 @@
 
 REPY_IfStmtHelperInternal* REPY_IfStmtHelperInternal_Create(REPY_IfStmtChainInternal** chain_root) {
     REPY_IfStmtHelperInternal* helper = recomp_alloc(sizeof(REPY_IfStmtHelperInternal));
-
+    LOGD("Allocating new REPY_IfStmtHelper at 0x%p", helper);
+    
     helper->index = 0;
     helper->root = chain_root;
     helper->curr = NULL;
@@ -25,14 +26,20 @@ bool REPY_IfStmtHelperInternal_Step(REPY_IfStmtHelperInternal* helper, REPY_Hand
         helper->_first_step = false;
         
         if (*(helper->root) == NULL) {
+            LOGD("REPY_IfStmtHelper at 0x%p - First step - Creating REPY_IfStmtChain for %s (%s, %s, line %u, %s)", helper, expr_string, filename, function_name, line_number, identifier);
             // No chain was ever created. Starting one now.
             (*(helper->root)) = REPY_IfStmtChainInternal_Create(expr_string, filename, function_name, line_number, identifier);
+        } else {
+            LOGD("REPY_IfStmtHelper at 0x%p - First step - REPY_IfStmtChain already exists: %s (%s, %s, line %u, %s)", helper, expr_string, filename, function_name, line_number, identifier);
         }
         helper->curr = (*(helper->root));
     } else {
         if (helper->curr->next == NULL) {
             // The next link in the clain doesn't exist. Let's create it.
+            LOGD("REPY_IfStmtHelper at 0x%p - Creating REPY_IfStmtChain for %s (%s, %s, line %u, %s)", helper, expr_string, filename, function_name, line_number, identifier);
             helper->curr->next = REPY_IfStmtChainInternal_Create(expr_string, filename, function_name, line_number, identifier);
+        } else {
+            LOGD("REPY_IfStmtHelper at 0x%p - REPY_IfStmtChain already exists: %s (%s, %s, line %u, %s)", helper, expr_string, filename, function_name, line_number, identifier);
         }
         // Move down the chain:
         helper->curr = helper->curr->next;
