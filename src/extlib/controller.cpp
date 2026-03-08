@@ -91,7 +91,7 @@ PyInterpreterController::PyInterpreterController(plog::Severity log_severity, bo
 
     PySubController* main_interp = new PySubController(PYTHON_MAIN_INTERPRETER_HANDLE);
     subinterpreters.push_back(main_interp);
-
+    calling_thread_id = std::this_thread::get_id();
     // Allow other threads to have the GIL.
     py_main_thread = PyEval_SaveThread();
 }
@@ -118,12 +118,23 @@ PyInterpreterController::~PyInterpreterController() {
     PLOGI << "-> Python interpreter shutdown";
 }
 
-void PyInterpreterController::thread_check() {
+bool PyInterpreterController::is_main_thread() {
     ZoneScoped;
-    if (!subinterp_index_stack.empty() && calling_thread_id != std::this_thread::get_id()) {
-        PLOGW.printf("The thread making calls to the REPY API has changed while the interpreter stack wasn't empty. This could potentially result in cross-talk between interperters.");
+    return calling_thread_id == std::this_thread::get_id();
+}
+
+void PyInterpreterController::thread_check_exception() {
+    ZoneScoped;
+    if (!is_main_thread()) {
+        throw std::exception("The thread making calls to the repy_api functions is not the main thread.");
     }
-    assert(subinterp_index_stack.empty() || calling_thread_id == std::this_thread::get_id());
+}
+
+void PyInterpreterController::thread_check_warning() {
+    ZoneScoped;
+    if (!is_main_thread()) {
+        PLOGW.printf("The thread making calls to the REPY API is not the main thread. This could potentially result in cross-talk between interperters.");
+    }
 }
 
 REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {
@@ -171,7 +182,6 @@ void PyInterpreterController::push_subcontroller_index(REPY_InterpreterIndex ind
     if (subinterp_index_stack.empty()) {
         subinterp_index_stack.push(index);
         subinterpreters.at(index)->activate();
-        calling_thread_id = std::this_thread::get_id();
     } else {
         REPY_InterpreterIndex old_index = subinterp_index_stack.top();
         subinterp_index_stack.push(index);

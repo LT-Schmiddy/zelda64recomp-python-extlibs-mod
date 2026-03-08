@@ -19,7 +19,9 @@ public:
     PyInterpreterController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~PyInterpreterController();
 
-    void thread_check();
+    bool is_main_thread();
+    void thread_check_warning();
+    void thread_check_exception();
 
     REPY_InterpreterIndex create_subcontroller();
     REPY_InterpreterIndex get_current_subcontroller_index();
