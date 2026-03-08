@@ -4,7 +4,7 @@
 ## @{
 
 """
-repy_api.mem.managed: This module provides easy access and wrappers to data inside N64Recompiled memory.
+repy_api.mem.byteswapped: This module provides easy access and wrappers to data inside N64Recompiled memory.
 
 """
 

@@ -316,16 +316,16 @@ extern REPY_InterpreterIndex subinterp_identifier; \
  * See those macros for more information.
  */
 #define REPY_EXTERN_INCBIN(identifier) \
-    extern REPY_u8 identifier[];                      \
+    extern REPY_u8 identifier[]; \
     extern REPY_u8 identifier##_end[]
 
 #ifdef REPY_SILENCE_INCBIN_SQUIGGLES
-#define REPY_INCBIN(identifier, filename)      \
-    extern REPY_u8 identifier[];                    \
+#define REPY_INCBIN(identifier, filename) \
+    extern REPY_u8 identifier[]; \
     extern REPY_u8 identifier##_end[]
 
 #define REPY_INCBIN_TEXT(identifier, filename) \
-    extern REPY_u8 identifier[];                    \
+    extern REPY_u8 identifier[]; \
     extern REPY_u8 identifier##_end[]               
 #else
 
