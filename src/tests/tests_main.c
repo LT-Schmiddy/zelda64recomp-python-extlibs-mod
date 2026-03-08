@@ -62,6 +62,8 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     run_api_tests();
     run_main_fn_macro_tests();
     run_main_init_macro_tests();
+
+    
     
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
     // {

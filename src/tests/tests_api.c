@@ -665,7 +665,13 @@ void run_api_tests() {
     REPY_ExecCStr("mmem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
     validate("repy_api.mem.managed.write_buffer_n matches target when using `bytearray`", strncmp((const char*)string_byte_str, "hello recomp", 20) == 0);
 
-    // REPY_ExecCStr("for i in range(0, 1000):\n\tmem.write_buffer_n(mem_bytes_ptr, bytearray(b'hello recomp'), 20)", py_globals, py_locals);
+    // Last thing: Test zip access.
+    REPY_Handle nrm_zipfile_handle = REPY_GetNrmZipFile();
+    validate("REPY_GetNrmZipFile retrieves handle for ZipFile", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "type(_0) == _1.ZipFile and 'mod.json' in _0.namelist()",
+        REPY_VL_SUH(REPY_NO_OBJECT, 2, nrm_zipfile_handle, REPY_MakeSUH(REPY_ImportModule("zipfile"))),
+        REPY_NO_OBJECT
+    ))));
 
     REPY_Release(py_globals);
     REPY_Release(py_locals);
