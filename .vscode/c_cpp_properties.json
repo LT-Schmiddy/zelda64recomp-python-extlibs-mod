@@ -20,8 +20,7 @@
                 "_LANGUAGE_C",
                 "MIPS",
                 "COMBINED_INTELLISENSE",
-                "RECOMP_INCBIN_EXTERN_ONLY",
-                "REPY_SILENCE_INCBIN_SQUIGGLES"
+                "RECOMP_INCBIN_EXTERN_ONLY"
             ],
             // "compilerPath": "clang",
             "cStandard": "c99",
@@ -39,7 +38,7 @@
                 "F3DEX_GBI_2",
                 "_LANGUAGE_C",
                 "MIPS",
-                "REPY_INTERNALS_EXPOSED"
+                "REPY_SILENCE_INCBIN_SQUIGGLES"
             ],
             "compilerPath": "clang",
             "cStandard": "c99"

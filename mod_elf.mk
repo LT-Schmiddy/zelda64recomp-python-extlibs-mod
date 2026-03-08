@@ -15,6 +15,7 @@ $(info    _ELF_PATH = $(_ELF_PATH))
 $(info    _SRC_DIR = $(_SRC_DIR))
 $(info    _PY_BUILD_FLAGS = $(_PY_BUILD_FLAGS))
 
+INCBIN_SRCS := $(call rwildcard,$(TESTS_INCBIN_DIR),*.py)
 C_SRCS := $(call rwildcard,$(_SRC_DIR),*.c)
 C_OBJS := $(addprefix $(_BUILD_DIR)/, $(C_SRCS:.c=.o))
 C_DEPS := $(addprefix $(_BUILD_DIR)/, $(C_SRCS:.c=.d))
@@ -27,7 +28,7 @@ $(info    BUILD_DIRS = $(BUILD_DIRS))
 
 all: $(BUILD_DIRS) $(_ELF_PATH)
 
-$(_ELF_PATH): $(ALL_OBJS) $(LDSCRIPT) | $(_BUILD_DIR)
+$(_ELF_PATH): $(ALL_OBJS) $(INCBIN_SRCS) $(LDSCRIPT) | $(_BUILD_DIR)
 	$(_MIPS_LD) $(ALL_OBJS) $(LDFLAGS) -Map $(_BUILD_DIR)/mod.map -o $@
 
 $(BUILD_DIRS) $(_BUILD_DIR):

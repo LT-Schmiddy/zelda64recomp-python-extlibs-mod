@@ -7,7 +7,8 @@
 #include "mod_logging.h"
 
 RECOMP_DECLARE_EVENT(REPY_OnPreInit());
-RECOMP_DECLARE_EVENT(REPY_OnInit());
+RECOMP_DECLARE_EVENT(REPY_OnInitSubinterpreters());
+RECOMP_DECLARE_EVENT(REPY_OnInitCodeCache());
 RECOMP_DECLARE_EVENT(REPY_OnPostInit());
 
 RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
@@ -27,7 +28,8 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
         LOGF("There was an error initializing the Python interpreter.\n");
     }
 
-    REPY_OnInit();
+    REPY_OnInitSubinterpreters();
+    REPY_OnInitCodeCache();
     REPY_OnPostInit();
 }
 

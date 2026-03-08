@@ -1,6 +1,7 @@
 #include "tests_main.h"
 #include "tests_api.h"
 #include "tests_fn_macros.h"
+#include "tests_init_macros.h"
 
 REPY_PREINIT_ADD_NRM_TO_SYS_PATH;
 
@@ -20,7 +21,6 @@ void validate(char* case_name, bool case_stmt) {
 }
 
 REPY_REGISTER_SUBINTERPRETER(test_subinterp);
-
 
 void load_repl() {
         recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
@@ -61,21 +61,39 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     // Running Core API tests on interpreter 0:
     run_api_tests();
     run_main_fn_macro_tests();
+    run_main_init_macro_tests();
     
     recomp_printf("REPY: Passed %i out of %i cases.\n", _test_cases_passed, _test_cases);
-    {
-        REPY_FN_SETUP_INTERP(test_subinterp);
-        REPY_FN_EXEC_CACHE(thread_test_1, 
-            "import threading, time\n"
-            "def t_test():\n"
-            "    time.sleep(10)\n"
-            "    print('I am incredibly smart')\n"
-            "\n"
-            "t = threading.Thread(None, t_test)\n"
-            "t.start()\n"
-        );
-        REPY_FN_CLEANUP;
-    }
+    // {
+    //     REPY_FN_SETUP_INTERP(test_subinterp);
+    //     REPY_FN_EXEC_CACHE(thread_test_1, 
+    //         "import threading, time\n"
+    //         "def t_test():\n"
+    //         "    time.sleep(10)\n"
+    //         "    print('I am incredibly smart')\n"
+    //         "\n"
+    //         "t = threading.Thread(None, t_test)\n"
+    //         "t.start()\n"
+    //     );
+    //     REPY_FN_CLEANUP;
+    // }
+
+    // {
+    //     REPY_FN_SETUP;
+    //     int int_ptr = 66;
+    //     REPY_FN_SET("ptr", REPY_CreatePtr_SUH(&int_ptr));
+    //     REPY_FN_EXEC_CACHE(thread_test_2, 
+    //         "import threading, time\n"
+    //         "from repy_api.mem import managed\n"
+    //         "def t_test():\n"
+    //         "    time.sleep(3)\n"
+    //         "    print(managed.read_s32(ptr))\n"
+    //         "\n"
+    //         "t = threading.Thread(None, t_test)\n"
+    //         "t.start()\n"
+    //     );
+    //     REPY_FN_CLEANUP;
+    // }
 
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;

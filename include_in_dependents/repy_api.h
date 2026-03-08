@@ -230,7 +230,16 @@ typedef void REPY_DeferredCleanupHelper;
  * 
  * Takes no arguments, returns void.
  */
-#define REPY_ON_INIT RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInit)
+#define REPY_ON_INIT_SUBINTERPRETERS RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInitSubinterpreters)
+
+/**
+ * @brief Event that runs immediately after the Python interpreter is initialized. Many global-level REPY macros use this event for initialization.
+ * 
+ * If you want to ensure that your code is called after events specified by REPY macros are called, use `REPY_ON_POST_INIT`.
+ * 
+ * Takes no arguments, returns void.
+ */
+#define REPY_ON_INIT_CODE_CACHE RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInitCodeCache)
 
 /**
  * @brief Event that runs immediately after the `REPY_ON_INIT` is called. Since many REPY macros use `REPY_ON_INIT`, use this event to ensure your code runs after.
@@ -283,7 +292,7 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
   */
 #define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
 REPY_InterpreterIndex subinterp_identifier = 0; \
-REPY_ON_INIT void subinterp_identifier ## _init() { \
+REPY_ON_INIT_SUBINTERPRETERS void subinterp_identifier ## _init() { \
     subinterp_identifier = REPY_RegisterSubinterpreter(); \
     recomp_printf("Subinterpreter %s Initialized\n", #subinterp_identifier); \
     REPY_PushInterpreter(subinterp_identifier); \
@@ -374,13 +383,15 @@ extern REPY_InterpreterIndex subinterp_identifier; \
  * @param code_mode The type of code being compiled. See `REPY_CodeMode` for valid modes.
  * @param code_str The Python code string to compile. Must be NULL-terminated.
  */
-#define REPY_GLOBAL_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
+#define REPY_GLOBAL_COMPILE_CACHE(interpreter_index, bytecode_identifier, code_mode, code_str) \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+REPY_ON_INIT_CODE_CACHE void _cache_code_ ## bytecode_identifier () { \
     if (bytecode_identifier == 0) { \
+        REPY_PushInterpreter(interpreter_index); \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_GLOBAL_COMPILE_CACHE", __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
         recomp_free(iden_str); \
+        REPY_PopInterpreter(); \
     } \
 }
 
@@ -393,13 +404,15 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
  * @param code_mode The type of code being compiled. See `REPY_CodeMode` for valid modes.
  * @param code_str The Python code string to compile. Must be NULL-terminated.
  */
-#define REPY_STATIC_COMPILE_CACHE(bytecode_identifier, code_mode, code_str) \
+#define REPY_STATIC_COMPILE_CACHE(interpreter_index, bytecode_identifier, code_mode, code_str) \
 static REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+REPY_ON_INIT_CODE_CACHE void _cache_code_ ## bytecode_identifier () { \
     if (bytecode_identifier == 0) { \
+        REPY_PushInterpreter(interpreter_index); \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_CACHE", __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
         bytecode_identifier = REPY_CompileCStr(code_str, (const char*)iden_str, code_mode); \
         recomp_free(iden_str); \
+        REPY_PopInterpreter(); \
     } \
 }
 
@@ -414,15 +427,17 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
  * @param bytecode_identifier The variable name for the resultant `REPY_Handle` bytecode handle.
  * @param filename The path to the module file to INCBIN. The file needs to be in your include path. 
  */
-#define REPY_GLOBAL_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
+#define REPY_GLOBAL_COMPILE_INCBIN_CACHE(interpreter_index, bytecode_identifier, filename) \
 REPY_INCBIN(bytecode_identifier ## _code_str, filename); \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+REPY_ON_INIT_CODE_CACHE void _cache_code_ ## bytecode_identifier () { \
     if (bytecode_identifier == 0) { \
+        REPY_PushInterpreter(interpreter_index); \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_GLOBAL_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
-        bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
+        bytecode_identifier = REPY_CompileCStrN((const char*)bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
             (const char*)iden_str, REPY_CODE_EXEC); \
         recomp_free(iden_str); \
+        REPY_PopInterpreter(); \
     } \
 }
 
@@ -436,15 +451,17 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
  * @param bytecode_identifier The variable name for the resultant `static REPY_Handle` bytecode handle.
  * @param filename The path to the module file to INCBIN. The file needs to be in your include path. 
  */
-#define REPY_STATIC_COMPILE_INCBIN_CACHE(bytecode_identifier, filename) \
+#define REPY_STATIC_COMPILE_INCBIN_CACHE(interpreter_index, bytecode_identifier, filename) \
 REPY_INCBIN(bytecode_identifier ## _code_str, filename); \
 REPY_Handle bytecode_identifier = 0; \
-REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
+REPY_ON_INIT_CODE_CACHE void _cache_code_ ## bytecode_identifier () { \
+    REPY_PushInterpreter(interpreter_index); \
     if (bytecode_identifier == 0) { \
         char* iden_str = REPY_InlineCodeSourceStrHelper("REPY_STATIC_COMPILE_INCBIN_CACHE: " filename, __FILE_NAME__, (char*) __func__, __LINE__, #bytecode_identifier); \
-        bytecode_identifier = REPY_CompileCStrN(bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
+        bytecode_identifier = REPY_CompileCStrN((const char*)bytecode_identifier ## _code_str, bytecode_identifier ## _code_str_end - bytecode_identifier ## _code_str, \
             (const char*)iden_str, REPY_CODE_EXEC); \
         recomp_free(iden_str); \
+        REPY_PopInterpreter(); \
     } \
 }
 /** @}*/
@@ -578,8 +595,10 @@ REPY_FOREACH_CLEANUP_NOW(iter_identifier); break
  * 
  * @param iter_identifier the `REPY_IteratorHelper` pointer.
  */
-#define REPY_FOREACH_RETURN(iter_identifier) \
-REPY_FOREACH_CLEANUP_NOW(iter_identifier); return
+#define REPY_FOREACH_RETURN(iter_identifier, retType, retVal) \
+retType __repy_retVal = retVal; \
+REPY_FOREACH_CLEANUP_NOW(iter_identifier); \
+return __repy_retVal
 
 /** @}*/
 
@@ -652,7 +671,8 @@ REPY_DeferredCleanupHelper* REPY_FN_AUTO_CLEANUP = REPY_DeferredCleanupHelper_Cr
 #define REPY_FN_SETUP_INTERP_WITH_GLOBALS(interp_index, globals) \
 REPY_PushInterpreter(interp_index); \
 REPY_Handle REPY_FN_GLOBAL_SCOPE = globals; \
-REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_CreateDict(0) \
+REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_CreateDict(0); \
+REPY_DeferredCleanupHelper* REPY_FN_AUTO_CLEANUP = REPY_DeferredCleanupHelper_Create() \
 
 /**
  * @brief Create an inline execution scope for your function without any globals.
@@ -688,7 +708,7 @@ REPY_FN_SETUP_INTERP_WITH_GLOBALS(REPY_MAIN_INTERPRETER)
  * The global scope is only released if the global and local scopes are the same.
  */
 #define REPY_FN_CLEANUP \
-REPY_DeferredCleanupHelper_Destroy(REPY_FN_AUTO_CLEANUP, true); \
+REPY_DeferredCleanupHelper_Destroy(REPY_FN_AUTO_CLEANUP, 1); \
 REPY_Release(REPY_FN_LOCAL_SCOPE); \
 REPY_PopInterpreter() \
 
@@ -703,16 +723,16 @@ REPY_PopInterpreter() \
  */
 #define REPY_FN_RETURN(retType, retVal) \
 retType __repy_retVal = retVal; \
-REPY_DeferredCleanupHelper_Destroy(REPY_FN_AUTO_CLEANUP, true); \
+REPY_DeferredCleanupHelper_Destroy(REPY_FN_AUTO_CLEANUP, 1); \
 REPY_Release(REPY_FN_LOCAL_SCOPE); \
 REPY_PopInterpreter(); \
-return retVal \
+return retVal 
 
 #define REPY_FN_DEFER_RELEASE(handle) \
-REPY_DeferredCleanupHelper_AddHandle(REPY_FN_AUTO_CLEANUP, handle)
+REPY_DeferredCleanupHelper_AddHandle(REPY_FN_AUTO_CLEANUP, handle) 
 
 #define REPY_FN_DEFER_RECOMP_FREE(pointer) \
-REPY_DeferredCleanupHelper_AddHandle(REPY_FN_AUTO_CLEANUP, (void*) pointer)
+REPY_DeferredCleanupHelper_AddHandle(REPY_FN_AUTO_CLEANUP, (void*) pointer) 
 
 /** @}*/
 

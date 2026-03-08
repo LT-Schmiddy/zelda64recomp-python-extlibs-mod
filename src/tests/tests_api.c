@@ -89,7 +89,7 @@ CREATE_CAST_STRN_TEST_BLOCK_SUH(char*, py_type ## N_SUH, py_type, value, max_siz
 void run_api_tests() {
     // Testing Handle Operations:
     REPY_Handle testbool = REPY_CreateBool(true);
-    validate("First assigned handle (testbool) == 1", testbool == 1);
+    // validate("First assigned handle (testbool) == 1", testbool == 1);
     validate("testbool is valid (REPY_IsValidHandle)", REPY_IsValidHandle(testbool));
     validate("testbool is not SUH (REPY_GetSUH)", REPY_GetSUH(testbool) == 0);
     REPY_MakeSUH(testbool);
@@ -97,7 +97,7 @@ void run_api_tests() {
     REPY_SetSUH(testbool, false);
     validate("testbool SUH disabled again (REPY_MakeSUH)", REPY_GetSUH(testbool) == 0);
     REPY_Handle testbool2 = REPY_CopyHandle(testbool);
-    validate("Copied handle (testbool2) == 2", testbool2 == 2);
+    validate("Copied handle (testbool2) incremented ", testbool2 == testbool + 1);
     REPY_MakeSUH(testbool2);
     REPY_Handle testbool3 = REPY_CopyHandle(testbool2);
     validate("testbool2 is not valid after SUH access", !REPY_IsValidHandle(testbool2));

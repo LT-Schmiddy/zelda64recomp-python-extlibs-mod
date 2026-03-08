@@ -248,7 +248,7 @@ void run_main_fn_macro_tests() {
         if_test_tracking2[i] = false;
     }
 
-    REPY_FN_IF_CACHE(if_nest1_test1, "True") {
+    REPY_FN_IF_CACHE(if_nest1_test1, "False") {
         REPY_FN_IF_CACHE(if_nest2_test1, "True") {
             if_test_tracking2[0] = true;
         } 
@@ -272,5 +272,29 @@ void run_main_fn_macro_tests() {
         && if_test_tracking2[3]
     );
 
+    // Testing the Foreach macros. Not technically part of `REPY_FN`, but this is still the most logical place to do this.
+    REPY_FN_EVAL_CACHE(eval_list_handle1, "[5, 4, 3, 2, 1, 0]", list_handle1);
+    // The behavior of the underlying IteratorHelper has already been tested.
+    // Here, we just need to ensure that the macro syntax is correct.
+    REPY_Handle list_borrowed1 = REPY_NO_OBJECT;
+    REPY_FOREACH(eval_list_iter1, list_handle1, true) {
+        list_borrowed1 = REPY_IteratorHelper_BorrowCurrent(eval_list_iter1);
+        REPY_FOREACH_BREAK(eval_list_iter1);
+    }
+
+    validate("REPY_FOREACH_BREAK releases borrowed handle", list_borrowed1 != REPY_NO_OBJECT && !REPY_IsValidHandle(list_borrowed1));
+
+    REPY_FOREACH_FNAC(eval_list_iter2, list_handle1) {
+        list_borrowed1 = REPY_IteratorHelper_BorrowCurrent(eval_list_iter2);
+        break;
+    }
+
+    // Quick test of deferred reference release behavior.
+    REPY_Handle deferred_cleanup_handle = REPY_FN_DEFER_RELEASE(REPY_CreateBool("True"));
+    bool deferred_valid_before = REPY_IsValidHandle(deferred_cleanup_handle);
     REPY_FN_CLEANUP; 
+    bool deferred_valid_after = REPY_IsValidHandle(deferred_cleanup_handle);
+
+    validate("REPY_DeferredCleanupHandler released a deferred handle", deferred_valid_before && !deferred_valid_after);
+    validate("REPY_FOREACH_FNAC cleaned up by REPY_DeferredCleanupHandler", list_borrowed1 != REPY_NO_OBJECT && !REPY_IsValidHandle(list_borrowed1));
 }
