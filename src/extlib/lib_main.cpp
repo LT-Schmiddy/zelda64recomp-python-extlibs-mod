@@ -896,7 +896,7 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
 
     py::object bytecode;
     try {
-        PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
+        // PLOGD.printf("Compiling %s", identifier_str->cast<std::u8string>().c_str()); // I want to print whenever inline code caches get printed.
         bytecode = controller->py_compile()(code_str, identifier_str, type_str);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
@@ -917,7 +917,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
 
     py::object bytecode;
     try {
-        PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
+        // PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
         bytecode = controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
@@ -939,7 +939,7 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
 
     py::object bytecode;
     try {
-        PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
+        // PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
         bytecode = controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
         controller->handle_exception(&e);
