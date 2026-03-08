@@ -93,7 +93,7 @@ RECOMP_EXPORT REPY_Handle REPY_DeferredCleanupHelper_AddHandle(REPY_DeferredClea
 }
 
 RECOMP_EXPORT void* REPY_DeferredCleanupHelper_AddRecompFree(REPY_DeferredCleanupHelper* cleanup, void* pointer) {
-    return REPY_DeferredCleanupHelper_AddRecompFree((REPY_DeferredCleanupHelperInternal*)cleanup, pointer);
+    return REPY_DeferredCleanupHelperInternal_AddRecompFree((REPY_DeferredCleanupHelperInternal*)cleanup, pointer);
 }
 
 RECOMP_EXPORT REPY_IteratorHelper* REPY_DeferredCleanupHelper_AddIteratorHelper(REPY_DeferredCleanupHelper* cleanup, REPY_IteratorHelper* iterator_helper) {
