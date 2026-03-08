@@ -288,6 +288,39 @@ void run_api_tests() {
     validate("REPY_TupleGetIndexS32 returned correct values for (3, 2, 1, 0) created with REPY_CreateTuple", py_list_match);
     REPY_Release(py_tuple2);
 
+    // We may as well test REPY_VariadicLocals here
+    REPY_Handle vlocals1 = REPY_VL(REPY_NO_OBJECT, 3, REPY_CreateU32_SUH(0), REPY_CreateU32_SUH(1), REPY_CreateU32_SUH(2));
+    validate("REPY_VariadicLocals generates new dict correctly", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 == 0 and _1 == 1 and _2 == 2", vlocals1, REPY_NO_OBJECT))));
+    REPY_Release(vlocals1);
+
+    REPY_Handle vlocals2 = REPY_CreateDict(0);
+    REPY_DictSetCStr(vlocals2, "other_key", REPY_CreateStr_SUH("Hello World"));
+    REPY_Handle vlocals3 = REPY_VL(vlocals2, 3, REPY_CreateU32_SUH(3), REPY_CreateU32_SUH(4), REPY_CreateU32_SUH(5));
+    validate("REPY_VariadicLocals returns the handle it was given when one is provided", vlocals2 == vlocals3);
+
+    validate("REPY_VariadicLocals inserts into provided dict correctly", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "_0 == 3 and _1 == 4 and _2 == 5 and other_key == 'Hello World'", vlocals3, REPY_NO_OBJECT))));
+
+    REPY_Release(vlocals3);
+    // From here on, we assume that REPY_VariadicLocals works correctly.
+    
+    // CreatePairCStr functions need testing because they have dedicated functions in the extlib. Test CreatePair as well.
+    REPY_Handle handle_pair1 = REPY_CreatePair(REPY_CreateStr_SUH("key1"), REPY_CreateStr_SUH("value1"));
+    validate("REPY_CreatePair returns a two-entry tuple", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "len(_0) == 2 and type(_0[0]) == str and _0[0] == 'key1' and type(_0[1]) == str and _0[1] == 'value1'",
+        REPY_VL_SUH(REPY_NO_OBJECT, 1, handle_pair1),
+        REPY_NO_OBJECT
+    ))));
+    REPY_Release(handle_pair1);
+
+    REPY_Handle cstr_pair1 = REPY_CreatePairCStr("key1", REPY_CreateStr_SUH("value1"));
+    validate("REPY_CreatePairCStr returns a two-entry tuple where the first entry is a string", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "len(_0) == 2 and type(_0[0]) == str and _0[0] == 'key1' and type(_0[1]) == str and _0[1] == 'value1'",
+        REPY_VL_SUH(REPY_NO_OBJECT, 1, cstr_pair1),
+        REPY_NO_OBJECT
+    ))));
+    REPY_Release(cstr_pair1);
+
     // Testing function invokations. We'll use the built-in `int` function for that.
     REPY_Handle py_int_fn = REPY_EvalCStr("int", 0, 0);
     validate("REPY_Call ran without error", REPY_Call(py_int_fn, REPY_MakeSUH(REPY_CreateTuple(1, REPY_CreateByteStr_SUH("33"))), 0));

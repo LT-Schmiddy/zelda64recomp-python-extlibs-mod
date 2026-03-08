@@ -16,10 +16,6 @@ if (identifier_name ## _is_valid) { \
 validate("" #identifier_name " executed properly.", identifier_name ## _executed); \
 validate("" #identifier_name " manipulated the scope as expected.", identifier_name ## _executed && REPY_FN_EVAL_CSTR_BOOL(eval_statement)); \
 
-
-
-
-
 void run_main_init_macro_tests() {
     REPY_FN_SETUP;
 

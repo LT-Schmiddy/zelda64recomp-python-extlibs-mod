@@ -84,7 +84,7 @@ typedef double REPY_f64;
  * to an object, and multiple handles can be mapped to a single Python object. Once created, a handle must be released
  * to remove that reference, either by using `REPY_Release` or flagging the handle as Single-Use (more on that below). 
  * If you need multiple references to a Python object, you can get a new handle to the same object using `REPY_CopyHandle`.
- * With the exception of `REPY_MakeSUH`, `REPY_VL` and `REPY_VL_SUH`, any REPY API function that returns a REPY_Handle always creates a new handle. 
+ * With the exception of `REPY_MakeSUH`, `REPY_VariadicLocals` and `REPY_VL_SUH`, any REPY API function that returns a REPY_Handle always creates a new handle. 
  * Failure to release handles will result in resource/memory leaks. 
  * 
  * The handle value of `REPY_NO_OBJECT` (the numerical value 0) is a special case, and represents the absense of any Python object. 
@@ -3310,7 +3310,7 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Hand
  * @brief Adds the Python object represented by a set of `REPY_handle`s to a dict, using the keys following the scheme `_0`, `_1`, `_2`, etc.
  * These keys serve as valid Python variable names to be used in code strings.
  * 
- * "VL" is short for "Variadic Locals". This is a convienience function for quick `REPY_Exec` and `REPY_Eval` statements where establishing a
+ * This is a convienience function for quick `REPY_Exec` and `REPY_Eval` statements where establishing a
  * scope or managing a whole dict is inconvenient. These keys serve as valid Python variable names to be used in code strings.
  * 
  * This function has slightly different behavior depending on whether or not `dict_nullable` is a valid dictionary.
@@ -3324,8 +3324,13 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Hand
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
  * `REPY_NO_OBJECT`
  */
-REPY_IMPORT(REPY_Handle REPY_VL(REPY_Handle dict_nullable, REPY_u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_VariadicLocals(REPY_Handle dict_nullable, REPY_u32 size, ...));
 
+/**
+ * @brief Shorthand for `REPY_VariadicLocals`
+ * 
+ */
+#define REPY_VL REPY_VariadicLocals
 
 /**
  * @brief Adds the Python object represented by a set of `REPY_handle`s to a dict, using the keys following the scheme `_0`, `_1`, `_2`, etc.
@@ -3348,7 +3353,13 @@ REPY_IMPORT(REPY_Handle REPY_VL(REPY_Handle dict_nullable, REPY_u32 size, ...));
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
  * `REPY_NO_OBJECT`
  */
-REPY_IMPORT(REPY_Handle REPY_VL_SUH(REPY_Handle dict_nullable, REPY_u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_VariadicLocals_SUH(REPY_Handle dict_nullable, REPY_u32 size, ...));
+
+/**
+ * @brief Shorthand for `REPY_VariadicLocals_SUH`
+ * 
+ */
+#define REPY_VL_SUH REPY_VariadicLocals_SUH
 
 /** @}*/
 

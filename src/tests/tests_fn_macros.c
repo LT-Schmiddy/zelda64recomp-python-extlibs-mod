@@ -157,9 +157,9 @@ void run_main_fn_macro_tests() {
     REPY_Handle os_eval_cstr = REPY_FN_EVAL_CSTR("os");
     REPY_FN_EVAL_CACHE(os_eval_cache_identifier, "os", os_eval_cache);
 
-    validate("REPY_FN_EVAL returned the os module", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 is _1", REPY_VL_SUH(REPY_NO_OBJECT, 2, get_os_module, os_eval), REPY_NO_OBJECT))));
-    validate("REPY_FN_EVAL_CSTR returned the os module", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 is _1", REPY_VL_SUH(REPY_NO_OBJECT, 2, get_os_module, os_eval_cstr), REPY_NO_OBJECT))));
-    validate("REPY_FN_EVAL_CACHE returned the os module", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 is _1", REPY_VL_SUH(REPY_NO_OBJECT, 2, get_os_module, os_eval_cache), REPY_NO_OBJECT))));
+    validate("REPY_FN_EVAL returned the os module", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 is _1", REPY_VariadicLocals_SUH(REPY_NO_OBJECT, 2, get_os_module, os_eval), REPY_NO_OBJECT))));
+    validate("REPY_FN_EVAL_CSTR returned the os module", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 is _1", REPY_VariadicLocals_SUH(REPY_NO_OBJECT, 2, get_os_module, os_eval_cstr), REPY_NO_OBJECT))));
+    validate("REPY_FN_EVAL_CACHE returned the os module", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 is _1", REPY_VariadicLocals_SUH(REPY_NO_OBJECT, 2, get_os_module, os_eval_cache), REPY_NO_OBJECT))));
     // From here, assume that all get/set/eval works.
 
     // Now the fun part: The Pythonic control structures:
