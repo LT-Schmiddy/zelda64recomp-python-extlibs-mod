@@ -1,6 +1,8 @@
 #include "controller.hpp"
 #include "embed_handler.hpp"
 
+#include <exception>
+
 // Not entirely certain it makes sense for either of these helper functions to
 // be part of the class definition. They're used in initializing the interpreter 
 // and then never again.
@@ -126,7 +128,7 @@ bool PyInterpreterController::is_main_thread() {
 void PyInterpreterController::thread_check_exception() {
     ZoneScoped;
     if (!is_main_thread()) {
-        throw std::exception("The thread making calls to the repy_api functions is not the main thread.");
+        throw std::runtime_error("The thread making calls to the repy_api functions is not the main thread.");
     }
 }
 
