@@ -211,39 +211,66 @@ void run_main_fn_macro_tests() {
         "c = 7\n"
         "d = 8\n"
     );
-    bool if_test1_tracking[5];
+    bool if_test_tracking1[5];
     for (int i = 0; i < 5; i++) {
-        if_test1_tracking[i] = false;
+        if_test_tracking1[i] = false;
     }
 
     REPY_FN_IF_CACHE(if_test1, "a == 5") {
-        if_test1_tracking[0] = true;
+        if_test_tracking1[0] = true;
     }
     
     REPY_FN_IF_CACHE(if_test2, "b == 5") {
-        if_test1_tracking[1] = true; // Shouldn't run
+        if_test_tracking1[1] = true; // Shouldn't run
     }
     REPY_FN_ELIF_CACHE(if_test2, "b == 6") {
-        if_test1_tracking[2] = true;
+        if_test_tracking1[2] = true;
     }
 
     REPY_FN_IF_CACHE(if_test3, "c == 7") {
-        if_test1_tracking[3] = true;
+        if_test_tracking1[3] = true;
     }
-    
     REPY_FN_ELIF_CACHE(if_test3, "d == 8") {
-        if_test1_tracking[4] = true; // Shouldn't run
+        if_test_tracking1[4] = true; // Shouldn't run
     }
 
     validate("REPY_IfStmtHelper macros behaving as expected when flat",  
-        if_test1_tracking[0]
-        && !if_test1_tracking[1]
-        && if_test1_tracking[2]
-        && if_test1_tracking[3]
-        && !if_test1_tracking[4]
+        if_test_tracking1[0]
+        && !if_test_tracking1[1]
+        && if_test_tracking1[2]
+        && if_test_tracking1[3]
+        && !if_test_tracking1[4]
     );
 
     // Make sure these behave correctly when nested:
+    bool if_test_tracking2[4];
+    for (int i = 0; i < 4; i++) {
+        if_test_tracking2[i] = false;
+    }
+
+    REPY_FN_IF_CACHE(if_nest1_test1, "True") {
+        REPY_FN_IF_CACHE(if_nest2_test1, "True") {
+            if_test_tracking2[0] = true;
+        } 
+        REPY_FN_ELIF_CACHE(if_nest2_test1, "False") {
+            if_test_tracking2[1] = true;
+        } 
+    }
+    REPY_FN_ELIF_CACHE(if_nest1_test1, "True") {
+        REPY_FN_IF_CACHE(if_nest2_test1, "False") {
+            if_test_tracking2[2] = true;
+        } 
+        REPY_FN_ELIF_CACHE(if_nest2_test1, "True") {
+            if_test_tracking2[3] = true; // Only this should run
+        } 
+    }
+
+    validate("REPY_IfStmtHelper macros behaving as expected when nested",  
+        !if_test_tracking2[0]
+        && !if_test_tracking2[1]
+        && !if_test_tracking2[2]
+        && if_test_tracking2[3]
+    );
 
     REPY_FN_CLEANUP; 
 }

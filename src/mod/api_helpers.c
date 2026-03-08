@@ -10,7 +10,7 @@
 #include "./api_helpers/if_stmt_chain.h"
 #include "./api_helpers/if_stmt_helper.h"
 #include "./api_helpers/iterator_helper.h"
-#include "./api_helpers/helper_auto_cleanup.h"
+#include "./api_helpers/deferred_cleanup_helper.h"
 
 #define PYCODE_INLINE_IDENTIFIER_FORMAT "%s in File %s, Function %s, Line %u, Identifier %s"
 
@@ -84,21 +84,30 @@ RECOMP_EXPORT bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* p_helper, REPY_Hand
 };
 
 // === Helper Auto-Cleanup ===
-RECOMP_EXPORT REPY_HelperAutoCleanup* REPY_HelperAutoCleanup_Create() {
-    return (REPY_HelperAutoCleanup*) REPY_HelperAutoCleanupInternal_Create();
+RECOMP_EXPORT REPY_DeferredCleanupHelper* REPY_DeferredCleanupHelper_Create() {
+    return (REPY_DeferredCleanupHelper*) REPY_DeferredCleanupHelperInternal_Create();
 }
 
-RECOMP_EXPORT REPY_IteratorHelper* REPY_HelperAutoCleanup_AddIteratorHelper(REPY_HelperAutoCleanup* cleanup, REPY_IteratorHelper* iterator_helper) {
-    return (REPY_IteratorHelper*) REPY_HelperAutoCleanupInternal_AddIteratorHelper((REPY_HelperAutoCleanupInternal*)cleanup, (REPY_IteratorHelperInternal*)iterator_helper);
+RECOMP_EXPORT REPY_Handle REPY_DeferredCleanupHelper_AddHandle(REPY_DeferredCleanupHelper* cleanup, REPY_Handle handle) {
+    return REPY_DeferredCleanupHelperInternal_AddHandle((REPY_DeferredCleanupHelperInternal*)cleanup, handle);
 }
 
-RECOMP_EXPORT REPY_IfStmtHelper* REPY_HelperAutoCleanup_AddIfStmtHelper(REPY_HelperAutoCleanup* cleanup, REPY_IfStmtHelper* if_stmt_helper) {
-    return (REPY_IfStmtHelper*) REPY_HelperAutoCleanupInternal_AddIfStmtHelper((REPY_HelperAutoCleanupInternal*) cleanup, (REPY_IfStmtHelperInternal*) if_stmt_helper);
-}
-RECOMP_EXPORT void REPY_HelperAutoCleanup_CleanNow(REPY_HelperAutoCleanup* cleanup) {
-    REPY_HelperAutoCleanupInternal_CleanNow((REPY_HelperAutoCleanupInternal*) cleanup);
+RECOMP_EXPORT void* REPY_DeferredCleanupHelper_AddRecompFree(REPY_DeferredCleanupHelper* cleanup, void* pointer) {
+    return REPY_DeferredCleanupHelper_AddRecompFree((REPY_DeferredCleanupHelperInternal*)cleanup, pointer);
 }
 
-RECOMP_EXPORT void REPY_HelperAutoCleanup_Destroy(REPY_HelperAutoCleanup* cleanup, bool clean_now) {
-    REPY_HelperAutoCleanupInternal_Destroy((REPY_HelperAutoCleanupInternal*) cleanup, clean_now);
+RECOMP_EXPORT REPY_IteratorHelper* REPY_DeferredCleanupHelper_AddIteratorHelper(REPY_DeferredCleanupHelper* cleanup, REPY_IteratorHelper* iterator_helper) {
+    return (REPY_IteratorHelper*) REPY_DeferredCleanupHelperInternal_AddIteratorHelper((REPY_DeferredCleanupHelperInternal*)cleanup, (REPY_IteratorHelperInternal*)iterator_helper);
+}
+
+RECOMP_EXPORT REPY_IfStmtHelper* REPY_DeferredCleanupHelper_AddIfStmtHelper(REPY_DeferredCleanupHelper* cleanup, REPY_IfStmtHelper* if_stmt_helper) {
+    return (REPY_IfStmtHelper*) REPY_DeferredCleanupHelperInternal_AddIfStmtHelper((REPY_DeferredCleanupHelperInternal*) cleanup, (REPY_IfStmtHelperInternal*) if_stmt_helper);
+}
+
+RECOMP_EXPORT void REPY_DeferredCleanupHelper_CleanNow(REPY_DeferredCleanupHelper* cleanup) {
+    REPY_DeferredCleanupHelperInternal_CleanNow((REPY_DeferredCleanupHelperInternal*) cleanup);
+}
+
+RECOMP_EXPORT void REPY_DeferredCleanupHelper_Destroy(REPY_DeferredCleanupHelper* cleanup, bool clean_now) {
+    REPY_DeferredCleanupHelperInternal_Destroy((REPY_DeferredCleanupHelperInternal*) cleanup, clean_now);
 }

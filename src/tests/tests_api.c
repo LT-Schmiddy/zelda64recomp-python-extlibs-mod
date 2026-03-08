@@ -476,21 +476,21 @@ void run_api_tests() {
     REPY_IfStmtHelper_Destroy(if_helper2);
     // From here on, we can assume the REPY_IfStmtHelper works.
 
-    // Testing for REPY_HelperAutoCleanup:
-    REPY_HelperAutoCleanup* auto_cleanup = REPY_HelperAutoCleanup_Create();
+    // Testing for REPY_DeferredCleanupHelper:
+    REPY_DeferredCleanupHelper* auto_cleanup = REPY_DeferredCleanupHelper_Create();
     REPY_Handle auto_cleanup_test_list = REPY_EvalCStr("[1, 2, 3]", REPY_NO_OBJECT, REPY_NO_OBJECT);
     recomp_printf("list created, handle == %u\n", auto_cleanup_test_list);
     
     REPY_IteratorHelper* ac_test_iter = REPY_IteratorHelper_Create(auto_cleanup_test_list, REPY_NO_OBJECT, NULL, false);
-    REPY_IteratorHelper* ac_test_iter2 = REPY_HelperAutoCleanup_AddIteratorHelper(auto_cleanup, ac_test_iter);
-    validate("REPY_HelperAutoCleanup_AddIteratorHelper returns the same iterator_helper it was given", ac_test_iter == ac_test_iter2);
+    REPY_IteratorHelper* ac_test_iter2 = REPY_DeferredCleanupHelper_AddIteratorHelper(auto_cleanup, ac_test_iter);
+    validate("REPY_AutoCleanupHelper_AddIteratorHelper returns the same iterator_helper it was given", ac_test_iter == ac_test_iter2);
 
     REPY_IteratorHelper_Update(ac_test_iter);
     REPY_IteratorHelper_Update(ac_test_iter);
     // The iterator's current object should be 2. 
     REPY_Handle ac_test_iter_val2 = REPY_IteratorHelper_BorrowCurrent(ac_test_iter);
     validate("ac_test_iter_val2 is valid and == 2", REPY_IsValidHandle(ac_test_iter_val2) && REPY_CastU32(ac_test_iter_val2) == 2);
-    REPY_HelperAutoCleanup_Destroy(auto_cleanup, true);
+    REPY_DeferredCleanupHelper_Destroy(auto_cleanup, true);
     // That borrowed handle should have been made invalid by the auto cleanup.
     validate("ac_test_iter_val2 was invalidated by auto-cleanup", !REPY_IsValidHandle(ac_test_iter_val2));
     REPY_Release(auto_cleanup_test_list);

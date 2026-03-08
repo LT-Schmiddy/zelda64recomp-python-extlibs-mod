@@ -102,7 +102,13 @@ typedef double REPY_f64;
  * have the suffix `_SUH` in their names.
  * 
  * Not that the only functions that won't release a Single-Use handle are ones meant to manipulate the handles themselves:
- * `REPY_MakeSUH`, `REPY_IsValidHandle`, `REPY_GetSUH`, and `REPY_SetSUH`. Their REPY_Handle argument names have the suffix `_no_release`
+ * * `REPY_MakeSUH`
+ * * `REPY_IsValidHandle`
+ * * `REPY_GetSUH`
+ * * `REPY_SetSUH`
+ * * `REPY_DeferredCleanupHelper_AddHandle`
+ * 
+ * Their REPY_Handle argument names have the suffix `_no_release`
  * to reflect this.
  * 
  * If at any point this documentation refers to a `REPY_Handle` as a Python object, understand that it is referring to the Python object that
@@ -148,7 +154,8 @@ typedef signed int REPY_InterpreterIndex;
  * @brief Used to set the type of code-string being compiled, in line with how Python's
  * built-in `compile` function operates.
  * 
- * Used with `REPY_CompileCStr` and `REPY_CompileCStr`. `REPY_Compile` accepts a REPY_Handle string argument instead.
+ * Used with `REPY_CompileCStr` and `REPY_CompileCStr`. `REPY_Compile` accepts a `REPY_Handle` argument instead, 
+ * which should reference a Python `str` object.
  */
 typedef enum REPY_CodeMode {
     REPY_CODE_EXEC = 0,
@@ -162,9 +169,7 @@ typedef enum REPY_CodeMode {
  * These objects are primarily used as part of the the `REPY_FOREACH` and `REPY_FN_FOREACH_CACHE` macros,
  * which simulate the behavior of Python's own `for` loops. You can use them manually as well.
  * 
- * The lifetime of each REPY_Handle member is managed by IteratorHelper. Do not release them manually.
- * 
- * For ABI compatability, the internals of these objects are managed by REPY. 
+ * For ABI compatability, the internals of these objects have been obfuscated, and they can only be allocated on the heap.
  */
 typedef void REPY_IteratorHelper;
 
@@ -174,26 +179,38 @@ typedef void REPY_IteratorHelper;
  * Used as part of the macro `REPY_FN_IF_CACHE_INIT`, and is used with `REPY_FN_IF_CACHE_STMT`, `REPY_FN_IF_CACHE` and `REPY_FN_ELIF_CACHE`.
  * Generally initialized as a `static` variable, so that that the compiled bytecode is is preserverd between uses.
  * 
- * The chain is a singly-linked list with the bytecode for each Python expression from a `REPY_IfStmtHelper_Step` call. Each link is constructed the 
- * that step is called.
+ * The chain is a singly-linked list with the bytecode for each Python expression from a `REPY_IfStmtHelper_Step` call. If the next link does not
+ * exist when that step is called, it will be created and appended to the chain.
  * 
- * For ABI compatability, the internals of these objects are managed by REPY.
+ * For ABI compatability, the internals of these objects have been obfuscated, and they can only be allocated on the heap.
  */
 typedef void REPY_IfStmtChain;
 
-
 /**
- * @brief Helper used to step through a `REPY_IfStmtChain` while it's being evaluated.
+ * @brief Helper object used to step through a `REPY_IfStmtChain` while it's being evaluated, generating new links as necessary.
+ * 
+ * Used as part of the `REPY_FN_IF_CACHE_STMT` macro. See `REPY_IfStmtChain` for more info. While the chain itself should be preserved
+ * between executions, this helper object should not.
  *
- * For ABI compatability, the internals of these objects are managed by REPY.
+ * For ABI compatability, the internals of these objects have been obfuscated, and they can only be allocated on the heap.
  */
 typedef void REPY_IfStmtHelper;
 
-typedef void REPY_HelperAutoCleanup;
+/**
+ * @brief Helper object used to deallocate `REPY_IfStmtHelper` and `REPY_IteratorHelper` objects when a `REPY_FN` scope exits.
+ * 
+ * Support for cleaning up other things may be added in the future.
+ * 
+ * For ABI compatability, the internals of these objects have been obfuscated, and they can only be allocated on the heap.
+ */
+typedef void REPY_DeferredCleanupHelper;
 
 /** @}*/
 
 /** \defgroup repy_events Events
+ * 
+ * N64Recompiled events defined by REPY.
+ * 
  *  @{
  */
 
@@ -227,12 +244,33 @@ typedef void REPY_HelperAutoCleanup;
 /** @}*/
 
 /** \defgroup repy_macros Macros
+ * 
+ * REPY makes considerable use of macros streamline common tasks.
+ * 
  *  @{
  */
 
 /** \defgroup repy_init_macros Initialization Macros
- *  @{
+ * 
+ * Macros that initialize REPY resources before or during REPY's initialization process.
+ * 
+ * @{
  */
+
+/**
+ * @brief Adds this .nrm file to Python's module search path.
+ * 
+ * This will allow you to add Python modules (both single files and module folders) to your mod by
+ * including them under the `additional_files` section of your mod.toml
+ * 
+ * These modules will be available by the time `REPY_ON_INIT` runs, and will be available to all subinterpreters.
+ */
+#define REPY_PREINIT_ADD_NRM_TO_SYS_PATH \
+REPY_ON_PRE_INIT void _repy_register_nrm () { \
+    const unsigned char* nrm_file_path = recomp_get_mod_file_path(); \
+    REPY_PreInitAddSysPath(nrm_file_path); \
+    recomp_free((void*)nrm_file_path); \
+};
 
  /**
   * @brief Use this macro at the global level of a C file to initialize a subinterpreter on startup.
@@ -240,6 +278,8 @@ typedef void REPY_HelperAutoCleanup;
   * The index of the subinterpreter will be stored in a global `REPY_InterpreterIndex` variable, the name 
   * for which is set via the `subinterp_identifier` argument.
   * 
+  * This macro also adds this .nrm to the import path`sys.path` for the new subinterpreter, meaning that
+  * the subinterpreter can import Python modules stored within the .nrm.
   */
 #define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
 REPY_InterpreterIndex subinterp_identifier = 0; \
@@ -260,19 +300,15 @@ REPY_ON_INIT void subinterp_identifier ## _init() { \
 #define REPY_EXTERN_SUBINTERPRETER(subinterp_identifier) \
 extern REPY_InterpreterIndex subinterp_identifier; \
 
+
 /**
- * @brief Adds this .nrm file to Python's module search path.
+ * @brief Macro that creates `extern` statements for data included by `REPY_INCBIN` and `REPY_INCBIN_TEXT`.
  * 
- * This will allow you to add Python modules (both single files and module folders) to your mod by
- * including them under the `additional_files` section of your mod.toml
- * 
+ * See those macros for more information.
  */
-#define REPY_PREINIT_ADD_NRM_TO_SYS_PATH \
-REPY_ON_PRE_INIT void _repy_register_nrm () { \
-    const unsigned char* nrm_file_path = recomp_get_mod_file_path(); \
-    REPY_PreInitAddSysPath(nrm_file_path); \
-    recomp_free((void*)nrm_file_path); \
-};
+#define REPY_EXTERN_INCBIN(identifier) \
+    extern REPY_u8 identifier[];                      \
+    extern REPY_u8 identifier##_end[]
 
 #ifdef REPY_SILENCE_INCBIN_SQUIGGLES
 #define REPY_INCBIN(identifier, filename)      \
@@ -283,6 +319,7 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
     extern REPY_u8 identifier[];                    \
     extern REPY_u8 identifier##_end[]               
 #else
+
 /**
  * @brief General INCBIN macro used by several other initialization macros to include external Python code.
  * 
@@ -302,10 +339,9 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
         "\t.globl " #identifier "_end\n"              \
         #identifier "_end:\n"                         \
         "\t.popsection\n");                           \
-    extern REPY_u8 identifier[];                           \
-    extern REPY_u8 identifier##_end[]
+        REPY_EXTERN_INCBIN(identifier)
 
-    /**
+/**
  * @brief General INCBIN macro used by several other initialization macros to include external Python code.
  * 
  * The data included by this macro is NULL-terminated, with `identifier_end` pointing to the termination character.
@@ -325,8 +361,7 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
         "\t.globl " #identifier "_end\n"              \
         #identifier "_end:\n"                         \
         "\t.popsection\n");                           \
-    extern REPY_u8 identifier[];                      \
-    extern REPY_u8 identifier##_end[]
+        REPY_EXTERN_INCBIN(identifier)
 #endif
 
 /**
@@ -415,7 +450,12 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
 /** @}*/
 
 /** \defgroup repy_inline_cache_macros Inline Code Caching Macros
- *  @{
+ * 
+ * Parsing a Python code string every time it needs to be executed would make for poor performance.
+ * The macros here will parse a Python code string the first time they are run, and provide a `REPY_Handle`
+ * to a Python bytecode object.
+ * 
+ * @{
  */
 
 /**
@@ -430,7 +470,7 @@ REPY_ON_INIT void _cache_code_ ## bytecode_identifier () { \
  * In this header, macros that depend this one will use their own name for this argument. That way, if you get a error message from running
  * inline Python code, you can see which macro caused the error along with the other source information.
  * 
- * @param category A category name used as part of the bytecode's identifying string. 
+ * @param category A category name used as part of the bytecode's identifying string. Many REPY macros that use this one will set this to their own macro names.
  * @param bytecode_identifier The name of the static variable that the bytecode handle will be assigned to.
  * @param code_mode The type of code being compiled. See `REPY_CodeMode` for valid modes.
  * @param code_str The Python code string to compile. Should be NULL-terminated.
@@ -450,7 +490,7 @@ if (bytecode_identifier == 0) { \
  * By only parsing and compiling the Python code string once, we can dramatically improve the performance of any function
  * that needs to execute inline Python code.
  * 
- * This macro is identical to `REPY_INLINE_COMPILE_CACHE_BLOCK`, except it uses REPY_INLINE_COMPILE_CACHE as the category.
+ * This macro is identical to `REPY_INLINE_COMPILE_CACHE_BLOCK`, except it uses "REPY_INLINE_COMPILE_CACHE" as the category.
  * 
  * @param bytecode_identifier The name of the static variable that the bytecode handle will be assigned to.
  * @param code_mode The type of code being compiled. See `REPY_CodeMode` for valid modes.
@@ -462,8 +502,32 @@ REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_INLINE_COMPILE_CACHE", bytecode_identifier
 /** @}*/
 
 /** \defgroup repy_foreach_macros REPY_FOREACH - Python Object Iteration Macros
- *  @{
+ * 
+ * A convienient way to iterate through a Python object in your C mod code.
+ * 
+ * @{
  */
+
+/**
+ * @brief Iterate through a Python object, the way Python's `for` loops do.
+ * 
+ * A `REPY_IteratorHelper` object is created to manage the iteration process. The current object of the loop can be
+ * accessed via `REPY_IteratorHelper_BorrowCurrent(iter_identifier)`, and the index of that object can be accessed via
+ * `REPY_IteratorHelper_GetIndex(iter_identifier)`. See the `REPY_IteratorHelper` documentation for more information.
+ * 
+ * REPY_IteratorHelper copies the `py_object` `REPY_Handle` you pass in, so it's safe to release it of have it be Single-Use.
+ * 
+ * Unlike `REPY_FOREACH`, this macro assumes that it's being called inside a `REPY_FN` scope, and therefore will use
+ * the scope's auto cleanup. That way, you don't need to worry about doing it yourself with the other macros in this section.
+ * 
+ * @param iter_identifier the variable name for the `REPY_IteratorHelper` pointer.
+ * @param py_object a `REPY_Handle` for the Python object to iterate through.
+ */
+#define REPY_FOREACH_FNAC(iter_identifier, py_object) \
+for (REPY_IteratorHelper* iter_identifier = \
+    REPY_DeferredCleanupHelper_AddIteratorHelper(REPY_FN_AUTO_CLEANUP, REPY_IteratorHelper_Create(py_object, REPY_NO_OBJECT, NULL, false)); \
+    REPY_IteratorHelper_Update(iter_identifier); \
+) \
 
 /**
  * @brief Iterate through a Python object, the way Python's `for` loops do.
@@ -472,19 +536,22 @@ REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_INLINE_COMPILE_CACHE", bytecode_identifier
  * accessed via `iter_identifier->curr`, and the index of that object can be accessed via `iter_identifier->index`.
  * See the `REPY_IteratorHelper` documentation for more information.
  * 
- * REPY_IteratorHelper doesn't hold onto the `py_object` handle you pass in, so it's safe to release it.
+ * REPY_IteratorHelper copies the `py_object` handle you pass in, so it's safe to release it of have it be Single-Use.
  * 
- * In this macro, `REPY_IteratorHelper_Update` is set to clean up the `REPY_IteratorHelper` automatically. once the iteration ends.
+ * In this macro, `REPY_IteratorHelper_Update` is set to clean up the `REPY_IteratorHelper` automatically, once the iteration ends.
  * Ergo, you only have to clean up if you end the loop early, such as through a break or a return. The macros `REPY_FOREACH_CLEANUP_NOW`,
- * `REPY_FOREACH_BREAK`, and `REPY_FOREACH_RETURN` are provided to facillitate that. ailure to manually clean up the `REPY_IteratorHelper`
+ * `REPY_FOREACH_BREAK`, and `REPY_FOREACH_RETURN` are provided to facillitate that. Failure to manually clean up the `REPY_IteratorHelper`
  * when exiting the loop early will result in a memory leak.
+ * 
+ * Because this macro can be used outside of a `REPY_FN` scope, this macro cannot automatically add it to the auto-cleanup handler.
+ * 
  * 
  * @param iter_identifier the variable name for the `REPY_IteratorHelper` pointer.
  * @param py_object a `REPY_Handle` for the Python object to iterate through.
+ * @param auto_self_destuct whether or not this helper should destroy itself on the last `REPY_IteratorHelper_Update` call.
  */
-#define REPY_FOREACH(iter_identifier, py_object) \
-for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object, REPY_NO_OBJECT, NULL, true); REPY_IteratorHelper_Update(iter_identifier);)
-
+#define REPY_FOREACH(iter_identifier, py_object, auto_self_destuct) \
+for (REPY_IteratorHelper* iter_identifier = REPY_IteratorHelper_Create(py_object, REPY_NO_OBJECT, NULL, auto_self_destuct); REPY_IteratorHelper_Update(iter_identifier);)
 
 /**
  * @brief Manually clean up the `REPY_IteratorHelper` for a `REPY_FOREACH` loop.
@@ -517,6 +584,16 @@ REPY_FOREACH_CLEANUP_NOW(iter_identifier); return
 /** @}*/
 
 /** \defgroup repy_fn REPY_FN - Python Interpreter Operations Matching C Function Scopes.
+ * 
+ * The `REPY_FN` macro collection is the real powerhouse of the REPY API. Using the exposed API functions,
+ * these macros will allow you to execute Python code as part of your mod code functions, with Python scopes
+ * that correspond to the scope of the mod code functions themselves, and a control of flow that feels natural.
+ * 
+ * Interlacing your moc code functions with Python code serves as an excellent workaround for native code 
+ * being unable to call mod code.
+ * 
+ * Go to \ref repy_fn_overview for more information.
+ * 
  *  @{
  */
 
@@ -557,7 +634,7 @@ REPY_FOREACH_CLEANUP_NOW(iter_identifier); return
 REPY_PushInterpreter(interp_index); \
 REPY_Handle REPY_FN_GLOBAL_SCOPE = REPY_CreateDict(0); \
 REPY_Handle REPY_FN_LOCAL_SCOPE = REPY_FN_GLOBAL_SCOPE; \
-REPY_HelperAutoCleanup* REPY_FN_AUTO_CLEANUP = REPY_HelperAutoCleanup_Create() \
+REPY_DeferredCleanupHelper* REPY_FN_AUTO_CLEANUP = REPY_DeferredCleanupHelper_Create() \
 
 /**
  * @brief Create an inline execution scope for your function, using a pre-defined Python
@@ -606,30 +683,42 @@ REPY_FN_SETUP_INTERP_WITH_GLOBALS(REPY_MAIN_INTERPRETER)
 /**
  * @brief Clean up a inline execution scope by releasing the local scope and popping the last interpreter index.
  * 
+ * The `REPY_DeferredCleanupHelper` will perform all queued cleanup tasks at this time.
+ * 
  * The global scope is only released if the global and local scopes are the same.
  */
 #define REPY_FN_CLEANUP \
-REPY_HelperAutoCleanup_Destroy(REPY_FN_AUTO_CLEANUP, true); \
+REPY_DeferredCleanupHelper_Destroy(REPY_FN_AUTO_CLEANUP, true); \
 REPY_Release(REPY_FN_LOCAL_SCOPE); \
 REPY_PopInterpreter() \
 
 /**
  * @brief Clean up a inline scope by releasing the local scope and popping the last interpreter index, then returns.
  * 
- * Supports returning a value.
+ * The `REPY_DeferredCleanupHelper` will perform all queued cleanup tasks at this time.
+ * 
+ * Supports returning a value, which is captured before cleanup starts.
  * 
  * The global scope is only released if the global and local scopes are the same.
  */
 #define REPY_FN_RETURN(retType, retVal) \
 retType __repy_retVal = retVal; \
-REPY_HelperAutoCleanup_Destroy(REPY_FN_AUTO_CLEANUP, true); \
+REPY_DeferredCleanupHelper_Destroy(REPY_FN_AUTO_CLEANUP, true); \
 REPY_Release(REPY_FN_LOCAL_SCOPE); \
 REPY_PopInterpreter(); \
 return retVal \
 
+#define REPY_FN_DEFER_RELEASE(handle) \
+REPY_DeferredCleanupHelper_AddHandle(REPY_FN_AUTO_CLEANUP, handle)
+
+#define REPY_FN_DEFER_RECOMP_FREE(pointer) \
+REPY_DeferredCleanupHelper_AddHandle(REPY_FN_AUTO_CLEANUP, (void*) pointer)
+
 /** @}*/
 
 /** \defgroup repy_fn_exec REPY_FN_EXEC - Python Scoped Inline Code Execution.
+ * 
+ * Parse and execute Python code strings within this scope. An extremely flexable way of interweaving mod code and Python code.
  *  @{
  */
 
@@ -666,7 +755,7 @@ REPY_ExecCStr(code_str, REPY_FN_GLOBAL_SCOPE, REPY_FN_LOCAL_SCOPE)
  * made by not having to recompile the code strings into bytecode for every run is substantial.
  * 
  * Because this macro expands to a block of code, rather than a single funtion call, the success of the execution is stored in a
- * variable named `identifier_success`. This variable will be 1 if execution was successful, 0 if there was an error.
+ * variable named `[identifier]_success`. This variable will be 1 if execution was successful, 0 if there was an error.
  * 
  * @param identifier The name for a static variable that will hold the Python bytecode handle once created.
  * @param code_str The Python code to execute. Should be a NULL-terminated C-string such as a string literal.
@@ -679,6 +768,10 @@ REPY_bool identifier ## _success = REPY_FN_EXEC(identifier)
 /** @}*/
 
 /** \defgroup repy_fn_eval REPY_FN_EVAL - Python Scope Expression Evaluation.
+ * 
+ * Evaluate Python code expressions and get the results. For convienience, many common casting operations have their own
+ * dedicated variant macro.
+ * 
  *  @{
  */
 
@@ -1324,7 +1417,11 @@ char* out_var = REPY_FN_EVAL_BYTESTR(bytecode_identifier)
 /** @}*/
 
 /** \defgroup repy_fn_getset REPY_FN_GET/SET - Python Scope Namespace Management.
- *  @{
+ * 
+ * Add variables to the Python scope, and retrieve handles and values. For convenience, many common casting 
+ * operations have their own variant macros.
+ * 
+ * @{
  */
 
 /**
@@ -1676,7 +1773,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateByteStrN
 
 /** @}*/
 
-/** \defgroup repy_fn_ifforwhile REPY_FN_IF/FOR/WHILE - Flow Control Based on Python Scopes
+/** \defgroup repy_fn_if_cache REPY_FN_IF_CACHE - Flow Control Based on Python Scopes
  *  @{
  */
 
@@ -1693,7 +1790,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, var_name, REPY_MakeSUH(REPY_CreateByteStrN
  */
 #define REPY_FN_IF_CACHE_INIT(helper_identifier) \
 static REPY_IfStmtChain* helper_identifier ## _chain_root = NULL; \
-REPY_IfStmtHelper* helper_identifier = REPY_HelperAutoCleanup_AddIfStmtHelper(REPY_FN_AUTO_CLEANUP, REPY_IfStmtHelper_Create(&helper_identifier ## _chain_root)); \
+REPY_IfStmtHelper* helper_identifier = REPY_DeferredCleanupHelper_AddIfStmtHelper(REPY_FN_AUTO_CLEANUP, REPY_IfStmtHelper_Create(&helper_identifier ## _chain_root)); \
 
 /**
  * @brief Constructs a `if` statement that uses a cached Python expression executed in the current scope.
@@ -1752,6 +1849,14 @@ REPY_FN_IF_CACHE_STMT(helper_identifier, py_expression)
 #define REPY_FN_ELIF_CACHE(helper_identifier, py_expression) \
 else REPY_FN_IF_CACHE_STMT(helper_identifier, py_expression)
 
+/** @}*/
+
+/** \defgroup repy_fn_loops REPY_FN Loops - C Loops Controlled By Python Scope
+ * 
+ * 
+ *  @{
+ */
+
 /**
  * @brief Constructs a `while` loop that uses a cached Python expression executed in the current scope.
  * 
@@ -1791,7 +1896,7 @@ while (REPY_FN_EVAL_BOOL(bytecode_identifier))
 #define REPY_FN_FOREACH_CACHE(bytecode_identifier, var_name, py_expression) \
 REPY_INLINE_COMPILE_CACHE_BLOCK("REPY_FN_FOREACH_CACHE", bytecode_identifier, REPY_CODE_EVAL, py_expression); \
 for ( \
-    REPY_IteratorHelper* bytecode_identifier ## _iter = REPY_HelperAutoCleanup_AddIteratorHelper( \
+    REPY_IteratorHelper* bytecode_identifier ## _iter = REPY_DeferredCleanupHelper_AddIteratorHelper( \
         REPY_FN_AUTO_CLEANUP, \
         REPY_IteratorHelper_Create(REPY_MakeSUH(REPY_FN_EVAL(bytecode_identifier)), REPY_FN_LOCAL_SCOPE, var_name, false) \
     ); \
@@ -1946,7 +2051,7 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release));
  */
 
 /**
- * @brief Register a new Python subinterpreter, and return a `REPY_InterpreterIndex corresponding to it.
+ * @brief Register a new Python subinterpreter, and return a `REPY_InterpreterIndex` corresponding to it.
  * 
  * Note that initializing a subinterpreter and establishing it within REPY's internal control stuctures. As a result,
  * you should make sure to run this on startup and not while the game is playing to avoid a significant lag spike.
@@ -3545,11 +3650,13 @@ REPY_IMPORT(void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper));
  */
 REPY_IMPORT(REPY_bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Handle global_scope, REPY_Handle local_scope, char* expr_string, char* filename, char* function_name, REPY_u32 line_number, char* identifier));
 
-REPY_IMPORT(REPY_HelperAutoCleanup* REPY_HelperAutoCleanup_Create());
-REPY_IMPORT(REPY_IteratorHelper* REPY_HelperAutoCleanup_AddIteratorHelper(REPY_HelperAutoCleanup* cleanup, REPY_IteratorHelper* iterator_helper));
-REPY_IMPORT(REPY_IfStmtHelper* REPY_HelperAutoCleanup_AddIfStmtHelper(REPY_HelperAutoCleanup* cleanup, REPY_IfStmtHelper* if_stmt_helper));
-REPY_IMPORT(void REPY_HelperAutoCleanup_CleanNow(REPY_HelperAutoCleanup* cleanup));
-REPY_IMPORT(void REPY_HelperAutoCleanup_Destroy(REPY_HelperAutoCleanup* cleanup, REPY_bool clean_now));
+REPY_IMPORT(REPY_DeferredCleanupHelper* REPY_DeferredCleanupHelper_Create());
+REPY_IMPORT(REPY_Handle REPY_DeferredCleanupHelper_AddHandle(REPY_DeferredCleanupHelper* cleanup, REPY_Handle handle_no_release));
+REPY_IMPORT(void* REPY_DeferredCleanupHelper_AddRecompFree(REPY_DeferredCleanupHelper* cleanup, void* pointer));
+REPY_IMPORT(REPY_IteratorHelper* REPY_DeferredCleanupHelper_AddIteratorHelper(REPY_DeferredCleanupHelper* cleanup, REPY_IteratorHelper* iterator_helper));
+REPY_IMPORT(REPY_IfStmtHelper* REPY_DeferredCleanupHelper_AddIfStmtHelper(REPY_DeferredCleanupHelper* cleanup, REPY_IfStmtHelper* if_stmt_helper));
+REPY_IMPORT(void REPY_DeferredCleanupHelper_CleanNow(REPY_DeferredCleanupHelper* cleanup));
+REPY_IMPORT(void REPY_DeferredCleanupHelper_Destroy(REPY_DeferredCleanupHelper* cleanup, REPY_bool clean_now));
 
 /** @}*/
 /** @}*/
