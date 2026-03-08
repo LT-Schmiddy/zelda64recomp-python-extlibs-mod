@@ -302,8 +302,23 @@ void run_api_tests() {
         "_0 == 3 and _1 == 4 and _2 == 5 and other_key == 'Hello World'", vlocals3, REPY_NO_OBJECT))));
 
     REPY_Release(vlocals3);
+
+    // Testing SUH versions
+    REPY_Handle vlocals4 = REPY_VL_SUH(REPY_NO_OBJECT, 3, REPY_CreateU32_SUH(0), REPY_CreateU32_SUH(1), REPY_CreateU32_SUH(2));
+    validate("REPY_VariadicLocals_SUH created a Single-Use Handle", REPY_GetSUH(vlocals4));
+    validate("REPY_VariadicLocals_SUH generates new dict correctly", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr("_0 == 0 and _1 == 1 and _2 == 2", vlocals4, REPY_NO_OBJECT))));
+
+    REPY_Handle vlocals5 = REPY_CreateDict(0);
+    REPY_DictSetCStr(vlocals5, "other_key", REPY_CreateStr_SUH("Hello World"));
+    bool vlocals5_was_suh = REPY_GetSUH(vlocals5);
+    REPY_Handle vlocals6 = REPY_VL_SUH(vlocals5, 3, REPY_CreateU32_SUH(3), REPY_CreateU32_SUH(4), REPY_CreateU32_SUH(5));
+    validate("REPY_VariadicLocals_SUH made the provided dict handle Single-Use", REPY_GetSUH(vlocals5) && !vlocals5_was_suh);
+    validate("REPY_VariadicLocals returns the handle it was given when one is provided", vlocals5 == vlocals6);
+
+    validate("REPY_VariadicLocals inserts into provided dict correctly", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "_0 == 3 and _1 == 4 and _2 == 5 and other_key == 'Hello World'", vlocals6, REPY_NO_OBJECT))));
+
     // From here on, we assume that REPY_VariadicLocals works correctly.
-    
     // CreatePairCStr functions need testing because they have dedicated functions in the extlib. Test CreatePair as well.
     REPY_Handle handle_pair1 = REPY_CreatePair(REPY_CreateStr_SUH("key1"), REPY_CreateStr_SUH("value1"));
     validate("REPY_CreatePair returns a two-entry tuple", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
@@ -320,6 +335,39 @@ void run_api_tests() {
         REPY_NO_OBJECT
     ))));
     REPY_Release(cstr_pair1);
+
+    REPY_Handle handle_pair2 = REPY_CreatePair_SUH(REPY_CreateStr_SUH("key1"), REPY_CreateStr_SUH("value1"));
+    validate("REPY_CreatePair_SUH created a Single-Use Handle", REPY_GetSUH(handle_pair2));
+    validate("REPY_CreatePair_SUH returns a two-entry tuple", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "len(_0) == 2 and type(_0[0]) == str and _0[0] == 'key1' and type(_0[1]) == str and _0[1] == 'value1'",
+        REPY_VL_SUH(REPY_NO_OBJECT, 1, handle_pair2),
+        REPY_NO_OBJECT
+    ))));
+    validate("REPY_CreatePairCStr_SUH was consumed by REPY_VaraidicLocals", !REPY_IsValidHandle(handle_pair2));
+
+    REPY_Handle cstr_pair2 = REPY_CreatePairCStr_SUH("key1", REPY_CreateStr_SUH("value1"));
+    validate("REPY_CreatePairCStr_SUH created a Single-Use Handle", REPY_GetSUH(cstr_pair2));
+    validate("REPY_CreatePairCStr_SUH returns a two-entry tuple where the first entry is a string", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "len(_0) == 2 and type(_0[0]) == str and _0[0] == 'key1' and type(_0[1]) == str and _0[1] == 'value1'",
+        REPY_VL_SUH(REPY_NO_OBJECT, 1, cstr_pair2),
+        REPY_NO_OBJECT
+    ))));
+    validate("REPY_CreatePairCStr_SUH was consumed by REPY_VaraidicLocals", !REPY_IsValidHandle(cstr_pair2));
+    
+    // From here on, we'll assume that CreatePair and CreatePairCStr work correctly.
+    // Testing variadic dict construction:
+    REPY_Handle variadic_dict_test = REPY_CreateDict(3,
+        REPY_CreatePairCStr_SUH("key1", REPY_CreateStr_SUH("value1")),
+        REPY_CreatePairCStr_SUH("key2", REPY_CreateStr_SUH("value2")),
+        REPY_CreatePairCStr_SUH("key3", REPY_CreateStr_SUH("value3"))
+    );
+
+    validate("REPY_CreateDict variadic arguments work correctly", REPY_CastBool(REPY_MakeSUH(REPY_EvalCStr(
+        "len(_0) == 3 and _0['key1'] == 'value1' and _0['key2'] == 'value2' and _0['key3'] == 'value3'",
+        REPY_VL_SUH(REPY_NO_OBJECT, 1, variadic_dict_test),
+        REPY_NO_OBJECT
+    ))));
+    // From here on, we'll assume that works correctly.
 
     // Testing function invokations. We'll use the built-in `int` function for that.
     REPY_Handle py_int_fn = REPY_EvalCStr("int", 0, 0);
