@@ -122,7 +122,8 @@ PyInterpreterController::~PyInterpreterController() {
 
 bool PyInterpreterController::is_main_thread() {
     ZoneScoped;
-    return calling_thread_id == std::this_thread::get_id();
+    // return calling_thread_id == std::this_thread::get_id();
+    return true;
 }
 
 void PyInterpreterController::thread_check_exception() {
@@ -141,13 +142,14 @@ void PyInterpreterController::thread_check_warning() {
 
 REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {
     ZoneScoped;
-    REPY_InterpreterIndex retVal = subinterpreters.size();
-    PySubController* main_interp = new PySubController(retVal);
-    subinterpreters.push_back(main_interp);
+    // REPY_InterpreterIndex retVal = subinterpreters.size();
+    // PySubController* main_interp = new PySubController(retVal);
+    // subinterpreters.push_back(main_interp);
 
-    PLOGI.printf("Created new subinterpreter with a handle of %u", retVal);
+    // PLOGI.printf("Created new subinterpreter with a handle of %u", retVal);
 
-    return retVal;
+    //return retVal;
+    PLOGE.printf("Creating new suninterpreters has been temporarily disabled.");
 }
 
 REPY_InterpreterIndex PyInterpreterController::get_current_subcontroller_index() {
