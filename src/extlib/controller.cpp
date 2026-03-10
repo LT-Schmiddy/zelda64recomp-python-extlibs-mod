@@ -150,6 +150,7 @@ REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {
 
     //return retVal;
     PLOGE.printf("Creating new suninterpreters has been temporarily disabled.");
+    return -1;
 }
 
 REPY_InterpreterIndex PyInterpreterController::get_current_subcontroller_index() {
