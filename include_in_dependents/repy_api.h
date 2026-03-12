@@ -3723,11 +3723,11 @@ REPY_IMPORT(REPY_u32 REPY_IteratorHelper_GetIndex(REPY_IteratorHelper* helper));
  * @brief Gets the `REPY_Handle` for a `REPY_IteratorHelper` object's current Python object.
  * 
  * The term `Borrow` is used because the lifetime of the returned `REPY_Handle` is managed by
- * the `REPY_IteratorHelper` itself, and therefore you should not release it yourself.
+ * the `REPY_IteratorHelper` itself, and therefore you should not release it manually.
  * 
  * If you need to access this object outside of the current iteration step, use `REPY_CopyHandle`.
  * 
- * @param helper The `REPY_IteratorHelper` to get the `REPY_Handle` from.
+ * @param helper The `REPY_teratorHelper` to get the `REPY_Handle` from.
  * @return The `REPY_Handle` referring to the current object from the `REPY_IteratorHelper`.
  */
 REPY_IMPORT(REPY_Handle REPY_IteratorHelper_BorrowCurrent(REPY_IteratorHelper* helper));
@@ -3759,14 +3759,25 @@ REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* f
 REPY_IMPORT(void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain));
 
 /**
- * @brief Construct a new repy import object
+ * @brief Returns a pointer to the next `IfStmtChain` in the series.
+ *
+ * The term `Borrow` is used because the lifetime of the returned `IfStmtChain` is managed by it's parent (the `chain` argument).
+ * If the parent is destroyed (using `REPY_IfStmtChain_Destroy`), this pointer will no longer be valid.
+ *
+ * Destroying the returned `IfStmtChain` manually is not catastrophic so long as you set the parent's next link to `NULL`,
+ * as this signals to `REPY_IfStmtHelper_Step` to simply regenerate the link. However, there isn't much benefit to doing so.
+ * Chains are meant to be preserved as a means of code caching.
  * 
- * @param chain 
+ * @param chain The `REPY_IfStmtChain` to get the next element from.
  */
 REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_BorrowNext(REPY_IfStmtChain* chain));
 
 /**
- * @brief Construct a new repy import object
+ * @brief Sets the next `REPY_IfStmtChain` in a series.
+ *
+ * The term `Steal` is used because the `REPY_IfStmtHelper` represented by the `chain` argument (IE, the parent) assumes ownership
+ * of the `REPY_IfStmtHelper` represented by `next`. Ergo, you shouldn't destroy `next`youself without setting the next link
+ * of `chain` to `NULL`.
  * 
  * @param chain 
  */

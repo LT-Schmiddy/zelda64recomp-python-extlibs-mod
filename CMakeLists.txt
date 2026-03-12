@@ -91,3 +91,20 @@ set_target_properties(${TARGET_NAME}
     LIBRARY_OUTPUT_DIRECTORY "./lib/"
     RUNTIME_OUTPUT_DIRECTORY "./lib/"
 )
+
+# Defining Native Testing Target:
+
+set(TEST_NAME "NativeTest_${CMAKE_SYSTEM_NAME}")
+add_executable(${TEST_NAME})
+add_subdirectory("./src/extlib_tests")
+
+set_target_properties(${TEST_NAME}
+    PROPERTIES
+    PREFIX ""
+    ARCHIVE_OUTPUT_DIRECTORY "./arc/"
+    LIBRARY_OUTPUT_DIRECTORY "./lib/"
+    RUNTIME_OUTPUT_DIRECTORY "./lib/"
+)
+
+
+

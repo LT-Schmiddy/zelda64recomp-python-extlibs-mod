@@ -3,7 +3,7 @@
 #include <queue>
 #include <format>
 #include <algorithm>
-#include <plog/Log.h> // Step1: include the headers
+#include <plog/Log.h> // Step 1: include the headers
 
 #include "lib_main.hpp"
 
@@ -23,7 +23,13 @@ static const char* code_type_strs[] = {
     "single"
 };
 static std::queue<fs::path> preinit_module_nrms;
+// Test
+RECOMP_DLL_FUNC(PythonNative_Test) {
+	std::cout << "Hello from REPY\n";
+	std::cout << RECOMP_ARG(uint32_t, 0) << "\n";
+}
 
+// 
 RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterNrmInModuleSearchPath) {
     ZoneScoped;
     std::u8string nrm_path_str = RECOMP_ARG_U8STR(0);
@@ -35,11 +41,12 @@ RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterNrmInModuleSearchPath) {
 // ======================================  API INIT: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Init) {
     ZoneScoped;
+    std::cout << "Hello Alex\n";
     uint32_t log_level = RECOMP_ARG(uint32_t, 0);
     uint32_t log_to_file = RECOMP_ARG(uint32_t, 1);
     std::u8string mod_dir_text = RECOMP_ARG_U8STR(2);
     fs::path mod_dir(mod_dir_text);
-
+    
     // Set up logging:
     controller = std::make_unique<PyInterpreterController>((plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
     controller->set_rdram(rdram);
