@@ -142,15 +142,15 @@ void PyInterpreterController::thread_check_warning() {
 
 REPY_InterpreterIndex PyInterpreterController::create_subcontroller() {
     ZoneScoped;
-    // REPY_InterpreterIndex retVal = subinterpreters.size();
-    // PySubController* main_interp = new PySubController(retVal);
-    // subinterpreters.push_back(main_interp);
+    REPY_InterpreterIndex retVal = subinterpreters.size();
+    PySubController* main_interp = new PySubController(retVal);
+    subinterpreters.push_back(main_interp);
 
-    // PLOGI.printf("Created new subinterpreter with a handle of %u", retVal);
+    PLOGI.printf("Created new subinterpreter with a handle of %u", retVal);
 
-    //return retVal;
-    PLOGE.printf("Creating new suninterpreters has been temporarily disabled.");
-    return 0;
+    return retVal;
+    // PLOGE.printf("Creating new suninterpreters has been temporarily disabled.");
+    // return 0;
 }
 
 REPY_InterpreterIndex PyInterpreterController::get_current_subcontroller_index() {

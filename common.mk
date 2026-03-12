@@ -8,9 +8,7 @@ WARNFLAGS := -Wall -Wextra -Wno-incompatible-library-redeclaration -Wno-unused-p
 CFLAGS   := $(ARCHFLAGS) $(WARNFLAGS) -D_LANGUAGE_C -nostdinc -ffunction-sections
 CPPFLAGS := -DMIPS -DF3DEX_GBI_2 -DF3DEX_GBI_PL -DGBI_DOWHILE \
 			-I include -I include/mod -I include/mod/dummy_headers \
-			-I include/shared -I mm-decomp/include -I mm-decomp/src -I mm-decomp/extracted/n64-us \
-			-I include_in_dependents -I assets_extracted -I assets_extracted/assets -I assets_extracted/assets/assets \
-			-I $(TESTS_INCBIN_DIR) -idirafter include/libc -idirafter mm-decomp/include/libc
+			-I include/shared -I include_in_dependents -I $(TESTS_INCBIN_DIR) -idirafter include/mod/libc 
 LDFLAGS  := -nostdlib -T $(LDSCRIPT) --unresolved-symbols=ignore-all --emit-relocs -e 0 --no-nmagic -gc-sections \
 			-L lib -lgcc_vr4300
 
