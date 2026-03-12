@@ -22,19 +22,10 @@ typedef unsigned long          REPY_u32;
 typedef signed long long int   REPY_s64;
 typedef unsigned long long int REPY_u64;
 
-typedef volatile REPY_u8  REPY_vu8;
-typedef volatile REPY_u16 REPY_vu16;
-typedef volatile REPY_u32 REPY_vu32;
-typedef volatile REPY_u64 REPY_vu64;
-typedef volatile REPY_s8  REPY_vs8;
-typedef volatile REPY_s16 REPY_vs16;
-typedef volatile REPY_s32 REPY_vs32;
-typedef volatile REPY_s64 REPY_vs64;
-
 typedef float  REPY_f32;
 typedef double REPY_f64;
 
-#define REPY_bool _Bool
+typedef _Bool REPY_bool;
 
 /**
  * @brief The mod id string for REPY.
