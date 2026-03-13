@@ -15,10 +15,12 @@ ThreadRootController::~ThreadRootController() {
 }
 
 uint8_t* ThreadRootController::get_rdram() {
+    ZoneScoped;
     return _global_root->get_rdram();
 }
 
 void ThreadRootController::set_rdram(uint8_t* rdram) {
+    ZoneScoped;
     _global_root->set_rdram(rdram);
 }
 

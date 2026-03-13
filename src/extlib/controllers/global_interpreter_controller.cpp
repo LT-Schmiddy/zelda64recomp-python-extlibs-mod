@@ -21,10 +21,12 @@ GlobalInterpreterController::~GlobalInterpreterController() {
 }
 
 REPY_InterpreterIndex GlobalInterpreterController::get_index() {
+    ZoneScoped;
     return _index;
 }
 
 py::subinterpreter* GlobalInterpreterController::get_subinterp() {
+    ZoneScoped;
     return &_subinterp;
 }
 

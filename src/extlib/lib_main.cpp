@@ -21,7 +21,7 @@ thread_local ThreadRootController* t_controller = nullptr;
     if (t_controller == nullptr) { \
         t_controller = l_controller->get_current_thread_root_controller(); \
     } \
-    g_controller->set_rdram(rdram); \
+    t_controller->set_rdram(rdram); \
 
 static const char* code_type_strs[] = {
     "exec",
