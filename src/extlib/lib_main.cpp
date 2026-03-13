@@ -1138,6 +1138,8 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
 }
 
 RECOMP_DLL_FUNC(PythonNative_VL)  {
+    ZoneScoped;
+    INTERP_API_HEADER;
     py::dict new_dict;
     py::dict* target_dict = &new_dict;
 
