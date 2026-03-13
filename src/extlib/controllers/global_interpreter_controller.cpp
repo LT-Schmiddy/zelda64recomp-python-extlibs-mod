@@ -81,10 +81,10 @@ py::object GlobalInterpreterController::get_zipfile_from_path(std::u8string file
 
 void GlobalInterpreterController::init_py_objects() {
     ZoneScoped;
-    // The GIL seems to want to be acquired at least once for pybind11's 
-    // GIL/thread management to work correctly. This initialization is always
-    // done on the main thread, so we'll do it here. Besides, we should have it
-    // for getting these objects anyway, and can't rely on mod-code interpreter activations yet.
+    // The GIL seems to want to be acquired at least once for pybind11's  GIL/thread
+    // management to work correctly. This initialization is always done on the main thread,
+    // so we'll do it here. Besides, we should have it for getting these objects anyway, 
+    // and can't rely on mod-code interpreter activations yet.
     py::gil_scoped_acquire gil; 
     auto builtins = py::module_::import("builtins");
     _py_compile = builtins.attr("compile");
