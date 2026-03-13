@@ -110,7 +110,7 @@ ThreadRootController* LifetimeController::get_thread_root_controller(std::thread
     ZoneScoped;
     std::lock_guard guard(_thread_root_mutex);
 
-    if (_thread_root.contains(thread_id)) {
+    if (!_thread_root.contains(thread_id)) {
         ThreadRootController* retVal = _global_root->create_thread_root_controller(thread_id);
         _thread_root.insert(std::make_pair(thread_id, retVal));
         return retVal;
@@ -122,4 +122,11 @@ ThreadRootController* LifetimeController::get_thread_root_controller(std::thread
 ThreadRootController* LifetimeController::get_current_thread_root_controller() {
     ZoneScoped;
     return get_thread_root_controller(std::this_thread::get_id());
+}
+
+void LifetimeController::thread_check_exception() {
+    ZoneScoped;
+    if (!_thread_root.contains(std::this_thread::get_id())) {
+        throw std::runtime_error("The thread making calls to the repy_api functions is not the main thread.");
+    }
 }

@@ -28,6 +28,8 @@ public:
     ThreadRootController* get_thread_root_controller(std::thread::id thread_id);
     ThreadRootController* get_current_thread_root_controller();
 
+    void thread_check_exception();
+
 private:
     plog::RollingFileAppender<plog::TxtFormatter>* _file_appender = nullptr;
     plog::ColorConsoleAppender<plog::TxtFormatter>* _console_appender = nullptr;

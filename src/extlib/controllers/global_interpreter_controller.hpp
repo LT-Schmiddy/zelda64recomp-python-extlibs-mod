@@ -2,6 +2,8 @@
 #include <atomic>
 #include "globals.hpp"
 
+class GlobalInterpreterController;
+
 // Holds references to interpreter-specific Python objects needed for the API.
 class GlobalInterpreterController {
 public:
@@ -10,6 +12,7 @@ public:
     ~GlobalInterpreterController();
     
     REPY_InterpreterIndex get_index();
+    py::subinterpreter* get_subinterp();
 
     bool get_auto_disarm();
     void set_auto_disarm(bool val);
@@ -23,7 +26,8 @@ public:
 
 private:
     // No atomic here. Only gets read after initialization.
-    REPY_InterpreterIndex _index;
+    REPY_InterpreterIndex _index;   
+    py::subinterpreter _subinterp;
 
     std::atomic<bool> _auto_disarm;
     py::function _py_compile;

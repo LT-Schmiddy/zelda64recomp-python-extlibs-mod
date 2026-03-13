@@ -10,6 +10,46 @@ ThreadInterpreterController::~ThreadInterpreterController() {
     ZoneScoped;
 }
 
+// Activation:
+void ThreadInterpreterController::activate() {
+    ZoneScoped;
+    assert(!_is_active);
+    REPY_InterpreterIndex _index = _global_interp->get_index();
+    _is_active = true;
+    _gil = new py::gil_scoped_acquire();
+
+
+    if (_index != 0) {
+        _scope = new py::subinterpreter_scoped_activate(*(_global_interp->get_subinterp()));
+        PLOGD.printf("Activated Python interpreter %u", _index);
+    } else {
+        PLOGD.printf("Activated Python interpreter %u (main interpreter)", _index);
+    }
+}
+
+void ThreadInterpreterController::deactivate() {
+    ZoneScoped;
+    assert(_is_active);
+    REPY_InterpreterIndex _index = _global_interp->get_index();
+    _is_active = false;
+
+    if (_index != 0) {
+        delete _scope;
+        _scope = NULL;
+        PLOGD.printf("Deactivated Python interpreter %u", _index);
+    } else {
+        PLOGD.printf("Deactivated Python interpreter %u (main interpreter)", _index);
+    }
+
+    delete _gil;
+    _gil = NULL;
+}
+
+bool ThreadInterpreterController::is_active() {
+    ZoneScoped;
+    return _is_active;
+}
+
 // Accessing Python Objects:
 bool ThreadInterpreterController::get_auto_disarm() {
     ZoneScoped;

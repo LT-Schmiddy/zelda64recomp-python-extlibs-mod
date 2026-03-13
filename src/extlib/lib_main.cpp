@@ -12,14 +12,14 @@ extern "C" {
     DLLEXPORT uint32_t recomp_api_version = 1;
 }
 
-std::unique_ptr<LifetimeController> lifetime_controller = nullptr;
+std::unique_ptr<LifetimeController> l_controller = nullptr;
 GlobalRootController* g_controller = nullptr;
 thread_local ThreadRootController* t_controller = nullptr;
 
 // This used to be bigger, but I'm keeping it.
 #define INTERP_API_HEADER \
     if (t_controller == nullptr) { \
-        ThreadRootController* t_controller = lifetime_controller->get_current_thread_root_controller(); \
+        t_controller = l_controller->get_current_thread_root_controller(); \
     } \
     g_controller->set_rdram(rdram); \
 
@@ -47,13 +47,20 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     fs::path mod_dir(mod_dir_text);
 
     // Set up logging:
-    lifetime_controller = std::make_unique<LifetimeController>(rdram, (plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
-    g_controller = lifetime_controller->get_global_root_controller();
-    t_controller = lifetime_controller->get_current_thread_root_controller();
+    l_controller = std::make_unique<LifetimeController>(rdram, (plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
+    g_controller = l_controller->get_global_root_controller();
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
     RECOMP_RETURN(int, 1);
 }
+
+RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
+    ZoneScoped;
+    py::gil_scoped_acquire gil; // Still needed, since this can be used with an empty interpreter stack, and the GIL is needed for this.
+    REPY_InterpreterIndex retVal = g_controller->create_global_interp_controller();
+    RECOMP_RETURN(REPY_InterpreterIndex, retVal);
+}
+
 // ======================================  General: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Release) {
     ZoneScoped;
@@ -108,31 +115,23 @@ RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
 }
 
 // ======================================  Subcontrollers/Subinterpreters: ====================================== 
-RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
-    ZoneScoped;
-    INTERP_API_HEADER;
-    py::gil_scoped_acquire gil; // Still needed, since this can be used with an empty interpreter stack, and the GIL is needed for this.
-    REPY_InterpreterIndex retVal = t_controller->create_subcontroller();
-    RECOMP_RETURN(REPY_InterpreterIndex, retVal);
-}
-
 RECOMP_DLL_FUNC(PythonNative_PushInterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
     REPY_InterpreterIndex interp = RECOMP_ARG(REPY_InterpreterIndex, 0);
-    t_controller->push_subcontroller_index(interp);
+    t_controller->push_interp_index(interp);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PopInterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
-    t_controller->pop_subcontroller_index();
+    t_controller->pop_interp_index();
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
-    REPY_InterpreterIndex retVal = t_controller->get_current_subcontroller_index();
+    REPY_InterpreterIndex retVal = t_controller->get_current_interp_index();
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
@@ -140,7 +139,7 @@ RECOMP_DLL_FUNC(PythonNative_GetInterpreterAutoDisarm) {
     ZoneScoped;
     INTERP_API_HEADER;
     REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
-    PySubController* sc = t_controller->get_subcontroller(index);
+    ThreadInterpreterController* sc = t_controller->get_interp(index);
     u32 retVal = sc->get_auto_disarm();
     RECOMP_RETURN(u32, retVal);
 }
@@ -150,7 +149,7 @@ RECOMP_DLL_FUNC(PythonNative_SetInterpreterAutoDisarm) {
     INTERP_API_HEADER;
     REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
     u32 val = RECOMP_ARG(u32, 1);
-    PySubController* sc = t_controller->get_subcontroller(index);
+    ThreadInterpreterController* sc = t_controller->get_interp(index);
     sc->set_auto_disarm(val);
 }
 
@@ -1229,7 +1228,6 @@ RECOMP_DLL_FUNC(PythonNative_CallReturn) {
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
-
 RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     ZoneScoped;
     INTERP_API_HEADER;
@@ -1351,7 +1349,8 @@ RECOMP_DLL_FUNC(PythonNative_GetFileFromPathCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
     std::u8string filepath = RECOMP_ARG_U8STR(0);
-    REPY_Handle retVal = t_controller->get_zipfile_from_path(filepath);
+    py::object zip_obj = t_controller->get_zipfile_from_path(filepath);
+    REPY_Handle retVal = t_controller->create_handle(&zip_obj);
 
     RECOMP_RETURN(REPY_Handle, retVal);
 }
@@ -1367,19 +1366,25 @@ RECOMP_DLL_FUNC(PythonNative_IsErrorSet) {
 RECOMP_DLL_FUNC(PythonNative_GetErrorType) {
     ZoneScoped;
     INTERP_API_HEADER;
-    RECOMP_RETURN(REPY_Handle, t_controller->get_py_error_type_handle());
+    py::object err_obj = t_controller->get_py_error_type();
+    REPY_Handle retVal = t_controller->create_handle(&err_obj);
+    RECOMP_RETURN(REPY_Handle, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorTrace) {
     ZoneScoped;
     INTERP_API_HEADER;
-    RECOMP_RETURN(REPY_Handle, t_controller->get_py_error_trace_handle());
+    py::object err_obj = t_controller->get_py_error_trace();
+    REPY_Handle retVal = t_controller->create_handle(&err_obj);
+    RECOMP_RETURN(REPY_Handle, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorValue) {
     ZoneScoped;
     INTERP_API_HEADER;
-    RECOMP_RETURN(REPY_Handle, t_controller->get_py_error_value_handle());
+    py::object err_obj = t_controller->get_py_error_value();
+    REPY_Handle retVal = t_controller->create_handle(&err_obj);
+    RECOMP_RETURN(REPY_Handle, retVal);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ClearError) {

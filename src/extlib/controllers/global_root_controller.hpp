@@ -6,6 +6,8 @@
 #include <queue>
 #include "globals.hpp"
 
+class GlobalRootController;
+
 #include "global_interpreter_controller.hpp"
 #include "thread_root_controller.hpp"
 #include "pyobject_slotmap.hpp"

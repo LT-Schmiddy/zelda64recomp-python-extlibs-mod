@@ -10,6 +10,13 @@ GlobalInterpreterController::~GlobalInterpreterController() {
     ZoneScoped;
 }
 
+REPY_InterpreterIndex GlobalInterpreterController::get_index() {
+    return _index;
+}
+
+py::subinterpreter* GlobalInterpreterController::get_subinterp() {
+    return &_subinterp;
+}
 
 bool GlobalInterpreterController::get_auto_disarm() {
     ZoneScoped;
@@ -26,7 +33,7 @@ void GlobalInterpreterController::set_auto_disarm(bool val) {
         return; 
     }
     _auto_disarm.store(val);
-    PLOGI.printf("Subinterpreter %i Auto-Disarm set to %u", _auto_disarm);
+    PLOGI.printf("Subinterpreter %i Auto-Disarm set to %u", _auto_disarm.load());
 }
 
 py::function GlobalInterpreterController::py_compile() {

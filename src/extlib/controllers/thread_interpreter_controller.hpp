@@ -1,5 +1,8 @@
 #pragma once
 #include "globals.hpp"
+
+class ThreadInterpreterController;
+
 #include "global_interpreter_controller.hpp"
 #include "global_root_controller.hpp"
 
@@ -10,6 +13,11 @@ class ThreadInterpreterController {
 public:
     ThreadInterpreterController(GlobalRootController* global_root, GlobalInterpreterController* global_interp);
     ~ThreadInterpreterController();
+
+    // Activation:
+    void activate();
+    void deactivate();
+    bool is_active();
 
     bool get_auto_disarm();
     void set_auto_disarm(bool val);
@@ -31,6 +39,10 @@ public:
 private:
     GlobalRootController* _global_root = nullptr;
     GlobalInterpreterController* _global_interp = nullptr;
+    py::gil_scoped_acquire* _gil = NULL;
+    py::subinterpreter_scoped_activate* _scope = NULL;
+    bool _is_active = false;
+    
 
     bool _is_py_error_set = false;
     py::object _last_error_type = py::none();
