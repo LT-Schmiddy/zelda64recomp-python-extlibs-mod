@@ -115,11 +115,11 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
         REPY_FN_CLEANUP;
     }
 
-    // if (recomp_get_config_u32("load_repl")) {
-    //     REPY_PushInterpreter(test_subinterp);
-    //     load_repl();
-    //     REPY_PopInterpreter();
-    // }
+    if (recomp_get_config_u32("load_repl")) {
+        REPY_PushInterpreter(0);
+        load_repl();
+        REPY_PopInterpreter();
+    }
     REPY_PopInterpreter();
 }
 

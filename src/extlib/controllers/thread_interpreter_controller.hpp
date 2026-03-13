@@ -43,10 +43,9 @@ private:
     py::subinterpreter_scoped_activate* _scope = NULL;
     bool _is_active = false;
     
-
     bool _is_py_error_set = false;
-    py::object _last_error_type = py::none();
-    py::object _last_error_trace = py::none();
-    py::object _last_error_value = py::none();
+    py::object _last_error_type;
+    py::object _last_error_trace;
+    py::object _last_error_value;
     void init_py_objects();
 };

@@ -91,6 +91,11 @@ LifetimeController::LifetimeController(uint8_t* rdram, plog::Severity log_severi
     py::initialize_interpreter(&config, 0, NULL, false); 
     PLOGI << "-> Python interpreter initialized";
 
+    // {
+
+    //     py::gil_scoped_acquire gil; 
+
+    // }
     _global_root = new GlobalRootController(rdram);
 }
 

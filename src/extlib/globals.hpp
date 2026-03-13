@@ -4,13 +4,13 @@
 #include <stdio.h>
 
 #include <tracy/Tracy.hpp>
-
+#define PYBIND11_DETAILED_ERROR_MESSAGES
+// #define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
 // This is what allows us to use free-threaded Python
 #define Py_GIL_DISABLED 1
 #ifdef _DEBUG
 #undef _DEBUG
 // Need to turn this off for debug builds, otherwise we get an error on shutdown debug builds.
-#define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
 #include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>

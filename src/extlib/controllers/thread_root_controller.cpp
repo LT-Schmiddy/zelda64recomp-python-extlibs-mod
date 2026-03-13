@@ -4,14 +4,15 @@ ThreadRootController::ThreadRootController(GlobalRootController* global_root, st
     ZoneScoped;
     _global_root = global_root;
     _thread_id = thread_id;
+    // Not every thread is likely to use every subinterpreter. We'll allocate our vector to hold 'em all,
+    // but actual initialization of ThreadInterpreterControllers will be handled lazily.
     _thread_interps.resize(interp_count, nullptr);
 
-    PLOGI.printf("Creating ThreadRootController for thread %llu. Interpreter count: %u", thread_id, _thread_interps.size());
+    PLOGI.printf("Creating ThreadRootController (Interpreter Count: %u, Thread %llu)", _thread_interps.size(), thread_id);
 }
 
 ThreadRootController::~ThreadRootController() {
     ZoneScoped;
-
 }
 
 uint8_t* ThreadRootController::get_rdram() {
@@ -41,6 +42,7 @@ ThreadInterpreterController* ThreadRootController::get_interp(REPY_InterpreterIn
     assert(index >= 0 && index < _thread_interps.size());
 
     ThreadInterpreterController* retVal = _thread_interps.at(index);
+    // Lazy initialization of the ThreadInterpreterController:
     if (retVal == nullptr) {
         retVal = new ThreadInterpreterController(_global_root, _global_root->get_global_interp_controller(index));
         _thread_interps.at(index) = retVal;
