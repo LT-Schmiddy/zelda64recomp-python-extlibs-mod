@@ -10,7 +10,6 @@ public:
     ThreadInterpreterController();
     ~ThreadInterpreterController();
 private:
-    GlobalRootController* _global_root = NULL;
-    GlobalInterpreterController* _global_interp = NULL;
-    ThreadRootController* _thread_root = NULL;
+    GlobalRootController* _global_root = nullptr;
+    GlobalInterpreterController* _global_interp = nullptr;
 };

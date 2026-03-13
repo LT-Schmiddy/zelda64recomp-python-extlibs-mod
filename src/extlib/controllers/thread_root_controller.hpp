@@ -8,13 +8,15 @@
 
 // Responsible for managing the thread's subinterpreter stack
 // and the ThreadInterpreterControllers for that thread.
+
+// This object will only be used by a single thread. No thread-safety code required here.
 class ThreadRootController {
 public:
-    ThreadRootController(std::thread::id);
+    ThreadRootController(GlobalRootController* global_root, std::thread::id thread_id, uint32_t interp_count);
     ~ThreadRootController();
 private:
+    std::thread::id _thread_id;
     GlobalRootController* _global_root;
-
     std::stack<REPY_InterpreterIndex> _interp_index_stack;
-    std::vector<ThreadInterpreterController> _interpreters;
+    std::vector<ThreadInterpreterController*> _thread_interps;
 };

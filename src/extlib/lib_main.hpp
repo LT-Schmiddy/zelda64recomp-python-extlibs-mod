@@ -4,5 +4,11 @@
 
 #include "globals.hpp"
 #include "lib_recomp.hpp"
-#include "controller.hpp"
-#include "subinterpreter.hpp"
+
+#include "controllers/lifetime_controller.hpp"
+#include "controllers/global_root_controller.hpp"
+#include "controllers/thread_root_controller.hpp"
+
+extern std::unique_ptr<LifetimeController> lifetime_controller;
+extern GlobalRootController* t_controller;
+extern thread_local ThreadRootController* t_controller;

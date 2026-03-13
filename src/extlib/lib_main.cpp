@@ -3,6 +3,7 @@
 #include <queue>
 #include <format>
 #include <algorithm>
+#include <thread>
 #include <plog/Log.h> // Step1: include the headers
 
 #include "lib_main.hpp"
@@ -11,11 +12,16 @@ extern "C" {
     DLLEXPORT uint32_t recomp_api_version = 1;
 }
 
+std::unique_ptr<LifetimeController> lifetime_controller = nullptr;
+GlobalRootController* g_controller = nullptr;
+thread_local ThreadRootController* t_controller = nullptr;
+
 // This used to be bigger, but I'm keeping it.
 #define INTERP_API_HEADER \
-    controller->thread_check_warning(); \
-    controller->set_rdram(rdram); \
-
+    g_controller->set_rdram(rdram); \
+    if (t_controller == nullptr) { \
+        ThreadRootController* t_controller = lifetime_controller->get_current_thread_root_controller(); \
+    }
 
 static const char* code_type_strs[] = {
     "exec",
@@ -41,8 +47,9 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     fs::path mod_dir(mod_dir_text);
 
     // Set up logging:
-    controller = std::make_unique<PyInterpreterController>((plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
-    controller->set_rdram(rdram);
+    lifetime_controller = std::make_unique<LifetimeController>(rdram, (plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
+    g_controller = lifetime_controller->get_global_root_controller();
+    t_controller = lifetime_controller->get_current_thread_root_controller();
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
     RECOMP_RETURN(int, 1);
@@ -53,7 +60,7 @@ RECOMP_DLL_FUNC(PythonNative_Release) {
     INTERP_API_HEADER;
 
     int handle = RECOMP_ARG(int, 0);
-    controller->release_handle(handle);
+    t_controller->release_handle(handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
@@ -61,7 +68,7 @@ RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
     INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    controller->set_handle_suh(handle, true);
+    g_controller->set_handle_suh(handle, true);
 
     RECOMP_RETURN(REPY_Handle, handle);
 }
@@ -71,7 +78,7 @@ RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
     INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    RECOMP_RETURN(bool, controller->is_valid_handle(handle));
+    RECOMP_RETURN(bool, t_controller->is_valid_handle(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetSUH) {
@@ -79,7 +86,7 @@ RECOMP_DLL_FUNC(PythonNative_GetSUH) {
     INTERP_API_HEADER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    RECOMP_RETURN(bool, controller->get_handle_suh(handle));
+    RECOMP_RETURN(bool, t_controller->get_handle_suh(handle));
 }
 
 RECOMP_DLL_FUNC(PythonNative_SetSUH) {
@@ -88,15 +95,15 @@ RECOMP_DLL_FUNC(PythonNative_SetSUH) {
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_Handle value = RECOMP_ARG(bool, 1);
-    controller->set_handle_suh(handle, value);
+    g_controller->set_handle_suh(handle, value);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
     ZoneScoped;
     INTERP_API_HEADER;
     py::object* object = RECOMP_ARG_PYOBJECT(0);
-    REPY_Handle new_handle = controller->create_handle(object);
-    controller->release_suh_handles();
+    REPY_Handle new_handle = g_controller->create_handle(object);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, new_handle);
 }
 
@@ -105,7 +112,7 @@ RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
     py::gil_scoped_acquire gil; // Still needed, since this can be used with an empty interpreter stack, and the GIL is needed for this.
-    REPY_InterpreterIndex retVal = controller->create_subcontroller();
+    REPY_InterpreterIndex retVal = g_controller->create_subcontroller();
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
@@ -113,19 +120,19 @@ RECOMP_DLL_FUNC(PythonNative_PushInterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
     REPY_InterpreterIndex interp = RECOMP_ARG(REPY_InterpreterIndex, 0);
-    controller->push_subcontroller_index(interp);
+    g_controller->push_subcontroller_index(interp);
 }
 
 RECOMP_DLL_FUNC(PythonNative_PopInterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
-    controller->pop_subcontroller_index();
+    g_controller->pop_subcontroller_index();
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
-    REPY_InterpreterIndex retVal = controller->get_current_subcontroller_index();
+    REPY_InterpreterIndex retVal = g_controller->get_current_subcontroller_index();
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
@@ -133,7 +140,7 @@ RECOMP_DLL_FUNC(PythonNative_GetInterpreterAutoDisarm) {
     ZoneScoped;
     INTERP_API_HEADER;
     REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
-    PySubController* sc = controller->get_subcontroller(index);
+    PySubController* sc = g_controller->get_subcontroller(index);
     u32 retVal = sc->get_auto_disarm();
     RECOMP_RETURN(u32, retVal);
 }
@@ -143,7 +150,7 @@ RECOMP_DLL_FUNC(PythonNative_SetInterpreterAutoDisarm) {
     INTERP_API_HEADER;
     REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
     u32 val = RECOMP_ARG(u32, 1);
-    PySubController* sc = controller->get_subcontroller(index);
+    PySubController* sc = g_controller->get_subcontroller(index);
     sc->set_auto_disarm(val);
 }
 
@@ -151,7 +158,7 @@ RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
     ZoneScoped;
     INTERP_API_HEADER;
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
-    REPY_InterpreterIndex retVal = controller->get_py_object_interpreter(handle);
+    REPY_InterpreterIndex retVal = g_controller->get_py_object_interpreter(handle);
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
@@ -174,7 +181,7 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
     std::u8string code_string = RECOMP_ARG_U8STR(1);
     bool add_to_sys = RECOMP_ARG(bool, 2);
 
-    controller->construct_module(module_name, code_string, add_to_sys);
+    g_controller->construct_module(module_name, code_string, add_to_sys);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
@@ -185,7 +192,7 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
     std::u8string code_string = RECOMP_ARG_U8STR_N(1, code_len);
     bool add_to_sys = RECOMP_ARG(bool, 3);
 
-    controller->construct_module(module_name, code_string, add_to_sys);
+    g_controller->construct_module(module_name, code_string, add_to_sys);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ImportModule) {
@@ -195,11 +202,11 @@ RECOMP_DLL_FUNC(PythonNative_ImportModule) {
 
     try {
         py::module_ mod = py::module_::import((const char *)module_name.c_str());
-        REPY_Handle handle = controller->create_handle(&mod);
+        REPY_Handle handle = g_controller->create_handle(&mod);
         RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -221,7 +228,7 @@ RECOMP_DLL_FUNC(fname) { \
     INTERP_API_HEADER \
     py_type* obj = (py_type*)RECOMP_ARG_PYOBJECT(0); \
     c_type retVal = obj->cast<c_type>(); \
-    controller->release_suh_handles(); \
+    g_controller->release_suh_handles(); \
     RECOMP_RETURN(c_type, retVal); \
 }
 
@@ -277,7 +284,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateStr) {
     std::u8string value = RECOMP_ARG_U8STR(0);
 
     py::str obj = py::str(value);
-    REPY_Handle retVal = controller->create_handle(&obj);
+    REPY_Handle retVal = g_controller->create_handle(&obj);
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
@@ -288,7 +295,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateStrN) {
     std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
 
     py::str obj = py::str(value);
-    REPY_Handle retVal = controller->create_handle(&obj);
+    REPY_Handle retVal = g_controller->create_handle(&obj);
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
@@ -300,13 +307,13 @@ RECOMP_DLL_FUNC(PythonNative_CastStr_Prepare) {
     INTERP_API_HEADER;
     py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
     cached_return_u8string = str->cast<std::u8string>();
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(int32_t, cached_return_u8string.size());
 }
 
 RECOMP_DLL_FUNC(PythonNative_CastStr_Copy) {
     ZoneScoped;
-    controller->set_rdram(rdram);
+    g_controller->set_rdram(rdram);
     // Don't need the GIL for this step.
     int str_len = RECOMP_ARG(int, 0);
     PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
@@ -322,7 +329,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateByteStr) {
     std::string value = RECOMP_ARG_STR(0);
 
     py::bytes obj = py::bytes(value);
-    REPY_Handle retVal = controller->create_handle(&obj);
+    REPY_Handle retVal = g_controller->create_handle(&obj);
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
@@ -333,7 +340,7 @@ RECOMP_DLL_FUNC(PythonNative_CreateByteStrN) {
     std::string value = RECOMP_ARG_STR_N(0, str_len);
 
     py::bytes obj = py::bytes(value);
-    REPY_Handle retVal = controller->create_handle(&obj);
+    REPY_Handle retVal = g_controller->create_handle(&obj);
     RECOMP_RETURN(REPY_Handle, retVal);
 }
 
@@ -345,13 +352,13 @@ RECOMP_DLL_FUNC(PythonNative_CastByteStr_Prepare) {
     INTERP_API_HEADER;
     py::bytes* str = (py::bytes*)RECOMP_ARG_PYOBJECT(0);
     cached_return_string = str->cast<std::string>();
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(int32_t, cached_return_string.size());
 }
 
 RECOMP_DLL_FUNC(PythonNative_CastByteStr_Copy) {
     ZoneScoped;
-    controller->set_rdram(rdram);
+    g_controller->set_rdram(rdram);
     // Don't actually need the GIL for this one.
     int str_len = RECOMP_ARG(int, 0);
     PTR(char) str_ptr = RECOMP_ARG(PTR(char), 1);
@@ -377,7 +384,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
         memcpy_from_recomp(rdram, mem_block, data_ptr, data_size);
     }
     py::bytes obj = py::bytes((char*)mem_block, data_size);
-    REPY_Handle retVal = controller->create_handle(&obj);
+    REPY_Handle retVal = g_controller->create_handle(&obj);
     delete[] mem_block;
 
     RECOMP_RETURN(REPY_Handle, retVal);
@@ -400,7 +407,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
         memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(uint32_t, buf_size);
 }
 
@@ -419,7 +426,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
         memcpy_from_recomp(rdram, mem_block, data_ptr, data_size);
     }
     py::bytearray obj = py::bytearray((char*)mem_block, data_size);
-    REPY_Handle retVal = controller->create_handle(&obj);
+    REPY_Handle retVal = g_controller->create_handle(&obj);
     delete[] mem_block;
 
     RECOMP_RETURN(REPY_Handle, retVal);
@@ -443,7 +450,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
         memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(uint32_t, buf_size);
 }
 
@@ -455,7 +462,7 @@ RECOMP_DLL_FUNC(PythonNative_Len) {
     py::object* object = RECOMP_ARG_PYOBJECT(0);
     uint32_t len_val = py::len(*object);
     
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(uint32_t, len_val);
 }
 
@@ -466,8 +473,8 @@ RECOMP_DLL_FUNC(PythonNative_Iter) {
     py::object* obj = RECOMP_ARG_PYOBJECT(0); 
 
     py::object iter = py::iter(*obj);
-    REPY_Handle handle = controller->create_handle(&iter);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&iter);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -482,24 +489,24 @@ RECOMP_DLL_FUNC(PythonNative_Next) {
     try {
         if (RECOMP_ARG(REPY_Handle, 1) != 0) {
             default_obj = RECOMP_ARG_PYOBJECT(1); 
-            entry = controller->py_next()(*obj, *default_obj);
+            entry = g_controller->py_next()(*obj, *default_obj);
         } else {
-            entry = controller->py_next()(*obj);
+            entry = g_controller->py_next()(*obj);
         }
     } catch (py::error_already_set &e) {
-        if (!e.type().is(controller->py_stop_iteration_type()) || !process_stop_iteration) {
-            controller->handle_exception(&e);
+        if (!e.type().is(g_controller->py_stop_iteration_type()) || !process_stop_iteration) {
+            g_controller->handle_exception(&e);
         } else {
             // Catching the exception already clears it from the interpreter. All we need to do now is let it die.
             PLOGD.printf("REPY_Handle 0x%08X has ended iteration. StopIteration exception handled internally", RECOMP_ARG(REPY_Handle, 0));
         }
         
-        controller->release_suh_handles();
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
-    REPY_Handle handle = controller->create_handle(&entry);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&entry);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -513,18 +520,18 @@ RECOMP_DLL_FUNC(PythonNative_CreateTuple) {
     try {
         py::list tmp = py::list();
         for (int i = 0; i < size; i++) {
-            tmp.append(controller->get_py_object(va_args_ptr[i]));
+            tmp.append(g_controller->get_py_object(va_args_ptr[i]));
             FrameMark;
         }
 
         py::tuple new_tuple = py::tuple(tmp);
-        REPY_Handle handle = controller->create_handle(&new_tuple);
-        controller->release_suh_handles();
+        REPY_Handle handle = g_controller->create_handle(&new_tuple);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, handle);
     
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
@@ -540,13 +547,13 @@ RECOMP_DLL_FUNC(PythonNative_TupleGetIndexS32) {
     try {
         py::object obj = (*tuple)[index];
         
-        REPY_Handle handle = controller->create_handle(&obj);
-        controller->release_suh_handles();
+        REPY_Handle handle = g_controller->create_handle(&obj);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, handle);
     
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -563,13 +570,13 @@ RECOMP_DLL_FUNC(PythonNative_CreatePairCStr) {
         tmp.append(py::str(key));
         tmp.append(*value);
         py::tuple new_tuple = py::tuple(tmp);
-        REPY_Handle handle = controller->create_handle(&new_tuple);
-        controller->release_suh_handles();
+        REPY_Handle handle = g_controller->create_handle(&new_tuple);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, handle);
     
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -585,18 +592,18 @@ RECOMP_DLL_FUNC(PythonNative_CreateDict) {
     REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 1);
     try {
         for (int i = 0; i < size; i++) {
-            py::tuple* pair = (py::tuple*)controller->get_py_object(va_args_ptr[i]);
+            py::tuple* pair = (py::tuple*)g_controller->get_py_object(va_args_ptr[i]);
             new_dict[(*pair)[0]] = (*pair)[1];
             FrameMark;
         }
 
-        REPY_Handle new_handle = controller->create_handle(&new_dict);
-        controller->release_suh_handles();
+        REPY_Handle new_handle = g_controller->create_handle(&new_dict);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, new_handle);
 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -610,13 +617,13 @@ RECOMP_DLL_FUNC(PythonNative_DictGet) {
 
         py::object obj = (*d)[*key];
 
-        REPY_Handle retVal = controller->create_handle(&obj);
-        controller->release_suh_handles();
+        REPY_Handle retVal = g_controller->create_handle(&obj);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, retVal);
 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -630,13 +637,13 @@ RECOMP_DLL_FUNC(PythonNative_DictGetCStr) {
 
         py::object obj = (*d)[(char*)key.c_str()];
 
-        REPY_Handle retVal = controller->create_handle(&obj);
-        controller->release_suh_handles();
+        REPY_Handle retVal = g_controller->create_handle(&obj);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, retVal);
 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -651,10 +658,10 @@ RECOMP_DLL_FUNC(PythonNative_DictSet) {
 
         (*d)[*key] = value;
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictSetCStr) {
@@ -668,9 +675,9 @@ RECOMP_DLL_FUNC(PythonNative_DictSetCStr) {
         (*d)[(char*)key.c_str()] = value;
     
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictHas) {
@@ -685,10 +692,10 @@ RECOMP_DLL_FUNC(PythonNative_DictHas) {
         retVal = d->contains(key);
     
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, retVal);
 }
 
@@ -704,10 +711,10 @@ RECOMP_DLL_FUNC(PythonNative_DictHasCStr) {
         retVal = d->contains(key.c_str());
     
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, retVal);
 }
 
@@ -720,9 +727,9 @@ RECOMP_DLL_FUNC(PythonNative_DictDel) {
 
         d->attr("pop")(*key);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 RECOMP_DLL_FUNC(PythonNative_DictDelCStr) {
@@ -735,10 +742,10 @@ RECOMP_DLL_FUNC(PythonNative_DictDelCStr) {
         d->attr("pop")(key.c_str());
 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 // ====================================== Object Attributes: ====================================== 
@@ -758,12 +765,12 @@ RECOMP_DLL_FUNC(PythonNative_GetAttr) {
             r = py::getattr(*obj, *key);
         }
         
-        REPY_Handle retVal = controller->create_handle(&r);
-        controller->release_suh_handles();
+        REPY_Handle retVal = g_controller->create_handle(&r);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, retVal);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -784,12 +791,12 @@ RECOMP_DLL_FUNC(PythonNative_GetAttrCStr) {
             r = py::getattr(*obj, (char*)key.c_str());
         }
         
-        REPY_Handle retVal = controller->create_handle(&r);
-        controller->release_suh_handles();
+        REPY_Handle retVal = g_controller->create_handle(&r);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, retVal);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 }
@@ -804,10 +811,10 @@ RECOMP_DLL_FUNC(PythonNative_SetAttr) {
 
         py::setattr(*obj, *key, *value);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 RECOMP_DLL_FUNC(PythonNative_SetAttrCStr) {
@@ -820,10 +827,10 @@ RECOMP_DLL_FUNC(PythonNative_SetAttrCStr) {
 
         py::setattr(*obj, (char*)key.c_str(), *value);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 RECOMP_DLL_FUNC(PythonNative_HasAttr) {
@@ -836,9 +843,9 @@ RECOMP_DLL_FUNC(PythonNative_HasAttr) {
 
         retVal = py::hasattr(*obj, *key);
     } catch(py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, retVal);
 }
 
@@ -852,9 +859,9 @@ RECOMP_DLL_FUNC(PythonNative_HasAttrCStr) {
 
         retVal = py::hasattr(*obj, (char*)key.c_str());
     } catch(py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, retVal);
 }
 
@@ -867,9 +874,9 @@ RECOMP_DLL_FUNC(PythonNative_DelAttr) {
 
         py::delattr(*obj, *key);
     } catch(py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 RECOMP_DLL_FUNC(PythonNative_DelAttrCStr) {
@@ -881,9 +888,9 @@ RECOMP_DLL_FUNC(PythonNative_DelAttrCStr) {
 
         py::delattr(*obj, (char*)key.c_str());
     } catch(py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
 }
 
 // ====================================== Execution: ====================================== 
@@ -897,14 +904,14 @@ RECOMP_DLL_FUNC(PythonNative_Compile) {
     py::object bytecode;
     try {
         // PLOGD.printf("Compiling %s", identifier_str->cast<std::u8string>().c_str()); // I want to print whenever inline code caches get printed.
-        bytecode = controller->py_compile()(code_str, identifier_str, type_str);
+        bytecode = g_controller->py_compile()(code_str, identifier_str, type_str);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-    REPY_Handle handle = controller->create_handle(&bytecode);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&bytecode);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -918,14 +925,14 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
     py::object bytecode;
     try {
         // PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
-        bytecode = controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
+        bytecode = g_controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
-    REPY_Handle handle = controller->create_handle(&bytecode);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&bytecode);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -940,13 +947,13 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
     py::object bytecode;
     try {
         // PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
-        bytecode = controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
+        bytecode = g_controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
+        g_controller->handle_exception(&e);
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
-    REPY_Handle handle = controller->create_handle(&bytecode);
+    REPY_Handle handle = g_controller->create_handle(&bytecode);
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -968,13 +975,13 @@ RECOMP_DLL_FUNC(PythonNative_Exec) {
     }
 
     try {
-        controller->py_exec()(bytecode, globals, locals);
+        g_controller->py_exec()(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, true);
 }
 
@@ -997,13 +1004,13 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     }
 
     try {
-        controller->py_exec()(code_string, globals, locals);
+        g_controller->py_exec()(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, true);
 }
 
@@ -1026,13 +1033,13 @@ RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     }
 
     try {
-        controller->py_exec()(code_string, globals, locals);
+        g_controller->py_exec()(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, true);
 }
 
@@ -1055,15 +1062,15 @@ RECOMP_DLL_FUNC(PythonNative_Eval) {
     
     py::object result;
     try {
-        result = controller->py_eval()(bytecode, globals, locals);
+        result = g_controller->py_eval()(bytecode, globals, locals);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
-    REPY_Handle handle = controller->create_handle(&result);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&result);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -1086,15 +1093,15 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
 
     py::object result;
     try {
-        result = controller->py_eval()(code_string, globals, locals);
+        result = g_controller->py_eval()(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
-    REPY_Handle handle = controller->create_handle(&result);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&result);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -1119,15 +1126,15 @@ RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
 
     py::object result;
     try {
-        result = controller->py_eval()(code_string, globals, locals);
+        result = g_controller->py_eval()(code_string, globals, locals);
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
-    REPY_Handle handle = controller->create_handle(&result);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&result);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -1145,21 +1152,21 @@ RECOMP_DLL_FUNC(PythonNative_VL)  {
     REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 2);
     try {
         for (int i = 0; i < size; i++) {
-            py::object* obj = controller->get_py_object(va_args_ptr[i]);
+            py::object* obj = g_controller->get_py_object(va_args_ptr[i]);
             (*target_dict)[py::str(std::format("_{}", i))] = *obj;
             FrameMark;
         }
 
         // if a dict was provided, don't make a new handle. return the old one.
         if (target_dict == &new_dict) {
-            retVal = controller->create_handle(target_dict);
+            retVal = g_controller->create_handle(target_dict);
         }
-        controller->release_suh_handles();
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, retVal);
 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
@@ -1184,12 +1191,12 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
             (*func)();
         } 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, true);
 }
 
@@ -1212,13 +1219,13 @@ RECOMP_DLL_FUNC(PythonNative_CallReturn) {
             result = (*func)();
         } 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
 
-    REPY_Handle handle = controller->create_handle(&result);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&result);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -1242,12 +1249,12 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
             obj->attr(*name)();
         } 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, true);
 }
 
@@ -1270,12 +1277,12 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
             obj->attr((char*)name.c_str())();
         } 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
 
-    controller->release_suh_handles();
+    g_controller->release_suh_handles();
     RECOMP_RETURN(bool, true);
 }
 
@@ -1298,13 +1305,13 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrReturn) {
             result = obj->attr(*name)();
         } 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
     
-    REPY_Handle handle = controller->create_handle(&result);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&result);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -1327,13 +1334,13 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
             result = obj->attr((char*)name.c_str())();
         } 
     } catch (py::error_already_set &e) {
-        controller->handle_exception(&e);
-        controller->release_suh_handles();
+        g_controller->handle_exception(&e);
+        g_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
     
-    REPY_Handle handle = controller->create_handle(&result);
-    controller->release_suh_handles();
+    REPY_Handle handle = g_controller->create_handle(&result);
+    g_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, handle);
 }
 
@@ -1344,7 +1351,7 @@ RECOMP_DLL_FUNC(PythonNative_GetFileFromPathCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
     std::u8string filepath = RECOMP_ARG_U8STR(0);
-    REPY_Handle retVal = controller->get_zipfile_from_path(filepath);
+    REPY_Handle retVal = g_controller->get_zipfile_from_path(filepath);
 
     RECOMP_RETURN(REPY_Handle, retVal);
 }
@@ -1352,33 +1359,33 @@ RECOMP_DLL_FUNC(PythonNative_GetFileFromPathCStr) {
 // ====================================== Errors: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_IsErrorSet) {
     ZoneScoped;
-    controller->set_rdram(rdram);
+    g_controller->set_rdram(rdram);
 
-    RECOMP_RETURN(int32_t, controller->is_error_set());
+    RECOMP_RETURN(int32_t, g_controller->is_error_set());
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorType) {
     ZoneScoped;
     INTERP_API_HEADER;
-    RECOMP_RETURN(REPY_Handle, controller->get_py_error_type_handle());
+    RECOMP_RETURN(REPY_Handle, g_controller->get_py_error_type_handle());
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorTrace) {
     ZoneScoped;
     INTERP_API_HEADER;
-    RECOMP_RETURN(REPY_Handle, controller->get_py_error_trace_handle());
+    RECOMP_RETURN(REPY_Handle, g_controller->get_py_error_trace_handle());
 }
 
 RECOMP_DLL_FUNC(PythonNative_GetErrorValue) {
     ZoneScoped;
     INTERP_API_HEADER;
-    RECOMP_RETURN(REPY_Handle, controller->get_py_error_value_handle());
+    RECOMP_RETURN(REPY_Handle, g_controller->get_py_error_value_handle());
 }
 
 RECOMP_DLL_FUNC(PythonNative_ClearError) {
     ZoneScoped;
     INTERP_API_HEADER;
-    controller->clear_py_error();
+    g_controller->clear_py_error();
 }
 
 // ====================================== Logging: ====================================== 

@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 #include <queue>
 #include <memory>
 #include <thread>
@@ -20,14 +21,21 @@
 class LifetimeController {
 public:
     LifetimeController() = delete;
-    LifetimeController(plog::Severity severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
+    LifetimeController(uint8_t* rdram, plog::Severity log_severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
     ~LifetimeController();
 
-private:
-    std::unique_ptr<GlobalRootController> _global = NULL;
-    std::unordered_map<std::thread::id, ThreadRootController> _threads;
+    GlobalRootController* get_global_root_controller();
+    ThreadRootController* get_thread_root_controller(std::thread::id thread_id);
+    ThreadRootController* get_current_thread_root_controller();
 
-    plog::RollingFileAppender<plog::TxtFormatter>* _file_appender = NULL;
-    plog::ColorConsoleAppender<plog::TxtFormatter>* _console_appender = NULL;
-    plog::Logger<0>* _log = NULL;
+private:
+    plog::RollingFileAppender<plog::TxtFormatter>* _file_appender = nullptr;
+    plog::ColorConsoleAppender<plog::TxtFormatter>* _console_appender = nullptr;
+    plog::Logger<0>* _log = nullptr;
+
+    PyThreadState* _py_main_thread = nullptr;
+    GlobalRootController* _global_root = nullptr;
+    
+    std::mutex _thread_root_mutex;
+    std::unordered_map<std::thread::id, ThreadRootController*> _thread_root;
 };
