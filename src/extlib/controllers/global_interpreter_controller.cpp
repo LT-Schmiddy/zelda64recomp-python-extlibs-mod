@@ -4,6 +4,16 @@ GlobalInterpreterController::GlobalInterpreterController(REPY_InterpreterIndex i
     ZoneScoped;
     _index = index;
     _auto_disarm.store(false);
+    
+    // Capturing critical Python objects:
+    if (_index != PYTHON_MAIN_INTERPRETER_HANDLE) {
+        _subinterp = py::subinterpreter::create();
+        py::subinterpreter_scoped_activate activate(_subinterp);
+        init_py_objects();
+    } else {
+        // id == 0 is a special case, referencing the global interpreter.
+        init_py_objects();
+    }
 }
 
 GlobalInterpreterController::~GlobalInterpreterController() {

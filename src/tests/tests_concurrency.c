@@ -19,16 +19,22 @@ osCreateThread(&identifier, id_ ## identifier, entry_ ## identifier, args_ptr, S
 //
 THREAD_DATA(testThread1, 0x500, 120);
 THREAD_FUNC(testThread1) {
-    for (int i = 0; i < 100; i++) {
-        recomp_printf("Running test thread 1 - %i\n", i);
-    }
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_CACHE(concur_test1, 
+        "print('Hello from test_thread1')"
+    );
+
+    REPY_FN_CLEANUP;
 }
 
 THREAD_DATA(testThread2, 0x500, 121);
 THREAD_FUNC(testThread2) {
-    for (int i = 0; i < 100; i++) {
-        recomp_printf("Running test thread 2 - %i\n", i);
-    }
+    REPY_FN_SETUP;
+    REPY_FN_EXEC_CACHE(concur_test1, 
+        "print('Hello from test_thread1')"
+    );
+
+    REPY_FN_CLEANUP;
 }
 
 void run_concurrency_tests() {

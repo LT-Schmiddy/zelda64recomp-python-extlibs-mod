@@ -4,6 +4,8 @@ ThreadInterpreterController::ThreadInterpreterController(GlobalRootController* g
     ZoneScoped;
     _global_root = global_root;
     _global_interp = global_interp;
+
+    PLOGI.printf("Creating ThreadInterpreterController (Interpreter %u, Thread %llu)", _global_interp->get_index(), std::this_thread::get_id());
 }
 
 ThreadInterpreterController::~ThreadInterpreterController() {
@@ -17,7 +19,6 @@ void ThreadInterpreterController::activate() {
     REPY_InterpreterIndex _index = _global_interp->get_index();
     _is_active = true;
     _gil = new py::gil_scoped_acquire();
-
 
     if (_index != 0) {
         _scope = new py::subinterpreter_scoped_activate(*(_global_interp->get_subinterp()));

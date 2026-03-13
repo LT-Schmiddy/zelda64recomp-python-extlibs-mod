@@ -21,7 +21,7 @@ void validate(char* case_name, bool case_stmt) {
     }
 }
 
-// REPY_REGISTER_SUBINTERPRETER(test_subinterp);
+REPY_REGISTER_SUBINTERPRETER(test_subinterp);
 
 void load_repl() {
         recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
@@ -49,20 +49,25 @@ void load_repl() {
 REPY_ON_POST_INIT void REPY_API_Tests() {
     // Testing Interpreter Operations
     REPY_PushInterpreter(REPY_MAIN_INTERPRETER);
-    // validate("Interpreter == 0 after pushing main interpreter.", REPY_GetCurrentInterpreter() == 0);
-    // REPY_PushInterpreter(test_subinterp);
-    // validate("Interpreter == test_subinterp after pushing test_subinterp.", REPY_GetCurrentInterpreter() == test_subinterp);
-    // REPY_PopInterpreter();
-    // validate("Interpreter == 0 after popping test_subinterp.", REPY_GetCurrentInterpreter() == 0);
+    validate("Interpreter == 0 after pushing main interpreter.", REPY_GetCurrentInterpreter() == 0);
+    REPY_PushInterpreter(test_subinterp);
+    validate("Interpreter == test_subinterp after pushing test_subinterp.", REPY_GetCurrentInterpreter() == test_subinterp);
+    REPY_PopInterpreter();
+    validate("Interpreter == 0 after popping test_subinterp.", REPY_GetCurrentInterpreter() == 0);
 
-    // bool test_subinterp_old_autodisarm = REPY_GetInterpreterAutoDisarm(test_subinterp);
-    // REPY_SetInterpreterAutoDisarm(test_subinterp, true);
-    // validate("Interpreter 1 Auto Disarm settable", REPY_GetInterpreterAutoDisarm(test_subinterp) && !test_subinterp_old_autodisarm);
+    bool test_subinterp_old_autodisarm = REPY_GetInterpreterAutoDisarm(test_subinterp);
+    REPY_SetInterpreterAutoDisarm(test_subinterp, true);
+    validate("Interpreter 1 Auto Disarm settable", REPY_GetInterpreterAutoDisarm(test_subinterp) && !test_subinterp_old_autodisarm);
 
     // Running Core API tests on interpreter 0:
     REPY_Handle test_handle = REPY_CreateDict(0);
 
     run_api_tests();
+
+    REPY_PushInterpreter(test_subinterp);
+    run_api_tests();
+    REPY_PopInterpreter();
+
     run_main_fn_macro_tests();
     run_main_init_macro_tests();
     run_concurrency_tests();

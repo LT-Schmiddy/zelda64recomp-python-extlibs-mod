@@ -123,10 +123,3 @@ ThreadRootController* LifetimeController::get_current_thread_root_controller() {
     ZoneScoped;
     return get_thread_root_controller(std::this_thread::get_id());
 }
-
-void LifetimeController::thread_check_exception() {
-    ZoneScoped;
-    if (!_thread_root.contains(std::this_thread::get_id())) {
-        throw std::runtime_error("The thread making calls to the repy_api functions is not the main thread.");
-    }
-}

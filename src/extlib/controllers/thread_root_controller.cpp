@@ -6,7 +6,7 @@ ThreadRootController::ThreadRootController(GlobalRootController* global_root, st
     _thread_id = thread_id;
     _thread_interps.resize(interp_count, nullptr);
 
-    PLOGI.printf("Creating ThreadRootController for thread %llu. Subinterpreter count: %u", thread_id, _thread_interps.size());
+    PLOGI.printf("Creating ThreadRootController for thread %llu. Interpreter count: %u", thread_id, _thread_interps.size());
 }
 
 ThreadRootController::~ThreadRootController() {
