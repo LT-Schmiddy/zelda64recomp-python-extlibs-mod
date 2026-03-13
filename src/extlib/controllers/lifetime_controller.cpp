@@ -102,10 +102,12 @@ LifetimeController::~LifetimeController() {
 
 
 GlobalRootController* LifetimeController::get_global_root_controller() {
+    ZoneScoped;
     return _global_root;
 }
 
 ThreadRootController* LifetimeController::get_thread_root_controller(std::thread::id thread_id) {
+    ZoneScoped;
     std::lock_guard guard(_thread_root_mutex);
 
     if (_thread_root.contains(thread_id)) {
@@ -118,5 +120,6 @@ ThreadRootController* LifetimeController::get_thread_root_controller(std::thread
 }
 
 ThreadRootController* LifetimeController::get_current_thread_root_controller() {
+    ZoneScoped;
     return get_thread_root_controller(std::this_thread::get_id());
 }

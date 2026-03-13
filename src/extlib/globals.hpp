@@ -40,3 +40,6 @@ namespace fs = std::filesystem;
 typedef signed int REPY_InterpreterIndex;
 typedef unsigned int REPY_Handle;
 
+// Thanks to LittleCube for this information:
+#define LIKELY(exp) __builtin_expect(exp, true)
+#define UNLIKELY(exp) __builtin_expect(exp, false)

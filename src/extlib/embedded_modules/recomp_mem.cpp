@@ -1,5 +1,5 @@
 #include "recomp_mem.hpp"
-#include "controller.hpp"
+#include "lib_main.hpp"
 #include "lib_recomp.hpp"
 
 #include <algorithm>
