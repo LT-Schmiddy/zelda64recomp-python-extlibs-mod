@@ -6,10 +6,18 @@ ThreadInterpreterController::ThreadInterpreterController(GlobalRootController* g
     _global_interp = global_interp;
 
     PLOGI.printf("Creating ThreadInterpreterController (Interpreter %u, Thread %llu)", _global_interp->get_index(), std::this_thread::get_id());
+    _last_error_type = py::none();
+    _last_error_trace = py::none();
+    _last_error_value = py::none();
 }
 
 ThreadInterpreterController::~ThreadInterpreterController() {
     ZoneScoped;
+
+    if (_is_active) {
+        deactivate();
+    }
+    PLOGI.printf("Creating ThreadInterpreterController (Interpreter %u)", _global_interp->get_index());
 }
 
 // Activation:

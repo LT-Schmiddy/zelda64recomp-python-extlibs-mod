@@ -89,20 +89,36 @@ LifetimeController::LifetimeController(uint8_t* rdram, plog::Severity log_severi
     config.install_signal_handlers = true;
 
     py::initialize_interpreter(&config, 0, NULL, false); 
-    PLOGI << "-> Python interpreter initialized";
+    PLOGI.printf("REPY: Lifetime Controller Initialized");
+    
+    // Release the GIL from this thread in case it gets reactivated.
+    _py_main_thread = PyEval_SaveThread();
 
-    // {
-
-    //     py::gil_scoped_acquire gil; 
-
-    // }
+    // Create the GlobalRootController:
     _global_root = new GlobalRootController(rdram);
 }
 
 LifetimeController::~LifetimeController() {
     ZoneScoped;
+    PyEval_RestoreThread(_py_main_thread);
 
-    PLOGI << "REPY: Lifetime Controller Finalized";
+    // Probably not necessary at this point, but JIC.
+    std::lock_guard lock(_thread_root_mutex);
+
+    // We can confident that none of the threads with ThreadRootControllers will be
+    // running from here on. Deallocate those first.
+    for (auto it : _thread_root) {
+        delete it.second;
+        it.second = nullptr;
+    }
+    _thread_root.clear();
+
+    // Deleting global root:
+    delete _global_root;
+    _global_root = nullptr;
+
+    py::finalize_interpreter();
+    PLOGI.printf("REPY: Lifetime Controller Finalized");
 }
 
 

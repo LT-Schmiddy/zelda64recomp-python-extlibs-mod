@@ -13,6 +13,12 @@ ThreadRootController::ThreadRootController(GlobalRootController* global_root, st
 
 ThreadRootController::~ThreadRootController() {
     ZoneScoped;
+    PLOGI.printf("Deleting ThreadRootController (Interpreter Count: %u, Thread %llu)", _thread_interps.size(), _thread_id);
+    
+    for (auto it : _thread_interps) {
+        delete it;
+    }
+    _thread_interps.clear();
 }
 
 uint8_t* ThreadRootController::get_rdram() {

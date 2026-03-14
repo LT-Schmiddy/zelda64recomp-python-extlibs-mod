@@ -7,10 +7,25 @@ GlobalRootController::GlobalRootController(uint8_t* rdram) {
     // Adding main interpreter
     GlobalInterpreterController* _interp = new GlobalInterpreterController(0);
     _global_interps.push_back(_interp);
+
+    PLOGI.printf("Created GlobalRootController");
 }
 
 GlobalRootController::~GlobalRootController(){
     ZoneScoped;
+    PLOGI.printf("Deleting GlobalRootController");
+    // Release all handles
+    {
+        std::lock_guard lock(_handles_mutex);
+        _handles.del_all();
+    }
+
+    {
+        std::lock_guard lock(_global_interps_mutex);
+        for (auto it : _global_interps) {
+            delete it;
+        }
+    }
 }
 
 // RDRAM:
@@ -39,8 +54,6 @@ REPY_InterpreterIndex GlobalRootController::create_global_interp_controller() {
     REPY_InterpreterIndex retVal = _global_interps.size();
     GlobalInterpreterController* _interp = new GlobalInterpreterController(retVal);
     _global_interps.push_back(_interp);
-
-    PLOGI.printf("Created new subinterpreter with a handle of %u", retVal);
 
     return retVal;
 

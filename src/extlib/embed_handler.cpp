@@ -116,7 +116,7 @@ void setup_python_stdlib_dlls(fs::path mod_dir, fs::path dll_dir) {
 
         fs::rename(target_module, renamed_module);
         
-        PLOGD.printf("Moved native module from '%s' to '%s'\n", target_module.string().c_str(), renamed_module.string().c_str());
+        PLOGD.printf("Moved native module from '%s' to '%s'", target_module.string().c_str(), renamed_module.string().c_str());
     }
 
     // Handle DLLs
@@ -141,7 +141,7 @@ void setup_python_stdlib_dlls(fs::path mod_dir, fs::path dll_dir) {
 
         fs::rename(target_module, renamed_module);
         
-        PLOGD.printf("Moved native dll from '%s' to '%s'\n", target_module.string().c_str(), renamed_module.string().c_str());
+        PLOGD.printf("Moved native dll from '%s' to '%s'", target_module.string().c_str(), renamed_module.string().c_str());
     }
 }
 #endif

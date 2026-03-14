@@ -11,7 +11,7 @@ RECOMP_DECLARE_EVENT(REPY_OnInitSubinterpreters());
 RECOMP_DECLARE_EVENT(REPY_OnInitCodeCache());
 RECOMP_DECLARE_EVENT(REPY_OnPostInit());
 
-RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
+RECOMP_CALLBACK("*", recomp_on_init) void REPY_Init() {
     const unsigned char* nrm_file_path = recomp_get_mod_file_path();
     PythonNative_Preinit_RegisterNrmInModuleSearchPath(nrm_file_path);
     recomp_free((void*)nrm_file_path);
@@ -23,9 +23,9 @@ RECOMP_CALLBACK("*", recomp_on_init) void Python_Init() {
     recomp_free((void*)mod_folder);
 
     if (py_init == 1) {
-        LOGI("Python interpreter initialized successfully.\n");
+        LOGI("Python interpreter initialized successfully.");
     } else {
-        LOGF("There was an error initializing the Python interpreter.\n");
+        LOGF("There was an error initializing the Python interpreter.");
     }
 
     REPY_OnInitSubinterpreters();

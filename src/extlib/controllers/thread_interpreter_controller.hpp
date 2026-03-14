@@ -39,8 +39,8 @@ public:
 private:
     GlobalRootController* _global_root = nullptr;
     GlobalInterpreterController* _global_interp = nullptr;
-    py::gil_scoped_acquire* _gil = NULL;
-    py::subinterpreter_scoped_activate* _scope = NULL;
+    py::gil_scoped_acquire* _gil = nullptr;
+    py::subinterpreter_scoped_activate* _scope = nullptr;
     bool _is_active = false;
     
     bool _is_py_error_set = false;

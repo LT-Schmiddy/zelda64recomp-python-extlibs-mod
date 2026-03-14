@@ -12,13 +12,19 @@ GlobalInterpreterController::GlobalInterpreterController(REPY_InterpreterIndex i
         init_py_objects();
     } else {
         // id == 0 is a special case, referencing the global interpreter.
-
         init_py_objects();
     }
+
+    PLOGI.printf("Created GlobalInterpreterController (Index %i)", _index);
 }
 
 GlobalInterpreterController::~GlobalInterpreterController() {
     ZoneScoped;
+    PLOGI.printf("Deleting GlobalInterpreterController (Index %i)", _index);
+    // If index is 0, then this is the main interpreter and no subinterpreter was ever initialized.
+    if (_index && _auto_disarm.load()) {
+        _subinterp.disarm(); // Disarm seems to resolve some of the freezing issues I've been having on shutdown. 
+    }
 }
 
 REPY_InterpreterIndex GlobalInterpreterController::get_index() {
