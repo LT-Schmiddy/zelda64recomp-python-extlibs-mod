@@ -1,8 +1,4 @@
 #pragma once
-#include <iostream>
-#include <filesystem>
-#include <stdio.h>
-
 #include <tracy/Tracy.hpp>
 #define PYBIND11_DETAILED_ERROR_MESSAGES
 // #define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
@@ -23,6 +19,10 @@
 #include <pybind11/subinterpreter.h>
 #endif
 #include <plog/Log.h>
+
+#include <iostream>
+#include <filesystem>
+#include <stdio.h>
 
 namespace py = pybind11;
 namespace fs = std::filesystem;
@@ -47,6 +47,4 @@ typedef unsigned int REPY_Handle;
 #else
 #define LIKELY(exp) __builtin_expect(exp, true)
 #define UNLIKELY(exp) __builtin_expect(exp, false)
-// #define LIKELY(exp) exp
-// #define UNLIKELY(exp) exp
 #endif

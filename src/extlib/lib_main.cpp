@@ -7,6 +7,7 @@
 #include <plog/Log.h> // Step1: include the headers
 
 #include "lib_main.hpp"
+#include "repy_utils.hpp"
 
 extern "C" {
     DLLEXPORT uint32_t recomp_api_version = 1;
@@ -391,19 +392,15 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
     bool reverse = RECOMP_ARG(bool, 2);
-
-
-    uint8_t* mem_block = new uint8_t[data_size];
-    if (reverse) {
-        memcpy_rev_from_recomp(rdram, mem_block, data_ptr, data_size);
-    } else {
-        memcpy_from_recomp(rdram, mem_block, data_ptr, data_size);
+    try {
+        py::bytes obj = recomp_memcpy_to_py_bytes(rdram, data_ptr, data_size, reverse);
+        REPY_Handle retVal = t_controller->create_handle(&obj);
+        RECOMP_RETURN(REPY_Handle, retVal);
     }
-    py::bytes obj = py::bytes((char*)mem_block, data_size);
-    REPY_Handle retVal = t_controller->create_handle(&obj);
-    delete[] mem_block;
-
-    RECOMP_RETURN(REPY_Handle, retVal);
+    catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
@@ -433,19 +430,15 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
     PTR(void) data_ptr = RECOMP_ARG(PTR(void), 0);
     uint32_t data_size = RECOMP_ARG(uint32_t, 1);
     bool reverse = RECOMP_ARG(bool, 2);
-
-
-    uint8_t* mem_block = new uint8_t[data_size];
-    if (reverse) {
-        memcpy_rev_from_recomp(rdram, mem_block, data_ptr, data_size);
-    } else {
-        memcpy_from_recomp(rdram, mem_block, data_ptr, data_size);
+    try {
+        py::bytearray obj = recomp_memcpy_to_py_bytearray(rdram, data_ptr, data_size, reverse);
+        REPY_Handle retVal = t_controller->create_handle(&obj);
+        RECOMP_RETURN(REPY_Handle, retVal);
     }
-    py::bytearray obj = py::bytearray((char*)mem_block, data_size);
-    REPY_Handle retVal = t_controller->create_handle(&obj);
-    delete[] mem_block;
-
-    RECOMP_RETURN(REPY_Handle, retVal);
+    catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 
@@ -550,7 +543,6 @@ RECOMP_DLL_FUNC(PythonNative_CreateTuple) {
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
 }
 
 RECOMP_DLL_FUNC(PythonNative_TupleGetIndexS32) {

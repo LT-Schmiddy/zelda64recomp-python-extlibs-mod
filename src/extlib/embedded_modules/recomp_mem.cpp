@@ -1,7 +1,7 @@
 #include "recomp_mem.hpp"
 #include "lib_main.hpp"
 #include "lib_recomp.hpp"
-
+#include "repy_utils.hpp"
 #include <algorithm>
 
 void thread_check_exception() {
@@ -275,18 +275,8 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem_byteswapped, m, py::mod_gil_not_used(), py:
         ZoneScopedN("_recomp_mem_byteswapped.read_bytes_n");
         thread_check_exception();
         uint8_t* rdram = g_controller->get_rdram();
-        uint8_t* buf = new uint8_t[size];
 
-        if (reverse) {
-            memcpy_rev_from_recomp(rdram, buf, ptr, size);
-        } else {
-            memcpy_from_recomp(rdram, buf, ptr, size);
-        }
-
-        py::bytes retVal = py::bytes((char*)buf, size);
-        delete[] buf;
-
-        return retVal;
+        return recomp_memcpy_to_py_bytes(rdram, ptr, size, reverse);
     });
 
     m.def("read_bytearray_n", [](int32_t ptr, uint32_t size, bool reverse) {
@@ -294,18 +284,7 @@ PYBIND11_EMBEDDED_MODULE(_recomp_mem_byteswapped, m, py::mod_gil_not_used(), py:
         thread_check_exception();
         uint8_t* rdram = g_controller->get_rdram();
 
-        uint8_t* buf = new uint8_t[size];
-
-        if (reverse) {
-            memcpy_rev_from_recomp(rdram, buf, ptr, size);
-        } else {
-            memcpy_from_recomp(rdram, buf, ptr, size);
-        }
-
-        py::bytearray retVal = py::bytearray((char*)buf, size);
-        delete[] buf;
-
-        return retVal;
+        return recomp_memcpy_to_py_bytearray(rdram, ptr, size, reverse);
     });
 
     m.def("write_buffer_n", [](int32_t ptr, py::buffer buffer, uint32_t size, bool reverse) {
