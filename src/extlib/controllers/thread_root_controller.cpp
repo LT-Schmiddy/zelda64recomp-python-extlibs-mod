@@ -42,7 +42,7 @@ REPY_InterpreterIndex ThreadRootController::get_current_interp_index() {
 ThreadInterpreterController* ThreadRootController::get_interp(REPY_InterpreterIndex index) {
     ZoneScoped;
     REPY_InterpreterIndex upper = _thread_interps.size();
-    if (index < 0 || index > upper) {
+    if (index < 0 || index >= upper) {
         PLOGF.printf("REPY_InterpreterIndex %i is out of range.", index);
     }
     assert(index >= 0 && index < _thread_interps.size());
