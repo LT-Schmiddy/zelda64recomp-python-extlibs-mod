@@ -87,22 +87,22 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     //     REPY_FN_CLEANUP;
     // }
 
-    // {
-    //     REPY_FN_SETUP;
-    //     int int_ptr = 66;
-    //     REPY_FN_SET("ptr", REPY_CreatePtr_SUH(&int_ptr));
-    //     REPY_FN_EXEC_CACHE(thread_test_2, 
-    //         "import threading, time\n"
-    //         "from repy_api.mem import managed\n"
-    //         "def t_test():\n"
-    //         "    time.sleep(3)\n"
-    //         "    print(managed.read_s32(ptr))\n"
-    //         "\n"
-    //         "t = threading.Thread(None, t_test)\n"
-    //         "t.start()\n"
-    //     );
-    //     REPY_FN_CLEANUP;
-    // }
+    {
+        REPY_FN_SETUP;
+        int int_ptr = 66;
+        REPY_FN_SET("ptr", REPY_CreatePtr_SUH(&int_ptr));
+        REPY_FN_EXEC_CACHE(thread_test_2, 
+            "import threading, time\n"
+            "from repy_api.mem import byteswapped as bs\n"
+            "def t_test():\n"
+            "    time.sleep(3)\n"
+            "    print(bs.read_s32(ptr))\n"
+            "\n"
+            "t = threading.Thread(None, t_test)\n"
+            "t.start()\n"
+        );
+        REPY_FN_CLEANUP;
+    }
 
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;

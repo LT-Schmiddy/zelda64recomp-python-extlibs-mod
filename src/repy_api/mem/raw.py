@@ -11,8 +11,6 @@ repy_api.mem.raw: This module provides direct access to data N64Recompiled memor
 
 import _recomp_mem_raw
 
-from .. import utils
-
 def create_raw_memoryview(ptr: int, size: int) -> memoryview:
     """_summary_
 
