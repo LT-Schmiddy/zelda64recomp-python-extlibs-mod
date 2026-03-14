@@ -16,12 +16,26 @@ std::unique_ptr<LifetimeController> l_controller = nullptr;
 GlobalRootController* g_controller = nullptr;
 thread_local ThreadRootController* t_controller = nullptr;
 
-// This used to be bigger, but I'm keeping it.
-#define INTERP_API_HEADER \
-    if (t_controller == nullptr) { \
+// The only function (currently) that gets this version is PythonNative_PushInterpreter,
+// But we're doing is this way so that it's next to the other one. Better organized.
+#define INTERP_API_HEADER_CREATE_T_CONTROLLER \
+    if (UNLIKELY(t_controller == nullptr)) { \
         t_controller = l_controller->get_current_thread_root_controller(); \
     } \
     t_controller->set_rdram(rdram); \
+
+
+// Common code for the beginning of all native API function.
+// There's no point creating a ThreadRootController on any function besides
+// PythonNative_PushInterpreter, because the interpreter stack is initialized 
+// as empty, which would result in a crash.
+#define INTERP_API_HEADER \
+    if (UNLIKELY(t_controller == nullptr)) { \
+        PLOGF.printf("No ThreadRootController exists for thread %u. Perhaps you forgot to call REPY_PushController?", std::this_thread::get_id()); \
+        assert(t_controller == nullptr); \
+    } \
+    t_controller->set_rdram(rdram); 
+
 
 static const char* const code_type_strs[] = {
     "exec",
@@ -120,7 +134,7 @@ RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
 // ======================================  Subcontrollers/Subinterpreters: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_PushInterpreter) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     REPY_InterpreterIndex interp = RECOMP_ARG(REPY_InterpreterIndex, 0);
     t_controller->push_interp_index(interp);
 }

@@ -49,7 +49,7 @@ ThreadInterpreterController* ThreadRootController::get_interp(REPY_InterpreterIn
 
     ThreadInterpreterController* retVal = _thread_interps.at(index);
     // Lazy initialization of the ThreadInterpreterController:
-    if (retVal == nullptr) {
+    if (UNLIKELY(retVal == nullptr)) {
         retVal = new ThreadInterpreterController(_global_root, _global_root->get_global_interp_controller(index));
         _thread_interps.at(index) = retVal;
     }

@@ -57,7 +57,8 @@
                 "${workspaceFolder}/src/extlib"
             ],
             "defines": [
-                "TRACY_ENABLE"
+                "TRACY_ENABLE",
+                "DISABLE_BRANCH_PREDICTION" // Not really. Just silencing the error squiggles.
             ]
         },
         {
@@ -72,6 +73,10 @@
                 "${workspaceFolder}/extern/incbin",
                 "${workspaceFolder}/extern/tracy/public",
                 "${workspaceFolder}/src/extlib"
+            ],
+            "defines": [
+                "TRACY_ENABLE",
+                "DISABLE_BRANCH_PREDICTION" // Not really. Just silencing the error squiggles.
             ]
         },
         {
@@ -86,6 +91,10 @@
                 "${workspaceFolder}/extern/incbin",
                 "${workspaceFolder}/extern/tracy/public",
                 "${workspaceFolder}/src/extlib"
+            ],
+            "defines": [
+                "TRACY_ENABLE",
+                "DISABLE_BRANCH_PREDICTION" // Not really. Just silencing the error squiggles.
             ]
         }
     ],

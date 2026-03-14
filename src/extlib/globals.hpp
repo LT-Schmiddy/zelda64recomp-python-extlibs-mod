@@ -41,5 +41,12 @@ typedef signed int REPY_InterpreterIndex;
 typedef unsigned int REPY_Handle;
 
 // Thanks to LittleCube for this information:
+#ifdef DISABLE_BRANCH_PREDICTION
+#define LIKELY(exp) exp
+#define UNLIKELY(exp) exp
+#else
 #define LIKELY(exp) __builtin_expect(exp, true)
 #define UNLIKELY(exp) __builtin_expect(exp, false)
+// #define LIKELY(exp) exp
+// #define UNLIKELY(exp) exp
+#endif
