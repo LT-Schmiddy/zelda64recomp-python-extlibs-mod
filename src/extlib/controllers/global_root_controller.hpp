@@ -19,7 +19,7 @@ class GlobalRootController;
 class GlobalRootController {
 public:
     // GlobalRootController() = delete;
-    GlobalRootController(uint8_t* rdram);
+    GlobalRootController(uint8_t* rdram, REPY_InterpreterIndex subinterp_count);
     ~GlobalRootController();
 
     uint8_t* get_rdram();
@@ -29,7 +29,6 @@ public:
     ThreadRootController* create_thread_root_controller(std::thread::id thread_id);
 
     // Interpreters:
-    REPY_InterpreterIndex create_global_interp_controller();
     GlobalInterpreterController* get_global_interp_controller(REPY_InterpreterIndex index);
 
     // Handles:

@@ -7,7 +7,7 @@
 #include "mod_logging.h"
 
 RECOMP_DECLARE_EVENT(REPY_OnPreInit());
-RECOMP_DECLARE_EVENT(REPY_OnInitSubinterpreters());
+RECOMP_DECLARE_EVENT(REPY_OnConfigSubinterpreters());
 RECOMP_DECLARE_EVENT(REPY_OnInitCodeCache());
 RECOMP_DECLARE_EVENT(REPY_OnPostInit());
 
@@ -28,7 +28,7 @@ RECOMP_CALLBACK("*", recomp_on_init) void REPY_Init() {
         LOGF("There was an error initializing the Python interpreter.");
     }
 
-    REPY_OnInitSubinterpreters();
+    REPY_OnConfigSubinterpreters();
     REPY_OnInitCodeCache();
     REPY_OnPostInit();
 }
@@ -37,6 +37,10 @@ RECOMP_CALLBACK("*", recomp_on_init) void REPY_Init() {
 // Preinit:
 RECOMP_EXPORT void REPY_PreInitAddSysPath(const unsigned char* nrm_file_path ) {
     PythonNative_Preinit_RegisterNrmInModuleSearchPath(nrm_file_path);
+}
+
+RECOMP_EXPORT REPY_InterpreterIndex REPY_PreInitRegisterSubinterpreter() {
+    return PythonNative_Preinit_RegisterSubinterpreter();
 }
 
 // General:
@@ -64,11 +68,7 @@ RECOMP_EXPORT REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release) {
     return PythonNative_CopyHandle(handle_no_release);
 }
 
-// Subinterpreters:
-RECOMP_EXPORT REPY_InterpreterIndex REPY_RegisterSubinterpreter() {
-    return PythonNative_RegisterSubinterpreter();
-}
-
+// Interpreters:
 RECOMP_EXPORT void REPY_PushInterpreter(REPY_InterpreterIndex interpreter_handle) {
     PythonNative_PushInterpreter(interpreter_handle);
 }

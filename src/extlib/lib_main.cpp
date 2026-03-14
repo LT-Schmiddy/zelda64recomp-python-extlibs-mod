@@ -23,12 +23,15 @@ thread_local ThreadRootController* t_controller = nullptr;
     } \
     t_controller->set_rdram(rdram); \
 
-static const char* code_type_strs[] = {
+static const char* const code_type_strs[] = {
     "exec",
     "eval",
     "single"
 };
 static std::queue<fs::path> preinit_module_nrms;
+static REPY_InterpreterIndex preinit_subinterp_count = 0;
+
+// ======================================  API PREINIT: ====================================== 
 
 RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterNrmInModuleSearchPath) {
     ZoneScoped;
@@ -36,6 +39,12 @@ RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterNrmInModuleSearchPath) {
     fs::path nrm_path(nrm_path_str);
 
     preinit_module_nrms.push(nrm_path);
+}
+
+RECOMP_DLL_FUNC(PythonNative_Preinit_RegisterSubinterpreter) {
+    ZoneScoped;
+    REPY_InterpreterIndex retVal = ++preinit_subinterp_count;
+    RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
 // ======================================  API INIT: ====================================== 
@@ -47,18 +56,12 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
     fs::path mod_dir(mod_dir_text);
 
     // Set up logging:
-    l_controller = std::make_unique<LifetimeController>(rdram, (plog::Severity)log_level, log_to_file, mod_dir, &preinit_module_nrms);
+    l_controller = std::make_unique<LifetimeController>(rdram, (plog::Severity)log_level, log_to_file, 
+        mod_dir, &preinit_module_nrms, preinit_subinterp_count);
     g_controller = l_controller->get_global_root_controller();
 
     PLOGI.printf("Mod Folder: %s", (char*)mod_dir_text.c_str());
     RECOMP_RETURN(int, 1);
-}
-
-RECOMP_DLL_FUNC(PythonNative_RegisterSubinterpreter) {
-    ZoneScoped;
-    py::gil_scoped_acquire gil; // Still needed, since this can be used with an empty interpreter stack, and the GIL is needed for this.
-    REPY_InterpreterIndex retVal = g_controller->create_global_interp_controller();
-    RECOMP_RETURN(REPY_InterpreterIndex, retVal);
 }
 
 // ======================================  General: ====================================== 

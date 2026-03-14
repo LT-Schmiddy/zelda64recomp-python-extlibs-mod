@@ -21,7 +21,8 @@
 class LifetimeController {
 public:
     LifetimeController() = delete;
-    LifetimeController(uint8_t* rdram, plog::Severity log_severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms);
+    LifetimeController(uint8_t* rdram, plog::Severity log_severity, bool log_to_file, 
+        fs::path mod_dir, std::queue<fs::path>* registered_nrms, REPY_InterpreterIndex subinterp_count);
     ~LifetimeController();
 
     GlobalRootController* get_global_root_controller();

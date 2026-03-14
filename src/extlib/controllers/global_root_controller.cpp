@@ -1,14 +1,31 @@
 #include "global_root_controller.hpp"
 
-GlobalRootController::GlobalRootController(uint8_t* rdram) {
+GlobalRootController::GlobalRootController(uint8_t* rdram, REPY_InterpreterIndex subinterp_count) {
     ZoneScoped;
     _rdram.store(rdram);
 
     // Adding main interpreter
-    GlobalInterpreterController* _interp = new GlobalInterpreterController(0);
-    _global_interps.push_back(_interp);
-
     PLOGI.printf("Created GlobalRootController");
+    
+    // We need a GlobalInterpreterController for the main controller and each subinterpreter.
+    // Doing it this way for readability. Index 0 is special and indicates the main interpreter.
+    REPY_InterpreterIndex interp_count = subinterp_count + 1;
+
+    {
+        std::lock_guard lock(_global_interps_mutex);
+        
+        // The GIL seems to want to be acquired at least once for pybind11's  GIL/thread
+        // management to work correctly. This initialization is always done on the main thread,
+        // so that requirement is satisfied here. Also, needs to be acquired to allocate subinterpreters.
+        py::gil_scoped_acquire gil;
+
+        _global_interps.reserve(interp_count);
+        for (REPY_InterpreterIndex i = 0; i < interp_count; i++) {
+            GlobalInterpreterController* _interp = new GlobalInterpreterController(i);
+            _global_interps.push_back(_interp);
+        }
+    }
+
 }
 
 GlobalRootController::~GlobalRootController(){
@@ -48,17 +65,6 @@ ThreadRootController* GlobalRootController::create_thread_root_controller(std::t
 }
 
 // Interpreters
-REPY_InterpreterIndex GlobalRootController::create_global_interp_controller() {
-    ZoneScoped;
-    std::lock_guard lock(_global_interps_mutex);
-    REPY_InterpreterIndex retVal = _global_interps.size();
-    GlobalInterpreterController* _interp = new GlobalInterpreterController(retVal);
-    _global_interps.push_back(_interp);
-
-    return retVal;
-
-}
-
 GlobalInterpreterController* GlobalRootController::get_global_interp_controller(REPY_InterpreterIndex index) {
     ZoneScoped;
     std::lock_guard lock(_global_interps_mutex);

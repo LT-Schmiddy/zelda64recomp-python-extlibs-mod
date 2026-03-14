@@ -231,7 +231,7 @@ typedef void REPY_DeferredCleanupHelper;
  * 
  * Takes no arguments, returns void.
  */
-#define REPY_ON_INIT_SUBINTERPRETERS RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnInitSubinterpreters)
+#define REPY_ON_CONFIG_SUBINTERPRETERS RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnConfigSubinterpreters)
 
 /**
  * @brief Event that runs immediately after `REPY_ON_INIT_SUBINTERPRETERS`. Used by the various global and static code caching macros.
@@ -293,9 +293,12 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
   */
 #define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
 REPY_InterpreterIndex subinterp_identifier = 0; \
-REPY_ON_INIT_SUBINTERPRETERS void subinterp_identifier ## _init() { \
-    subinterp_identifier = REPY_RegisterSubinterpreter(); \
-    recomp_printf("Subinterpreter %s Initialized\n", #subinterp_identifier); \
+REPY_ON_PRE_INIT void subinterp_identifier ## _register() { \
+    subinterp_identifier = REPY_PreInitRegisterSubinterpreter(); \
+    recomp_printf("Registering Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
+} \
+REPY_ON_CONFIG_SUBINTERPRETERS void subinterp_identifier ## _config() { \
+    recomp_printf("Configuring Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
     REPY_PushInterpreter(subinterp_identifier); \
     REPY_AddNrmToSysPath(); \
     REPY_PopInterpreter(); \
@@ -2037,6 +2040,15 @@ for ( \
   */
 REPY_IMPORT(void REPY_PreInitAddSysPath(const unsigned char* nrm_file_path));
 
+/**
+ * @brief Registers a new Python subinterpreter to be created on initialization, and return a `REPY_InterpreterIndex` corresponding to it.
+ * 
+ * Note that initializing a subinterpreter is expensive performance-wise, and can add a slight delay on startup.
+ * 
+ * @return the index that will correspond to the new interpreter.
+ */
+REPY_IMPORT(REPY_InterpreterIndex REPY_PreInitRegisterSubinterpreter());
+
 /** @}*/
 
 /** \defgroup repy_handle_funcs Handle Functions
@@ -2133,16 +2145,6 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release));
  * 
  * @{
  */
-
-/**
- * @brief Register a new Python subinterpreter, and return a `REPY_InterpreterIndex` corresponding to it.
- * 
- * Note that initializing a subinterpreter and establishing it within REPY's internal control stuctures. As a result,
- * you should make sure to run this on startup and not while the game is playing to avoid a significant lag spike.
- * 
- * @return the index of the new interpreter.
- */
-REPY_IMPORT(REPY_InterpreterIndex REPY_RegisterSubinterpreter());
 
 /**
  * @brief Pushes an interpreter index to the interpreter stack, and switching the active interpreter if necessary.

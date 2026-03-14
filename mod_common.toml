@@ -24,6 +24,7 @@ native_libraries = [
     { name = "RecompPythonNative", funcs = [
         # Preinit
         "PythonNative_Preinit_RegisterNrmInModuleSearchPath",
+        "PythonNative_Preinit_RegisterSubinterpreter",
 
         # General
         "PythonNative_Init",
@@ -34,7 +35,7 @@ native_libraries = [
         "PythonNative_SetSUH",
         "PythonNative_CopyHandle",
 
-        "PythonNative_RegisterSubinterpreter",
+        #Interpreters
         "PythonNative_PushInterpreter",
         "PythonNative_PopInterpreter",
         "PythonNative_GetCurrentInterpreter",

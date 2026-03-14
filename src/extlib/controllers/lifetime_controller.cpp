@@ -37,7 +37,8 @@ static void py_preinit_add_search_path(PyConfig* config, fs::path path) {
 }
 
 // ======================================  Handle Control: ====================================== 
-LifetimeController::LifetimeController(uint8_t* rdram, plog::Severity log_severity, bool log_to_file, fs::path mod_dir, std::queue<fs::path>* registered_nrms) {
+LifetimeController::LifetimeController(uint8_t* rdram, plog::Severity log_severity, bool log_to_file,
+    fs::path mod_dir, std::queue<fs::path>* registered_nrms, REPY_InterpreterIndex subinterp_count) {
     ZoneScoped;
 
     // Initialize Logging
@@ -95,7 +96,7 @@ LifetimeController::LifetimeController(uint8_t* rdram, plog::Severity log_severi
     _py_main_thread = PyEval_SaveThread();
 
     // Create the GlobalRootController:
-    _global_root = new GlobalRootController(rdram);
+    _global_root = new GlobalRootController(rdram, subinterp_count);
 }
 
 LifetimeController::~LifetimeController() {

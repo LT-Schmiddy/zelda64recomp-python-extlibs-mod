@@ -8,6 +8,7 @@
 
 // General
 RECOMP_IMPORT(".", void PythonNative_Preinit_RegisterNrmInModuleSearchPath(const unsigned char* str));
+RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_Preinit_RegisterSubinterpreter());
 RECOMP_IMPORT(".", int PythonNative_Init(u32 log_level, u32 log_to_file, const unsigned char* str));
 RECOMP_IMPORT(".", void PythonNative_Release(REPY_Handle py_object));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_MakeSUH(REPY_Handle py_object));
@@ -17,7 +18,7 @@ RECOMP_IMPORT(".", void PythonNative_SetSUH(REPY_Handle py_object, bool suh_stat
 RECOMP_IMPORT(".", REPY_Handle PythonNative_CopyHandle(REPY_Handle py_object));
 
 // Subinterpreters
-RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_RegisterSubinterpreter());
+
 RECOMP_IMPORT(".", void PythonNative_PushInterpreter(REPY_InterpreterIndex interpreter_handle));
 RECOMP_IMPORT(".", void PythonNative_PopInterpreter());
 RECOMP_IMPORT(".", bool PythonNative_GetInterpreterAutoDisarm(REPY_InterpreterIndex index));
