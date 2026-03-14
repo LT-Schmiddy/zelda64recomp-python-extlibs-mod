@@ -571,7 +571,7 @@ void run_api_tests() {
     // The iterator's current object should be 2. 
     REPY_Handle ac_test_iter_val2 = REPY_IteratorHelper_BorrowCurrent(ac_test_iter);
     validate("ac_test_iter_val2 is valid and == 2", REPY_IsValidHandle(ac_test_iter_val2) && REPY_CastU32(ac_test_iter_val2) == 2);
-    REPY_DeferredCleanupHelper_Destroy(auto_cleanup, true);
+    REPY_DeferredCleanupHelper_Destroy(auto_cleanup);
     // That borrowed handle should have been made invalid by the auto cleanup.
     validate("ac_test_iter_val2 was invalidated by auto-cleanup", !REPY_IsValidHandle(ac_test_iter_val2));
     REPY_Release(auto_cleanup_test_list);

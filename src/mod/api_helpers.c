@@ -108,6 +108,6 @@ RECOMP_EXPORT void REPY_DeferredCleanupHelper_CleanNow(REPY_DeferredCleanupHelpe
     REPY_DeferredCleanupHelperInternal_CleanNow((REPY_DeferredCleanupHelperInternal*) cleanup);
 }
 
-RECOMP_EXPORT void REPY_DeferredCleanupHelper_Destroy(REPY_DeferredCleanupHelper* cleanup, bool clean_now) {
-    REPY_DeferredCleanupHelperInternal_Destroy((REPY_DeferredCleanupHelperInternal*) cleanup, clean_now);
+RECOMP_EXPORT void REPY_DeferredCleanupHelper_Destroy(REPY_DeferredCleanupHelper* cleanup) {
+    REPY_DeferredCleanupHelperInternal_Destroy((REPY_DeferredCleanupHelperInternal*) cleanup, true);
 }
