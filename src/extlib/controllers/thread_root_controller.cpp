@@ -102,6 +102,11 @@ REPY_Handle ThreadRootController::create_handle(py::object* obj) {
     return _global_root->create_handle(obj, get_current_interp_index());
 }
 
+REPY_Handle ThreadRootController::copy_handle(REPY_Handle handle) {
+    ZoneScoped;
+    return _global_root->copy_handle(handle);
+}
+
 REPY_InterpreterIndex ThreadRootController::get_py_object_interpreter(REPY_Handle handle) {
     ZoneScoped;
     return _global_root->get_py_object_interpreter(handle);

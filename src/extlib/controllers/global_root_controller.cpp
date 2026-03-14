@@ -85,6 +85,35 @@ REPY_Handle GlobalRootController::create_handle(py::object* obj, REPY_Interprete
     return new_handle;
 }
 
+REPY_Handle GlobalRootController::copy_handle(REPY_Handle handle) {
+    ZoneScoped;
+    std::lock_guard lock(_handles_mutex);
+    if (handle == 0) {
+        PLOGF.printf("REPY_Handle 0 was used in a case where a valid Python handle is required");
+    } 
+    assert(handle != 0);
+
+    REPY_HandleEntry* entry = _handles.get(handle);
+    if (entry == NULL) {
+        PLOGF.printf("0x%08X is not a valid REPY_Handle");
+    } 
+    assert(entry != NULL);
+
+    REPY_Handle retVal = _handles.add(&entry->py_object, entry->interp_index);
+
+    if (entry->is_single_use) {
+        _suh_release_queue.push(handle);
+        PLOGD.printf("-> REPY_Handle 0x%08X from interpreter %u copied to 0x%08X (SUH)", handle, retVal, entry->interp_index);
+    } else {
+        PLOGD.printf("-> REPY_Handle 0x%08X from interpreter %u copied to 0x%08X", handle, retVal, entry->interp_index);
+    }
+    IF_PLOG(plog::verbose) {
+        std::u8string repr_str = py::repr(entry->py_object).cast<std::u8string>();
+        PLOGV.printf("Handle 0x%08X: %s", handle, repr_str.c_str());
+    }
+    return retVal;
+}
+
 REPY_InterpreterIndex GlobalRootController::get_py_object_interpreter(REPY_Handle handle) {
     ZoneScoped;
     std::lock_guard lock(_handles_mutex);
@@ -132,7 +161,6 @@ py::object* GlobalRootController::get_py_object(REPY_Handle handle, REPY_Interpr
         PLOGV.printf("Handle 0x%08X: %s", handle, repr_str.c_str());
     }
     return &entry->py_object;
-    
 }
 
 bool GlobalRootController::is_valid_handle(REPY_Handle handle) {

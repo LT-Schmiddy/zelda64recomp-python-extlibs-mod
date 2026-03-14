@@ -33,6 +33,7 @@ public:
 
     // Handles:
     REPY_Handle create_handle(py::object* obj, REPY_InterpreterIndex interp_index);
+    REPY_Handle copy_handle(REPY_Handle handle);
     REPY_InterpreterIndex get_py_object_interpreter(REPY_Handle handle);
     py::object* get_py_object(REPY_Handle handle, REPY_InterpreterIndex current_interp_index);
     bool is_valid_handle(REPY_Handle handle);

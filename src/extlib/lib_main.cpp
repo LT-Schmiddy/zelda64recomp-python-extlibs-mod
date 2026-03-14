@@ -17,14 +17,13 @@ std::unique_ptr<LifetimeController> l_controller = nullptr;
 GlobalRootController* g_controller = nullptr;
 thread_local ThreadRootController* t_controller = nullptr;
 
-// The only function (currently) that gets this version is PythonNative_PushInterpreter,
-// But we're doing is this way so that it's next to the other one. Better organized.
+// Only a handful of functions are allowed to initialize a t_controller.
+// Specifically, those that don't rely on the interpreter stack.
 #define INTERP_API_HEADER_CREATE_T_CONTROLLER \
     if (UNLIKELY(t_controller == nullptr)) { \
         t_controller = l_controller->get_current_thread_root_controller(); \
     } \
     t_controller->set_rdram(rdram); \
-
 
 // Common code for the beginning of all native API function.
 // There's no point creating a ThreadRootController on any function besides
@@ -82,7 +81,7 @@ RECOMP_DLL_FUNC(PythonNative_Init) {
 // ======================================  General: ====================================== 
 RECOMP_DLL_FUNC(PythonNative_Release) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
 
     int handle = RECOMP_ARG(int, 0);
     t_controller->release_handle(handle);
@@ -90,7 +89,7 @@ RECOMP_DLL_FUNC(PythonNative_Release) {
 
 RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     t_controller->set_handle_suh(handle, true);
@@ -100,7 +99,7 @@ RECOMP_DLL_FUNC(PythonNative_MakeSUH) {
 
 RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     RECOMP_RETURN(bool, t_controller->is_valid_handle(handle));
@@ -108,7 +107,7 @@ RECOMP_DLL_FUNC(PythonNative_IsValidHandle) {
 
 RECOMP_DLL_FUNC(PythonNative_GetSUH) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     RECOMP_RETURN(bool, t_controller->get_handle_suh(handle));
@@ -116,7 +115,7 @@ RECOMP_DLL_FUNC(PythonNative_GetSUH) {
 
 RECOMP_DLL_FUNC(PythonNative_SetSUH) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     // Don't need the API header for this
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_Handle value = RECOMP_ARG(bool, 1);
@@ -125,9 +124,9 @@ RECOMP_DLL_FUNC(PythonNative_SetSUH) {
 
 RECOMP_DLL_FUNC(PythonNative_CopyHandle) {
     ZoneScoped;
-    INTERP_API_HEADER;
-    py::object* object = RECOMP_ARG_PYOBJECT(0);
-    REPY_Handle new_handle = t_controller->create_handle(object);
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
+    REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
+    REPY_Handle new_handle = t_controller->copy_handle(handle);
     t_controller->release_suh_handles();
     RECOMP_RETURN(REPY_Handle, new_handle);
 }
@@ -155,7 +154,7 @@ RECOMP_DLL_FUNC(PythonNative_GetCurrentInterpreter) {
 
 RECOMP_DLL_FUNC(PythonNative_GetInterpreterAutoDisarm) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
     ThreadInterpreterController* sc = t_controller->get_interp(index);
     u32 retVal = sc->get_auto_disarm();
@@ -164,7 +163,7 @@ RECOMP_DLL_FUNC(PythonNative_GetInterpreterAutoDisarm) {
 
 RECOMP_DLL_FUNC(PythonNative_SetInterpreterAutoDisarm) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     REPY_InterpreterIndex index = RECOMP_ARG(REPY_InterpreterIndex, 0);
     u32 val = RECOMP_ARG(u32, 1);
     ThreadInterpreterController* sc = t_controller->get_interp(index);
@@ -173,7 +172,7 @@ RECOMP_DLL_FUNC(PythonNative_SetInterpreterAutoDisarm) {
 
 RECOMP_DLL_FUNC(PythonNative_GetHandleInterpreter) {
     ZoneScoped;
-    INTERP_API_HEADER;
+    INTERP_API_HEADER_CREATE_T_CONTROLLER;
     REPY_Handle handle = RECOMP_ARG(REPY_Handle, 0);
     REPY_InterpreterIndex retVal = t_controller->get_py_object_interpreter(handle);
     RECOMP_RETURN(REPY_InterpreterIndex, retVal);
@@ -194,30 +193,37 @@ RECOMP_DLL_FUNC(PythonNative_AddCStrToSysPath) {
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::u8string module_name = RECOMP_ARG_U8STR(0);
-    std::u8string code_string = RECOMP_ARG_U8STR(1);
-    bool add_to_sys = RECOMP_ARG(bool, 2);
-
-    t_controller->construct_module(module_name, code_string, add_to_sys);
+    try {
+        std::u8string module_name = RECOMP_ARG_U8STR(0);
+        std::u8string code_string = RECOMP_ARG_U8STR(1);
+        bool add_to_sys = RECOMP_ARG(bool, 2);
+        t_controller->construct_module(module_name, code_string, add_to_sys);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::u8string module_name = RECOMP_ARG_U8STR(0);
-    int32_t code_len = RECOMP_ARG(int32_t, 2);
-    std::u8string code_string = RECOMP_ARG_U8STR_N(1, code_len);
-    bool add_to_sys = RECOMP_ARG(bool, 3);
-
-    t_controller->construct_module(module_name, code_string, add_to_sys);
+    try {
+        std::u8string module_name = RECOMP_ARG_U8STR(0);
+        int32_t code_len = RECOMP_ARG(int32_t, 2);
+        std::u8string code_string = RECOMP_ARG_U8STR_N(1, code_len);
+        bool add_to_sys = RECOMP_ARG(bool, 3);
+        t_controller->construct_module(module_name, code_string, add_to_sys);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 RECOMP_DLL_FUNC(PythonNative_ImportModule) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::u8string module_name = RECOMP_ARG_U8STR(0);
-
     try {
+        std::u8string module_name = RECOMP_ARG_U8STR(0);
         py::module_ mod = py::module_::import((const char *)module_name.c_str());
         REPY_Handle handle = t_controller->create_handle(&mod);
         RECOMP_RETURN(REPY_Handle, handle);
@@ -232,21 +238,31 @@ RECOMP_DLL_FUNC(PythonNative_ImportModule) {
 #define PYTHON_OBJECT_CREATE(fname, c_type, py_type) \
 RECOMP_DLL_FUNC(fname) { \
     ZoneScoped; \
-    INTERP_API_HEADER \
-    c_type value = RECOMP_ARG(c_type, 0); \
-    py_type obj = py_type(value); \
-    int new_handle = t_controller->create_handle((py::object*)&obj); \
-    RECOMP_RETURN(int, new_handle); \
+    INTERP_API_HEADER; \
+    try { \
+        c_type value = RECOMP_ARG(c_type, 0); \
+        py_type obj = py_type(value); \
+        REPY_Handle new_handle = t_controller->create_handle((py::object*)&obj); \
+        RECOMP_RETURN(REPY_Handle, new_handle); \
+    } catch (py::error_already_set &e) { \
+        t_controller->handle_exception(&e); \
+        RECOMP_RETURN(REPY_Handle, 0); \
+    } \
 }
 
 #define PYTHON_OBJECT_CAST(fname, c_type, py_type) \
 RECOMP_DLL_FUNC(fname) { \
     ZoneScoped; \
-    INTERP_API_HEADER \
-    py_type* obj = (py_type*)RECOMP_ARG_PYOBJECT(0); \
-    c_type retVal = obj->cast<c_type>(); \
-    t_controller->release_suh_handles(); \
-    RECOMP_RETURN(c_type, retVal); \
+    INTERP_API_HEADER; \
+    try { \
+        py_type* obj = (py_type*)RECOMP_ARG_PYOBJECT(0); \
+        c_type retVal = obj->cast<c_type>(); \
+        t_controller->release_suh_handles(); \
+        RECOMP_RETURN(c_type, retVal); \
+    } catch (py::error_already_set &e) { \
+        t_controller->handle_exception(&e); \
+        t_controller->release_suh_handles(); \
+    } \
 }
 
 #define PYTHON_OBJECT_CREATECAST(fname, c_type, py_type) \
@@ -268,24 +284,32 @@ PYTHON_OBJECT_CREATECAST(F32, float, py::float_);
 RECOMP_DLL_FUNC(name) { \
     ZoneScoped; \
     INTERP_API_HEADER \
-    PTR(c_type) location = RECOMP_ARG(PTR(c_type), 0); \
-    /* 0 for read, 1 for write */ \
     bool op_mode = RECOMP_ARG(bool, 1); \
-    if (op_mode) { \
-        /* Writing: */ \
-        /* We only need this if we're writing, and use while reading will give an error: */ \
-        py_type* obj = (py_type*)RECOMP_ARG_PYOBJECT(1); \
-        c_type val = obj->cast<c_type>(); \
-        memcpy_rev_to_recomp(rdram, location, (uint8_t*)&val, sizeof(c_type)); \
+    try { \
+        PTR(c_type) location = RECOMP_ARG(PTR(c_type), 0); \
+        /* 0 for read, 1 for write */ \
+        if (op_mode) { \
+            /* Writing: */ \
+            /* We only need this if we're writing, and use while reading will give an error: */ \
+            py_type* obj = (py_type*)RECOMP_ARG_PYOBJECT(1); \
+            c_type val = obj->cast<c_type>(); \
+            memcpy_rev_to_recomp(rdram, location, (uint8_t*)&val, sizeof(c_type)); \
+            t_controller->release_suh_handles(); \
+            RECOMP_RETURN(REPY_Handle, 0); \
+        } else { \
+            /* Reading: */ \
+            c_type val; \
+            memcpy_rev_from_recomp(rdram, (uint8_t*)&val, location, sizeof(c_type)); \
+            py_type obj = py_type(val); \
+            REPY_Handle retVal = t_controller->create_handle(&obj); \
+            RECOMP_RETURN(REPY_Handle, retVal); \
+        } \
+    } catch (py::error_already_set &e) { \
+        t_controller->handle_exception(&e); \
         t_controller->release_suh_handles(); \
-        RECOMP_RETURN(REPY_Handle, 0); \
-    } else { \
-        /* Reading: */ \
-        c_type val; \
-        memcpy_rev_from_recomp(rdram, (uint8_t*)&val, location, sizeof(c_type)); \
-        py_type obj = py_type(val); \
-        REPY_Handle retVal = t_controller->create_handle(&obj); \
-        RECOMP_RETURN(REPY_Handle, retVal); \
+        if (!op_mode) { \
+            RECOMP_RETURN(REPY_Handle, 0); \
+        } \
     } \
 }
 
@@ -293,27 +317,35 @@ NUMBER64_OPERATION(PythonNative_U64Operation, uint64_t, py::int_);
 NUMBER64_OPERATION(PythonNative_S64Operation, int64_t, py::int_);
 NUMBER64_OPERATION(PythonNative_F64Operation, double, py::float_);
 
-
 // ======================================  String Casting: ======================================
 RECOMP_DLL_FUNC(PythonNative_CreateStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::u8string value = RECOMP_ARG_U8STR(0);
-
-    py::str obj = py::str(value);
-    REPY_Handle retVal = t_controller->create_handle(&obj);
-    RECOMP_RETURN(REPY_Handle, retVal);
+    try {
+        std::u8string value = RECOMP_ARG_U8STR(0);
+        py::str obj = py::str(value);
+        REPY_Handle retVal = t_controller->create_handle(&obj);
+        RECOMP_RETURN(REPY_Handle, retVal);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 RECOMP_DLL_FUNC(PythonNative_CreateStrN) {
     ZoneScoped;
     INTERP_API_HEADER;
-    int32_t str_len = RECOMP_ARG(int32_t, 1);
-    std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
+    try {
+        int32_t str_len = RECOMP_ARG(int32_t, 1);
+        std::u8string value = RECOMP_ARG_U8STR_N(0, str_len);
+        py::str obj = py::str(value);
+        REPY_Handle retVal = t_controller->create_handle(&obj);
+        RECOMP_RETURN(REPY_Handle, retVal);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 
-    py::str obj = py::str(value);
-    REPY_Handle retVal = t_controller->create_handle(&obj);
-    RECOMP_RETURN(REPY_Handle, retVal);
 }
 
 // Cast and allocate str. Both functions are always called in succession
@@ -322,10 +354,17 @@ thread_local static std::u8string cached_return_u8string;
 RECOMP_DLL_FUNC(PythonNative_CastStr_Prepare) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
-    cached_return_u8string = str->cast<std::u8string>();
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, cached_return_u8string.size());
+    try {
+	    py::str* str = (py::str*)RECOMP_ARG_PYOBJECT(0);
+        cached_return_u8string = str->cast<std::u8string>();
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(int32_t, cached_return_u8string.size());
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
+    
 }
 
 RECOMP_DLL_FUNC(PythonNative_CastStr_Copy) {
@@ -343,22 +382,34 @@ RECOMP_DLL_FUNC(PythonNative_CastStr_Copy) {
 RECOMP_DLL_FUNC(PythonNative_CreateByteStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::string value = RECOMP_ARG_STR(0);
-
-    py::bytes obj = py::bytes(value);
-    REPY_Handle retVal = t_controller->create_handle(&obj);
-    RECOMP_RETURN(REPY_Handle, retVal);
+    try {
+        std::string value = RECOMP_ARG_STR(0);
+        py::bytes obj = py::bytes(value);
+        REPY_Handle retVal = t_controller->create_handle(&obj);
+        RECOMP_RETURN(REPY_Handle, retVal);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 RECOMP_DLL_FUNC(PythonNative_CreateByteStrN) {
     ZoneScoped;
     INTERP_API_HEADER;
-    int32_t str_len = RECOMP_ARG(int32_t, 1);
-    std::string value = RECOMP_ARG_STR_N(0, str_len);
 
-    py::bytes obj = py::bytes(value);
-    REPY_Handle retVal = t_controller->create_handle(&obj);
-    RECOMP_RETURN(REPY_Handle, retVal);
+
+    try {
+        int32_t str_len = RECOMP_ARG(int32_t, 1);
+        std::string value = RECOMP_ARG_STR_N(0, str_len);
+
+        py::bytes obj = py::bytes(value);
+        REPY_Handle retVal = t_controller->create_handle(&obj);
+        RECOMP_RETURN(REPY_Handle, retVal);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 // Cast and allocate bytes. Both functions are always called in succession
@@ -367,10 +418,16 @@ thread_local static std::string cached_return_string;
 RECOMP_DLL_FUNC(PythonNative_CastByteStr_Prepare) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::bytes* str = (py::bytes*)RECOMP_ARG_PYOBJECT(0);
-    cached_return_string = str->cast<std::string>();
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(int32_t, cached_return_string.size());
+    try {
+	    py::bytes* str = (py::bytes*)RECOMP_ARG_PYOBJECT(0);
+        cached_return_string = str->cast<std::string>();
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(int32_t, cached_return_string.size());
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 RECOMP_DLL_FUNC(PythonNative_CastByteStr_Copy) {
@@ -406,22 +463,27 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
 RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
     ZoneScoped;
     INTERP_API_HEADER;
-    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
-    uint32_t data_size = RECOMP_ARG(uint32_t, 1);
-    bool reverse = RECOMP_ARG(bool, 2);
-    py::bytes* bytes_obj = (py::bytes*)RECOMP_ARG_PYOBJECT(3);
+    try {
+	    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
+        uint32_t data_size = RECOMP_ARG(uint32_t, 1);
+        bool reverse = RECOMP_ARG(bool, 2);
+        py::bytes* bytes_obj = (py::bytes*)RECOMP_ARG_PYOBJECT(3);
 
-    py::buffer_info info = py::buffer(*bytes_obj).request();
-    uint8_t* buf_data = (uint8_t*)info.ptr;
-    py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
-    if (reverse) {
-        memcpy_rev_to_recomp(rdram, data_ptr, buf_data, buf_size);
-    } else {
-        memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
+        py::buffer_info info = py::buffer(*bytes_obj).request();
+        uint8_t* buf_data = (uint8_t*)info.ptr;
+        py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
+        if (reverse) {
+            memcpy_rev_to_recomp(rdram, data_ptr, buf_data, buf_size);
+        } else {
+            memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
+        }
+
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(uint32_t, buf_size);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
     }
-
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, buf_size);
 }
 
 RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
@@ -445,22 +507,28 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
 RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
     ZoneScoped;
     INTERP_API_HEADER;
-    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
-    uint32_t data_size = RECOMP_ARG(uint32_t, 1);
-    bool reverse = RECOMP_ARG(bool, 2);
-    py::bytearray* bytes_obj = (py::bytearray*)RECOMP_ARG_PYOBJECT(3);
+    try {
+	    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
+        uint32_t data_size = RECOMP_ARG(uint32_t, 1);
+        bool reverse = RECOMP_ARG(bool, 2);
+        py::bytearray* bytes_obj = (py::bytearray*)RECOMP_ARG_PYOBJECT(3);
 
-    py::buffer_info info = py::buffer(*bytes_obj).request();
-    uint8_t* buf_data = (uint8_t*)info.ptr;
-    py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
-    if (reverse) {
-        memcpy_rev_to_recomp(rdram, data_ptr, buf_data, buf_size);
-    } else {
-        memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
+        py::buffer_info info = py::buffer(*bytes_obj).request();
+        uint8_t* buf_data = (uint8_t*)info.ptr;
+        py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
+        if (reverse) {
+            memcpy_rev_to_recomp(rdram, data_ptr, buf_data, buf_size);
+        } else {
+            memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
+        }
+
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(uint32_t, buf_size);
+	
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
     }
-
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, buf_size);
 }
 
 // ====================================== Indexing and Slicing Operations: ====================================== 
@@ -468,40 +536,59 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
 RECOMP_DLL_FUNC(PythonNative_Len) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* object = RECOMP_ARG_PYOBJECT(0);
-    uint32_t len_val = py::len(*object);
-    
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(uint32_t, len_val);
+    try {
+	    py::object* object = RECOMP_ARG_PYOBJECT(0);
+        uint32_t len_val = py::len(*object);
+        
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(uint32_t, len_val);
+	
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 // ====================================== Iteration: ======================================
 RECOMP_DLL_FUNC(PythonNative_Iter) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0); 
 
-    py::object iter = py::iter(*obj);
-    REPY_Handle handle = t_controller->create_handle(&iter);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
+    try {
+	    py::object* obj = RECOMP_ARG_PYOBJECT(0); 
+
+        py::object iter = py::iter(*obj);
+        REPY_Handle handle = t_controller->create_handle(&iter);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
+	
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
 }
 
 RECOMP_DLL_FUNC(PythonNative_Next) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0); 
     bool process_stop_iteration = RECOMP_ARG(bool, 2);
-    py::object* default_obj; 
-    py::object entry;
-
     try {
+        py::object* obj = RECOMP_ARG_PYOBJECT(0); 
+        py::object* default_obj; 
+        py::object entry;
         if (RECOMP_ARG(REPY_Handle, 1) != 0) {
             default_obj = RECOMP_ARG_PYOBJECT(1); 
             entry = t_controller->py_next()(*obj, *default_obj);
         } else {
             entry = t_controller->py_next()(*obj);
         }
+
+        REPY_Handle handle = t_controller->create_handle(&entry);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
+
     } catch (py::error_already_set &e) {
         if (!e.type().is(t_controller->py_stop_iteration_type()) || !process_stop_iteration) {
             t_controller->handle_exception(&e);
@@ -513,10 +600,6 @@ RECOMP_DLL_FUNC(PythonNative_Next) {
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
-    REPY_Handle handle = t_controller->create_handle(&entry);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 // ====================================== Tuple: ====================================== 
@@ -549,10 +632,10 @@ RECOMP_DLL_FUNC(PythonNative_TupleGetIndexS32) {
     ZoneScoped;
     INTERP_API_HEADER;
 
-    py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
     int index = RECOMP_ARG(int, 1); 
 
     try {
+        py::tuple* tuple = (py::tuple*)RECOMP_ARG_PYOBJECT(0); 
         py::object obj = (*tuple)[index];
         
         REPY_Handle handle = t_controller->create_handle(&obj);
@@ -571,9 +654,9 @@ RECOMP_DLL_FUNC(PythonNative_CreatePairCStr) {
     INTERP_API_HEADER;
 
     std::u8string key = RECOMP_ARG_U8STR(0); 
-    py::object* value = RECOMP_ARG_PYOBJECT(1); 
 
     try {
+        py::object* value = RECOMP_ARG_PYOBJECT(1); 
         py::list tmp = py::list();
         tmp.append(py::str(key));
         tmp.append(*value);
@@ -594,11 +677,11 @@ RECOMP_DLL_FUNC(PythonNative_CreatePairCStr) {
 RECOMP_DLL_FUNC(PythonNative_CreateDict) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::dict new_dict = py::dict();
 
     uint32_t size = RECOMP_ARG(uint32_t, 0);
     REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 1);
     try {
+        py::dict new_dict = py::dict();
         for (int i = 0; i < size; i++) {
             py::tuple* pair = (py::tuple*)t_controller->get_py_object(va_args_ptr[i]);
             new_dict[(*pair)[0]] = (*pair)[1];
@@ -905,22 +988,22 @@ RECOMP_DLL_FUNC(PythonNative_DelAttrCStr) {
 RECOMP_DLL_FUNC(PythonNative_Compile) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::str* code_str = (py::str*)RECOMP_ARG_PYOBJECT(0);
-    py::str* identifier_str = (py::str*)RECOMP_ARG_PYOBJECT(1);
-    py::str* type_str = (py::str*)RECOMP_ARG_PYOBJECT(2);
-
-    py::object bytecode;
     try {
         // PLOGD.printf("Compiling %s", identifier_str->cast<std::u8string>().c_str()); // I want to print whenever inline code caches get printed.
+        py::str* code_str = (py::str*)RECOMP_ARG_PYOBJECT(0);
+        py::str* identifier_str = (py::str*)RECOMP_ARG_PYOBJECT(1);
+        py::str* type_str = (py::str*)RECOMP_ARG_PYOBJECT(2);
+
+        py::object bytecode;
         bytecode = t_controller->py_compile()(code_str, identifier_str, type_str);
+        REPY_Handle handle = t_controller->create_handle(&bytecode);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-    REPY_Handle handle = t_controller->create_handle(&bytecode);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
@@ -929,19 +1012,17 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStr) {
     std::string code_str = RECOMP_ARG_STR(0);
     std::string identifier = RECOMP_ARG_STR(1);
     int32_t code_type = RECOMP_ARG(int32_t, 2);
-
-    py::object bytecode;
     try {
+        py::object bytecode;
         // PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
         bytecode = t_controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
+        REPY_Handle handle = t_controller->create_handle(&bytecode);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
-    REPY_Handle handle = t_controller->create_handle(&bytecode);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
@@ -952,215 +1033,216 @@ RECOMP_DLL_FUNC(PythonNative_CompileCStrN) {
     std::string identifier = RECOMP_ARG_STR(2);
     int32_t code_type = RECOMP_ARG(int32_t, 3);
 
-    py::object bytecode;
     try {
+        py::object bytecode;
         // PLOGD.printf("Compiling %s", identifier.c_str()); // I want to print whenever inline code caches get printed.
         bytecode = t_controller->py_compile()(code_str, identifier, code_type_strs[code_type]);
+        REPY_Handle handle = t_controller->create_handle(&bytecode);
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
-    REPY_Handle handle = t_controller->create_handle(&bytecode);
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Exec) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
-    py::dict empty_globals = py::dict();
-    py::dict* globals = &empty_globals; 
-    if (RECOMP_ARG(REPY_Handle, 1) != 0) {
-        globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
-    }
-
-    py::dict* locals;
-    if (RECOMP_ARG(REPY_Handle, 2) == 0) {
-        locals = globals;
-    } else {
-        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
-    }
-
     try {
+        py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
+        py::dict empty_globals = py::dict();
+        py::dict* globals = &empty_globals; 
+        if (RECOMP_ARG(REPY_Handle, 1) != 0) {
+            globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+        }
+
+        py::dict* locals;
+        if (RECOMP_ARG(REPY_Handle, 2) == 0) {
+            locals = globals;
+        } else {
+            locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+        }
+
         t_controller->py_exec()(bytecode, globals, locals);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(bool, true);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::string code_string = RECOMP_ARG_STR(0);
-    py::dict empty_globals = py::dict();
-    py::dict* globals = &empty_globals; 
-    if (RECOMP_ARG(REPY_Handle, 1) != 0) {
-        globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
-    }
-    
-
-    py::dict* locals;
-    if (RECOMP_ARG(REPY_Handle, 2) == 0) {
-        locals = globals;
-    } else {
-        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
-    }
-
     try {
+        std::string code_string = RECOMP_ARG_STR(0);
+        py::dict empty_globals = py::dict();
+        py::dict* globals = &empty_globals; 
+        if (RECOMP_ARG(REPY_Handle, 1) != 0) {
+            globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+        }
+
+        py::dict* locals;
+        if (RECOMP_ARG(REPY_Handle, 2) == 0) {
+            locals = globals;
+        } else {
+            locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+        }
+
         t_controller->py_exec()(code_string, globals, locals);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(bool, true);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(bool, true);
+
 }
 
 RECOMP_DLL_FUNC(PythonNative_ExecCStrN) {
     ZoneScoped;
     INTERP_API_HEADER;
-    int32_t code_len = RECOMP_ARG(int32_t, 1);
-    std::string code_string = RECOMP_ARG_STR_N(0, code_len);
-    py::dict empty_globals = py::dict();
-    py::dict* globals = &empty_globals; 
-    if (RECOMP_ARG(REPY_Handle, 2) != 0) {
-        globals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
-    }
-
-    py::dict* locals;
-    if (RECOMP_ARG(REPY_Handle, 3) == 0) {
-        locals = globals;
-    } else {
-        locals = (py::dict*)RECOMP_ARG_PYOBJECT(3);
-    }
-
     try {
+        int32_t code_len = RECOMP_ARG(int32_t, 1);
+        std::string code_string = RECOMP_ARG_STR_N(0, code_len);
+        py::dict empty_globals = py::dict();
+        py::dict* globals = &empty_globals; 
+        if (RECOMP_ARG(REPY_Handle, 2) != 0) {
+            globals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+        }
+
+        py::dict* locals;
+        if (RECOMP_ARG(REPY_Handle, 3) == 0) {
+            locals = globals;
+        } else {
+            locals = (py::dict*)RECOMP_ARG_PYOBJECT(3);
+        }
         t_controller->py_exec()(code_string, globals, locals);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(bool, true);
+
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_Eval) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
-    py::dict empty_globals = py::dict();
-    py::dict* globals = &empty_globals; 
-    if (RECOMP_ARG(REPY_Handle, 1) != 0) {
-        globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
-    }
-    
-    py::dict* locals;
-    if (RECOMP_ARG(REPY_Handle, 2) == 0) {
-        locals = globals;
-    } else {
-        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
-    }
-    
-    py::object result;
+
     try {
+        py::object* bytecode = RECOMP_ARG_PYOBJECT(0);
+        py::dict empty_globals = py::dict();
+        py::dict* globals = &empty_globals; 
+        if (RECOMP_ARG(REPY_Handle, 1) != 0) {
+            globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+        }
+        
+        py::dict* locals;
+        if (RECOMP_ARG(REPY_Handle, 2) == 0) {
+            locals = globals;
+        } else {
+            locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+        }
+        
+        py::object result;
         result = t_controller->py_eval()(bytecode, globals, locals);
+
+        REPY_Handle handle = t_controller->create_handle(&result);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
-    REPY_Handle handle = t_controller->create_handle(&result);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_EvalCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::string code_string = RECOMP_ARG_STR(0);
-    py::dict empty_globals = py::dict();
-    py::dict* globals = &empty_globals; 
-    if (RECOMP_ARG(REPY_Handle, 1) != 0) {
-        globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
-    }
-    
-    py::dict* locals;
-    if (RECOMP_ARG(REPY_Handle, 2) == 0) {
-        locals = globals;
-    } else {
-        locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
-    }
-
-    py::object result;
     try {
+        std::string code_string = RECOMP_ARG_STR(0);
+        py::dict empty_globals = py::dict();
+        py::dict* globals = &empty_globals; 
+        if (RECOMP_ARG(REPY_Handle, 1) != 0) {
+            globals = (py::dict*)RECOMP_ARG_PYOBJECT(1);
+        }
+        
+        py::dict* locals;
+        if (RECOMP_ARG(REPY_Handle, 2) == 0) {
+            locals = globals;
+        } else {
+            locals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+        }
+
+        py::object result;
         result = t_controller->py_eval()(code_string, globals, locals);
+
+        REPY_Handle handle = t_controller->create_handle(&result);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
-    REPY_Handle handle = t_controller->create_handle(&result);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_EvalCStrN) {
     ZoneScoped;
     INTERP_API_HEADER;
-    int32_t code_len = RECOMP_ARG(int32_t, 1);
-    std::string code_string = RECOMP_ARG_STR_N(0, code_len);
 
-    py::dict empty_globals = py::dict();
-    py::dict* globals = &empty_globals; 
-    if (RECOMP_ARG(REPY_Handle, 2) != 0) {
-        globals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
-    }
-
-    py::dict* locals;
-    if (RECOMP_ARG(REPY_Handle, 3) == 0) {
-        locals = globals;
-    } else {
-        locals = (py::dict*)RECOMP_ARG_PYOBJECT(3);
-    }
-
-    py::object result;
     try {
+        int32_t code_len = RECOMP_ARG(int32_t, 1);
+        std::string code_string = RECOMP_ARG_STR_N(0, code_len);
+
+        py::dict empty_globals = py::dict();
+        py::dict* globals = &empty_globals; 
+        if (RECOMP_ARG(REPY_Handle, 2) != 0) {
+            globals = (py::dict*)RECOMP_ARG_PYOBJECT(2);
+        }
+
+        py::dict* locals;
+        if (RECOMP_ARG(REPY_Handle, 3) == 0) {
+            locals = globals;
+        } else {
+            locals = (py::dict*)RECOMP_ARG_PYOBJECT(3);
+        }
+
+        py::object result;
         result = t_controller->py_eval()(code_string, globals, locals);
+        REPY_Handle handle = t_controller->create_handle(&result);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
-    REPY_Handle handle = t_controller->create_handle(&result);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_VL)  {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::dict new_dict;
-    py::dict* target_dict = &new_dict;
-
-    // use the provided dict, if one exists.
-    REPY_Handle retVal = RECOMP_ARG(REPY_Handle, 0);
-    if (retVal) {
-        target_dict = (py::dict*)RECOMP_ARG_PYOBJECT(0);
-    }
-
-    uint32_t size = RECOMP_ARG(uint32_t, 1);
-    REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 2);
     try {
+        py::dict new_dict;
+        py::dict* target_dict = &new_dict;
+
+        // use the provided dict, if one exists.
+        REPY_Handle retVal = RECOMP_ARG(REPY_Handle, 0);
+        if (retVal) {
+            target_dict = (py::dict*)RECOMP_ARG_PYOBJECT(0);
+        }
+
+        uint32_t size = RECOMP_ARG(uint32_t, 1);
+        REPY_Handle* va_args_ptr = RECOMP_ARG(REPY_Handle*, 2);
+
         for (int i = 0; i < size; i++) {
             py::object* obj = t_controller->get_py_object(va_args_ptr[i]);
             (*target_dict)[py::str(std::format("_{}", i))] = *obj;
@@ -1186,11 +1268,11 @@ RECOMP_DLL_FUNC(PythonNative_VL)  {
 RECOMP_DLL_FUNC(PythonNative_Call) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
-    py::tuple* args = RECOMP_ARG(REPY_Handle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : NULL;
-    py::dict* kwargs = RECOMP_ARG(REPY_Handle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : NULL;
-
     try {
+        py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
+        py::tuple* args = RECOMP_ARG(REPY_Handle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : NULL;
+        py::dict* kwargs = RECOMP_ARG(REPY_Handle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : NULL;
+
         if (args != NULL && kwargs != NULL) {
             (*func)(*(*args), **(*kwargs));
         } else if (args != NULL && kwargs == NULL) {
@@ -1199,26 +1281,26 @@ RECOMP_DLL_FUNC(PythonNative_Call) {
             (*func)(**(*kwargs));
         } else /* if (args == NULL && kwargs == NULL) */ {
             (*func)();
-        } 
+        }
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(bool, true);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallReturn) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
-    py::tuple* args = RECOMP_ARG(REPY_Handle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : NULL;
-    py::dict* kwargs = RECOMP_ARG(REPY_Handle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : NULL;
-
-    py::object result;
     try {
+        py::function* func = (py::function*)RECOMP_ARG_PYOBJECT(0);
+        py::tuple* args = RECOMP_ARG(REPY_Handle, 1) ? (py::tuple*)RECOMP_ARG_PYOBJECT(1) : NULL;
+        py::dict* kwargs = RECOMP_ARG(REPY_Handle, 2) ? (py::dict*)RECOMP_ARG_PYOBJECT(2) : NULL;
+
+        py::object result;
+
         if (args != NULL && kwargs != NULL) {
             result = (*func)(*(*args), **(*kwargs));
         } else if (args != NULL && kwargs == NULL) {
@@ -1228,26 +1310,26 @@ RECOMP_DLL_FUNC(PythonNative_CallReturn) {
         } else /* if (args == NULL && kwargs == NULL) */ {
             result = (*func)();
         } 
+        
+        REPY_Handle handle = t_controller->create_handle(&result);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-
-    REPY_Handle handle = t_controller->create_handle(&result);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    py::object* name = RECOMP_ARG_PYOBJECT(1);
-    py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
-    py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
     
     try {
+        py::object* obj = RECOMP_ARG_PYOBJECT(0);
+        py::object* name = RECOMP_ARG_PYOBJECT(1);
+        py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
+        py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
         if (args != NULL && kwargs != NULL) {
             obj->attr(*name)(*(*args), **(*kwargs));
         } else if (args != NULL && kwargs == NULL) {
@@ -1256,26 +1338,26 @@ RECOMP_DLL_FUNC(PythonNative_CallAttr) {
             obj->attr(*name)(**(*kwargs));
         } else /* if (args == NULL && kwargs == NULL) */ {
             obj->attr(*name)();
-        } 
+        }
+
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(bool, true);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
     ZoneScoped;
-    INTERP_API_HEADER;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    std::u8string name = RECOMP_ARG_U8STR(1);
-    py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
-    py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
-    
+    INTERP_API_HEADER;    
     try {
+        py::object* obj = RECOMP_ARG_PYOBJECT(0);
+        std::u8string name = RECOMP_ARG_U8STR(1);
+        py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
+        py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
+
         if (args != NULL && kwargs != NULL) {
             obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
         } else if (args != NULL && kwargs == NULL) {
@@ -1285,25 +1367,25 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStr) {
         } else /* if (args == NULL && kwargs == NULL) */ {
             obj->attr((char*)name.c_str())();
         } 
+
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(bool, true);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(bool, false);
     }
-
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(bool, true);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrReturn) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    py::object* name = RECOMP_ARG_PYOBJECT(1);
-    py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
-    py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
-    py::object result;
     try {
+        py::object* obj = RECOMP_ARG_PYOBJECT(0);
+        py::object* name = RECOMP_ARG_PYOBJECT(1);
+        py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
+        py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
+        py::object result;
         if (args != NULL && kwargs != NULL) {
             result = obj->attr(*name)(*(*args), **(*kwargs));
         } else if (args != NULL && kwargs == NULL) {
@@ -1313,26 +1395,26 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrReturn) {
         } else /* if (args == NULL && kwargs == NULL) */ {
             result = obj->attr(*name)();
         } 
+        REPY_Handle handle = t_controller->create_handle(&result);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-    
-    REPY_Handle handle = t_controller->create_handle(&result);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
     ZoneScoped;
     INTERP_API_HEADER;
-    py::object* obj = RECOMP_ARG_PYOBJECT(0);
-    std::u8string name = RECOMP_ARG_U8STR(1);
-    py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
-    py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
-    py::object result;
     try {
+        py::object* obj = RECOMP_ARG_PYOBJECT(0);
+        std::u8string name = RECOMP_ARG_U8STR(1);
+        py::tuple* args = RECOMP_ARG(REPY_Handle, 2) ? (py::tuple*)RECOMP_ARG_PYOBJECT(2) : NULL;
+        py::dict* kwargs = RECOMP_ARG(REPY_Handle, 3) ? (py::dict*)RECOMP_ARG_PYOBJECT(3) : NULL;
+        py::object result;
+
         if (args != NULL && kwargs != NULL) {
             result = obj->attr((char*)name.c_str())(*(*args), **(*kwargs));
         } else if (args != NULL && kwargs == NULL) {
@@ -1342,15 +1424,14 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
         } else /* if (args == NULL && kwargs == NULL) */ {
             result = obj->attr((char*)name.c_str())();
         } 
+        REPY_Handle handle = t_controller->create_handle(&result);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         t_controller->release_suh_handles();
         RECOMP_RETURN(REPY_Handle, 0);
     }
-    
-    REPY_Handle handle = t_controller->create_handle(&result);
-    t_controller->release_suh_handles();
-    RECOMP_RETURN(REPY_Handle, handle);
 }
 
 
@@ -1359,11 +1440,18 @@ RECOMP_DLL_FUNC(PythonNative_CallAttrCStrReturn) {
 RECOMP_DLL_FUNC(PythonNative_GetFileFromPathCStr) {
     ZoneScoped;
     INTERP_API_HEADER;
-    std::u8string filepath = RECOMP_ARG_U8STR(0);
-    py::object zip_obj = t_controller->get_zipfile_from_path(filepath);
-    REPY_Handle retVal = t_controller->create_handle(&zip_obj);
+    try {
+	    std::u8string filepath = RECOMP_ARG_U8STR(0);
+        py::object zip_obj = t_controller->get_zipfile_from_path(filepath);
+        REPY_Handle retVal = t_controller->create_handle(&zip_obj);
 
-    RECOMP_RETURN(REPY_Handle, retVal);
+        RECOMP_RETURN(REPY_Handle, retVal);
+    } catch (py::error_already_set &e) {
+        t_controller->handle_exception(&e);
+        t_controller->release_suh_handles();
+        RECOMP_RETURN(REPY_Handle, 0);
+    }
+
 }
 
 // ====================================== Errors: ====================================== 
