@@ -98,12 +98,12 @@ RECOMP_EXPORT void REPY_AddCStrToSysPath(const char* filepath) {
     PythonNative_AddCStrToSysPath(filepath);
 }
 
-RECOMP_EXPORT void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys) {
-    PythonNative_ConstructModuleFromCStr(identifier, code, add_to_sys);
+RECOMP_EXPORT REPY_Handle REPY_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys) {
+    return PythonNative_ConstructModuleFromCStr(identifier, code, add_to_sys);
 }
 
-RECOMP_EXPORT void REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, bool add_to_sys) {
-    PythonNative_ConstructModuleFromCStrN(identifier, code, len, add_to_sys);
+RECOMP_EXPORT REPY_Handle REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, bool add_to_sys) {
+    return PythonNative_ConstructModuleFromCStrN(identifier, code, len, add_to_sys);
 }
 
 RECOMP_EXPORT REPY_Handle REPY_ImportModule(const char* identifier) {

@@ -28,8 +28,8 @@ RECOMP_IMPORT(".", REPY_InterpreterIndex PythonNative_GetHandleInterpreter(REPY_
 
 // Modules
 RECOMP_IMPORT(".", void PythonNative_AddCStrToSysPath(const char* filepath));
-RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys));
-RECOMP_IMPORT(".", void PythonNative_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, bool add_to_sys));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_ConstructModuleFromCStr(const char* identifier, const char* code, bool add_to_sys));
+RECOMP_IMPORT(".", REPY_Handle PythonNative_ConstructModuleFromCStrN(const char* identifier, const char* code, u32 len, bool add_to_sys));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_ImportModule(const char* identifier));
 
 // Casting Primatives

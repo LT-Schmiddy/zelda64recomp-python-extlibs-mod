@@ -11,22 +11,6 @@
     \
  */
 
-
-// Ultratypes used by the Python API:
-typedef signed char            REPY_s8;
-typedef unsigned char          REPY_u8;
-typedef signed short int       REPY_s16;
-typedef unsigned short int     REPY_u16;
-typedef signed long            REPY_s32;
-typedef unsigned long          REPY_u32;
-typedef signed long long int   REPY_s64;
-typedef unsigned long long int REPY_u64;
-
-typedef float  REPY_f32;
-typedef double REPY_f64;
-
-typedef _Bool REPY_bool;
-
 /**
  * @brief The mod id string for REPY.
  * 
@@ -62,6 +46,114 @@ typedef _Bool REPY_bool;
 /** \defgroup repy_types Types
  * \brief All of the C types that REPY defines.
  *  @{
+ */
+
+/** \defgroup repy_numerical_types Numerical Types
+ * \brief Numerical Types used by REPY.
+ * 
+ * The `repy_api.h` header specifies it's own numerical types to avoid relying on libultra headers.
+ *  @{
+ */
+
+ /**
+  * @brief A signed, 8-bit integer compatible with libultra's `s8`.
+  * 
+  * Casting from the libultra `s8` type should not be required.
+  */
+typedef signed char            REPY_s8;
+
+ /**
+  * @brief An unsigned, 8-bit integer compatible with libultra's `u8`.
+  * 
+  * Casting from the libultra `u8` type should not be required.
+  */
+typedef unsigned char          REPY_u8;
+
+ /**
+  * @brief A signed, 16-bit integer compatible with libultra's `s16`.
+  * 
+  * Casting from the libultra `s16` type should not be required.
+  */
+typedef signed short int       REPY_s16;
+
+ /**
+  * @brief An unsigned, 16-bit integer compatible with libultra's `u16`.
+  * 
+  * Casting from the libultra `u16` type should not be required.
+  */
+typedef unsigned short int     REPY_u16;
+
+ /**
+  * @brief A signed, 32-bit integer compatible with libultra's `s32`.
+  * 
+  * Casting from the libultra `s8` type should not be required.
+  */
+typedef signed long            REPY_s32;
+
+ /**
+  * @brief An unsigned, 13-bit integer compatible with libultra's `u32`.
+  * 
+  * Casting from the libultra `u32` type should not be required.
+  */
+typedef unsigned long          REPY_u32;
+
+ /**
+  * @brief A signed, 64-bit integer compatible with libultra's `s64`.
+  * 
+  * Casting from the libultra `s64` type should not be required.
+  */
+typedef signed long long int   REPY_s64;
+
+ /**
+  * @brief An unsigned, 64-bit integer compatible with libultra's `u64`.
+  * 
+  * Casting from the libultra `s64` type should not be required.
+  */
+typedef unsigned long long int REPY_u64;
+
+ /**
+  * @brief A 32-bit floating point value compatible with libultra's `f32`.
+  * 
+  * Casting from the libultra `f32` type should not be required.
+  */
+typedef float  REPY_f32;
+
+ /**
+  * @brief A 64-bit floating point value compatible with libultra's `f64`.
+  * 
+  * Casting from the libultra `f64` type should not be required.
+  */
+typedef double REPY_f64;
+
+/**
+ * @brief A boolean type compatible with libultra's `bool` type.
+ * 
+ * Casting from the libultra `bool` type should not be required.
+ */
+typedef _Bool REPY_bool;
+
+/**
+ * @brief Used to set the type of code-string being compiled, in line with how Python's
+ * built-in `compile` function operates.
+ * 
+ * Used with `REPY_CompileCStr` and `REPY_CompileCStr`. `REPY_Compile` accepts a `REPY_Handle` argument instead, 
+ * which should reference a Python `str` object.
+ * 
+ * See `REPY_CodeModeEnum` for values.
+ */
+typedef enum REPY_CodeModeEnum {
+    REPY_CODE_EXEC = 0, ///< Equivalent to `exec`
+    REPY_CODE_EVAL = 1, ///< Equivalent to `eval`
+    REPY_CODE_SINGLE = 2 ///< Equivalent to `single`
+} REPY_CodeMode;
+
+/** @}*/
+
+/** \defgroup repy_handle_types Handle Types
+ * \brief Types used by REPY to represent entities that exist outside of mod code.
+ * 
+ * Generally, these are represented using integer values.
+ * @{
  */
 
 /**
@@ -109,13 +201,6 @@ typedef _Bool REPY_bool;
 typedef unsigned int REPY_Handle;
 
 /**
- * @brief Represents the absence of a Python object in REPY API functions.
- * 
- * A more readable alternative to simply entering 0.
- */
-#define REPY_NO_OBJECT 0
-
-/**
  * @brief Index value for a specific Python interpreter, either the main interpreter or a registered subinterpreter.
  * 
  * Values of `REPY_InterpreterIndex` follow this schema:
@@ -126,33 +211,45 @@ typedef unsigned int REPY_Handle;
  */
 typedef signed int REPY_InterpreterIndex;
 
+/** \defgroup repy_handle_types_special_values Handle Special Values
+ * \brief Macros representing special values for REPY \ref repy_handle_types.
+ * 
+ * Read the descriptions to see which handle type the macro goes with.
+ * @{
+ */
+
 /**
- * @brief Represents the index of the main Python interpreter.
+ * @brief Represents the absence of a Python object in REPY API functions. Goes with `REPY_Handle`.
+ * 
+ * A more readable alternative to simply entering 0.
+ */
+#define REPY_NO_OBJECT 0
+
+/**
+ * @brief Represents the index of the main Python interpreter. Goes with `REPY_InterpreterIndex`.
  * 
  * A more readable alternative to simply entering 0.
  */
 #define REPY_MAIN_INTERPRETER 0
 
 /**
- * @brief A value indicating that the interpreter stack is empty.
+ * @brief A value indicating that the interpreter stack is empty. Goes with `REPY_InterpreterIndex`.
  * 
  * A more readable alternative to simply entering -1.
  * 
  */
 #define REPY_INTERPRETER_STACK_EMPTY -1
 
-/**
- * @brief Used to set the type of code-string being compiled, in line with how Python's
- * built-in `compile` function operates.
+/** @}*/
+/** @}*/
+
+/** \defgroup repy_object_types Object Types
+ * \brief Types used by REPY for objects that exist in mod memory.
  * 
- * Used with `REPY_CompileCStr` and `REPY_CompileCStr`. `REPY_Compile` accepts a `REPY_Handle` argument instead, 
- * which should reference a Python `str` object.
+ * Specified as `void` in this header to conceal internals for ABI compatability.
+ * Use pointers to access the objects themselves.
+ * @{
  */
-typedef enum REPY_CodeMode {
-    REPY_CODE_EXEC = 0,
-    REPY_CODE_EVAL = 1,
-    REPY_CODE_SINGLE = 2
-} REPY_CodeMode;
 
 /**
  * @brief Helper object used to when iterating through Python objects in loops in C code.
@@ -206,6 +303,7 @@ typedef void REPY_IfStmtHelper;
 typedef void REPY_DeferredCleanupHelper;
 
 /** @}*/
+
 /** @}*/
 
 /** \defgroup repy_events Events
@@ -2061,7 +2159,7 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_PreInitRegisterSubinterpreter());
  * 
  * It is safe to use this function with a Single-Use handle, since it will not try to release the handle twice.
  * 
- * @param REPY_Release The handle to release.
+ * @param py_handle The handle to release.
  */
 REPY_IMPORT(void REPY_Release(REPY_Handle py_handle));
 
@@ -2128,7 +2226,7 @@ REPY_IMPORT(void REPY_SetSUH(REPY_Handle py_handle_no_release, REPY_bool value))
  * Note that, unlike the other functions in this category, this function WILL release Single-Use handles.
  * In the future, a `_no_release` version of this function may be added.
  * 
- * @param py_handle_no_release A handle for an object you need another handle to.
+ * @param handle_no_release A handle for an object you need another handle to.
  * @return A new handle to the same object.
  */
 REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release));
@@ -2227,13 +2325,13 @@ REPY_IMPORT(REPY_InterpreterIndex REPY_GetHandleInterpreter(REPY_Handle handle_n
 REPY_IMPORT(void REPY_AddCStrToSysPath(const char* filepath));
 
 /**
- * @brief Adds this NRM to the current interpreter's `sys.path. 
+ * @brief Adds this NRM to the current interpreter's `sys.path`. 
  * 
- *  Unlike `REPY_PreInitAddToSysPath`, this will only add a path to the current interpreter. The `sys.path` values of any
-  * other interpreters defined before this point will be unaffected.
-  * 
-  * This function is defined as `inline` in the `repy_api.h` header in order to be able to grab this mod's nrm path, and
-  * is primarily a wrapper for `REPY_AddCStrToSysPath`.
+ * Unlike `REPY_PreInitAddToSysPath`, this will only add a path to the current interpreter. The `sys.path` values of any
+* other interpreters defined before this point will be unaffected.
+* 
+* This function is defined as `inline` in the `repy_api.h` header in order to be able to grab this mod's nrm path, and
+* is primarily a wrapper for `REPY_AddCStrToSysPath`.
  */
 inline void REPY_AddNrmToSysPath() {
     const char* filepath = (const char*) recomp_get_mod_file_path();
@@ -2248,8 +2346,9 @@ inline void REPY_AddNrmToSysPath() {
  * 
  * @param identifier The name of the new module. Should be NULL-terminated.
  * @param code The Python code for the module. Should be NULL-terminated.
+ * @param  REPY_bool add_to_sys The Python code for the module. Should be NULL-terminated.
  */
-REPY_IMPORT(void REPY_ConstructModuleFromCStr(const char* identifier, const char* code, REPY_bool add_to_sys));
+REPY_IMPORT(REPY_Handle REPY_ConstructModuleFromCStr(const char* identifier, const char* code, REPY_bool add_to_sys));
 
 /**
  * @brief Construct a new Python module from a `char` array, importable by name.
@@ -2260,7 +2359,7 @@ REPY_IMPORT(void REPY_ConstructModuleFromCStr(const char* identifier, const char
  * @param code The Python code for the module. Does not need to be null terminated.
  * @param len The length of the Python code, in bytes.
  */
-REPY_IMPORT(void REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, REPY_u32 len, REPY_bool add_to_sys));
+REPY_IMPORT(REPY_Handle REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, REPY_u32 len, REPY_bool add_to_sys));
 
 /**
  * @brief Imports a Python module by name and returns a handle to it.
@@ -3407,7 +3506,7 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStr(const char* code, REPY_Handle global_scope
 REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Handle global_scope_nullable, REPY_Handle local_scope_nullable));
 
 /**
- * @brief Adds the Python object represented by a set of `REPY_handle`s to a dict, using the keys following the scheme `_0`, `_1`, `_2`, etc.
+ * @brief Adds the Python object represented by a set of `REPY_Handle` handles to a dict, using the keys following the scheme `_0`, `_1`, `_2`, etc.
  * These keys serve as valid Python variable names to be used in code strings.
  * 
  * This is a convienience function for quick `REPY_Exec` and `REPY_Eval` statements where establishing a
@@ -3418,9 +3517,9 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Hand
  * `dict` will have new key-value pairs added to it, and **provided** handle is returned (that is to say, no new handle is created). 
  * Be advised that this will cause issues if `dict_nullable` is Single-Use.
  * 
- * @param dict_no_release Should be either a valid `REPY_Handle for a dictionary, or `REPY_NO_OBJECT`.
+ * @param dict_no_release Should be either a valid `REPY_Handle` for a dictionary, or `REPY_NO_OBJECT`.
  * @param size the number of Python objects to add to the `dict`
- * @param ... The Python objects to add to the dict. 
+ * @param ... The Python objects to add to the `dict`. 
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
  * `REPY_NO_OBJECT`
  */
@@ -3447,11 +3546,11 @@ REPY_IMPORT(REPY_Handle REPY_VariadicLocals(REPY_Handle dict_nullable, REPY_u32 
  * Also important, because this function marks the returned `REPY_Handle` as single use, but can potentially return the same handle as it was given,
  * the handle for `dict_nullable` will become Single-Use if it was previously permanent.
  * 
- * @param dict_no_release Should be either a valid `REPY_Handle for a dictionary, or `REPY_NO_OBJECT`.
+ * @param dict_no_release Should be either a valid `REPY_Handle` for a dictionary, or `REPY_NO_OBJECT`.
  * @param size the number of Python objects to add to the `dict`
  * @param ... The Python objects to add to the dict. 
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
- * `REPY_NO_OBJECT`
+ * `REPY_NO_OBJECT`.
  */
 REPY_IMPORT(REPY_Handle REPY_VariadicLocals_SUH(REPY_Handle dict_nullable, REPY_u32 size, ...));
 
@@ -3662,7 +3761,7 @@ inline REPY_Handle REPY_GetNrmZipFile() {
  * The pointer returned by this function must be freed with `recomp_free`. Failure to do so will result in a memory leak.
  * 
  * @param category A category prefix for the filename string. Usually the name of the invoking macro.
- * @param filename A C filename to associate with a piece of Python code. Usually `_FILE_NAME__.
+ * @param filename A C filename to associate with a piece of Python code. Usually `_FILE_NAME__`.
  * @param function_name The name of C function to associate with a piece of Python code. Usually `__func__`.
  * @param line_number A line number in a C file to associate with a piece of Python code. Usually `__LINE__`.
  * @param identifier An identifiying string for a piece of Python code. Usually the bytecode identifier from the C file.
@@ -3670,9 +3769,7 @@ inline REPY_Handle REPY_GetNrmZipFile() {
  */
 REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename, char* function_name, REPY_u32 line_number, char* identifier));
 
-/** @}*/
-
-/** \defgroup repy_iterator_helper_methods `REPY_IteratorHelper` Methods
+/** \defgroup repy_iterator_helper_methods REPY_IteratorHelper Methods
  * \brief Method functions to operate on `REPY_IteratorHelper` objects.
  * 
  *  @{
@@ -3738,7 +3835,7 @@ REPY_IMPORT(REPY_Handle REPY_IteratorHelper_BorrowCurrent(REPY_IteratorHelper* h
 
 /** @}*/
 
-/** \defgroup repy_if_stmt_chain_methods `REPY_IfStmtChain` Methods
+/** \defgroup repy_if_stmt_chain_methods REPY_IfStmtChain Methods
  * \brief Method functions to operate on `REPY_IfStmtChain` objects.
  * 
  *  @{
@@ -3750,7 +3847,7 @@ REPY_IMPORT(REPY_Handle REPY_IteratorHelper_BorrowCurrent(REPY_IteratorHelper* h
  * Invoked as part of `REPY_IfStmtHelper` operations, but exposed for manual use here.
  * 
  * @param expr_string The Python expression to evaluate. Should be a NULL-terminated C string. Will be compiled into Python bytecode immediately.
- * @param filename A C filename to associate with the Python expression. Usually `_FILE_NAME__.
+ * @param filename A C filename to associate with the Python expression. Usually `_FILE_NAME__`.
  * @param function_name The name of C function to associate with the Python expression. Usually `__func__`.
  * @param line_number A line number in a C file to associate with the Python expression. Usually `__LINE__`.
  * @param identifier An identifiying string for the Python expression. Usually the bytecode identifier from the C file.
@@ -3821,7 +3918,7 @@ REPY_IMPORT(void REPY_IfStmtChain_StealEvalBytecode(REPY_IfStmtChain* chain, REP
 
 /** @}*/
 
-/** \defgroup repy_if_stmt_helper_methods `REPY_IfStmtHelper` Methods
+/** \defgroup repy_if_stmt_helper_methods REPY_IfStmtHelper Methods
  * \brief Method functions to operate on `REPY_IfStmtHelper` objects.
  * 
  *  @{
@@ -3860,7 +3957,7 @@ REPY_IMPORT(void REPY_IfStmtHelper_Destroy(REPY_IfStmtHelper* helper));
  * @param local_scope The local scope `dict` to evaluate the expression in.
  * @param expr_string The Python expression to evaluate. Should be a NULL-terminated C string. Will be compiled into Python bytecode immediately.
  * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
- * @param filename A C filename to associate with the Python expression. Usually `_FILE_NAME__.
+ * @param filename A C filename to associate with the Python expression. Usually `_FILE_NAME__`.
  * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
  * @param function_name The name of C function to associate with the Python expression. Usually `__func__`.
  * This argument is only used if there is no next link in the `REPY_IfStmtChain` chain (meaning the link needs to be created).
@@ -3873,7 +3970,7 @@ REPY_IMPORT(REPY_bool REPY_IfStmtHelper_Step(REPY_IfStmtHelper* helper, REPY_Han
 
 /** @}*/
 
-/** \defgroup repy_deferred_cleanup_helper_methods `REPY_DeferredCleanupHelper` Methods
+/** \defgroup repy_deferred_cleanup_helper_methods REPY_DeferredCleanupHelper Methods
  * \brief Method functions to operate on `REPY_DeferredCleanupHelper` objects.
  * 
  *  @{
@@ -3903,18 +4000,69 @@ REPY_IMPORT(REPY_DeferredCleanupHelper* REPY_DeferredCleanupHelper_Create());
 REPY_IMPORT(REPY_Handle REPY_DeferredCleanupHelper_AddHandle(REPY_DeferredCleanupHelper* cleanup, REPY_Handle handle_no_release));
 
 /**
- * @brief Adds a `void*` to be freed with `recomp_free` by a `REPY_DeferredCleanupHelper` instance.
+ * @brief Adds a region of memory (specified by a `void*`) to be freed with `recomp_free` by a `REPY_DeferredCleanupHelper` instance.
  * 
- * @param REPY_DeferredCleanupHelper_AddRecompFree 
+ * The `REPY_DeferredCleanupHelper` will now be responsible for freeing this memory. Do not free it yourself.
+ * 
+ * The memory will be released using `recomp_free`. If `recomp_free` is not the appropriate for releasing this memory,
+ * then do not use this mechanism. In the future, `REPY_DeferredCleanupHelper` may be updated to allow specifying custom
+ * types to be released. 
+ * 
+ * For the sake of easily wrapping other function calls, this function returns the same `void*`it was given.
+ * 
+ * @param cleanup The `REPY_DeferredCleanupHelper` to add `pointer` to.
+ * @param pointer A `void*` to be freed by this cleanup helper.
+ * @return the `void*` specified in `pointer`.
  */
 REPY_IMPORT(void* REPY_DeferredCleanupHelper_AddRecompFree(REPY_DeferredCleanupHelper* cleanup, void* pointer));
+
+/**
+ * @brief Adds a `REPY_IteratorHelper` to be destroyed by a `REPY_DeferredCleanupHelper` instance.
+ * 
+ * The `REPY_DeferredCleanupHelper` will now be responsible for destroying this `REPY_IteratorHelper`. Do not destroy it yourself.
+ * 
+ * For the sake of easily wrapping other function calls, this function returns the same `REPY_IteratorHelper*` it was given.
+ * 
+ * @param cleanup The `REPY_DeferredCleanupHelper` to add `iterator_helper` to.
+ * @param iterator_helper A `REPY_IteratorHelper` to be released by this cleanup helper.
+ * @return the `REPY_IteratorHelper` specified in `iterator_helper`.
+ */
 REPY_IMPORT(REPY_IteratorHelper* REPY_DeferredCleanupHelper_AddIteratorHelper(REPY_DeferredCleanupHelper* cleanup, REPY_IteratorHelper* iterator_helper));
+
+/**
+ * @brief Adds a `REPY_IfStmtHelper` to be destroyed by a `REPY_DeferredCleanupHelper` instance.
+ * 
+ * The `REPY_DeferredCleanupHelper` will now be responsible for destroying this `REPY_IfStmtHelper`. Do not destroy it yourself.
+ * 
+ * For the sake of easily wrapping other function calls, this function returns the same `REPY_IfStmtHelper*` it was given.
+ * 
+ * @param cleanup The `REPY_DeferredCleanupHelper` to add `if_stmt_helper` to.
+ * @param if_stmt_helper A `REPY_IfStmtHelper` to be released by this cleanup helper.
+ * @return the `REPY_IfStmtHelper` specified in `if_stmt_helper`.
+ */
 REPY_IMPORT(REPY_IfStmtHelper* REPY_DeferredCleanupHelper_AddIfStmtHelper(REPY_DeferredCleanupHelper* cleanup, REPY_IfStmtHelper* if_stmt_helper));
+
+/**
+ * @brief Clean up all of the resources registered to a `REPY_DeferredCleanupHelper` without destroying the instance itself.
+ * 
+ * The `REPY_DeferredCleanupHelper` now be considered empty again, and thus you can reuse it by adding new resources for it to clean up.
+ * 
+ * @param cleanup The `REPY_DeferredCleanupHelper` to run.
+ */
 REPY_IMPORT(void REPY_DeferredCleanupHelper_CleanNow(REPY_DeferredCleanupHelper* cleanup));
+
+/**
+ * @brief Destroy a `REPY_DeferredCleanupHelper` instance and clean up all of the resources registered to it.
+ * 
+ * It is safe to destroy a `REPY_DeferredCleanupHelper` instance that never had any resources added to it.
+ * 
+ * @param cleanup The `REPY_DeferredCleanupHelper` to run.
+ */
 REPY_IMPORT(void REPY_DeferredCleanupHelper_Destroy(REPY_DeferredCleanupHelper* cleanup));
 
 /** @}*/
 /** @}*/
 /** @}*/
 /** @}*/
+
 #endif

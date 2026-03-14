@@ -1,6 +1,6 @@
 ## \ingroup py_mem
 ## @{
-## \defgroup py_mem_managed repy_api.mem.managed
+## \defgroup py_mem_byteswapped repy_api.mem.byteswapped
 ## @{
 
 """
@@ -371,3 +371,5 @@ def write_buffer_n(ptr: int, data: bytearray, size: int, reverse: bool = False):
     """
     _recomp_mem_byteswapped.write_buffer_n(ptr, data, size, reverse)
     
+## @}
+## @}

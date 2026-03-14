@@ -197,7 +197,9 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStr) {
         std::u8string module_name = RECOMP_ARG_U8STR(0);
         std::u8string code_string = RECOMP_ARG_U8STR(1);
         bool add_to_sys = RECOMP_ARG(bool, 2);
-        t_controller->construct_module(module_name, code_string, add_to_sys);
+        py::object retVal = t_controller->construct_module(module_name, code_string, add_to_sys);
+        REPY_Handle new_handle = t_controller->create_handle((py::object*)&retVal);
+        RECOMP_RETURN(REPY_Handle, new_handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         RECOMP_RETURN(REPY_Handle, 0);
@@ -212,7 +214,9 @@ RECOMP_DLL_FUNC(PythonNative_ConstructModuleFromCStrN) {
         int32_t code_len = RECOMP_ARG(int32_t, 2);
         std::u8string code_string = RECOMP_ARG_U8STR_N(1, code_len);
         bool add_to_sys = RECOMP_ARG(bool, 3);
-        t_controller->construct_module(module_name, code_string, add_to_sys);
+        py::object retVal = t_controller->construct_module(module_name, code_string, add_to_sys);
+        REPY_Handle new_handle = t_controller->create_handle((py::object*)&retVal);
+        RECOMP_RETURN(REPY_Handle, new_handle);
     } catch (py::error_already_set &e) {
         t_controller->handle_exception(&e);
         RECOMP_RETURN(REPY_Handle, 0);
