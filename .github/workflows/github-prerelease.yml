@@ -21,7 +21,7 @@ jobs:
     - name: Get Apt Packages
       id: get_apt_packages
       run: |-
-        sudo apt install -y ninja-build jq zip
+        sudo apt install -y ninja-build jq zip doxygen
 
     - name: setup-python
       uses: actions/setup-python@v6
@@ -41,7 +41,7 @@ jobs:
     - name: Run Buildscript
       id: run_buildscript
       run: |-
-        python3 ./modbuild.py thunderstore
+        python3 ./modbuild.py thunderstore doxyzip
 
     - name: Upload Build Artifacts
       id: upload_build_artifacts
@@ -73,4 +73,5 @@ jobs:
         files: |
           ./thunderstore_packages/*thunderstore.zip
           ./include_in_dependents/*
+          ./doxygen/*.zip
         prerelease: true
