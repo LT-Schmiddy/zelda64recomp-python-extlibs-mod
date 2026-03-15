@@ -115,7 +115,7 @@ mod_toml_data = {
     "inputs": {
         "elf_path": str(mod_elf_path),
         "additional_files": [ 
-            str(root_dir.joinpath("thumb.dds"))
+            str(root_dir.joinpath("icons/mod/thumb.dds"))
         ],
         "mod_filename": project_name
     }
@@ -131,7 +131,8 @@ tests_toml_data = {
     },
     "inputs": {
         "elf_path": str(tests_elf_path),
-        "additional_files": [],
+        "additional_files": [
+            str(root_dir.joinpath("icons/tests/thumb.dds"))],
         "mod_filename": project_tests_name
     }
 }
@@ -587,7 +588,7 @@ def add_thunderstore_package(job_name: str, package_name: str, version_str: str,
         },
         root_dir.joinpath("thunderstore_info/README.md").read_text(),
         root_dir.joinpath("thunderstore_info/CHANGELOG.md").read_text(),
-        root_dir.joinpath("thumb.png")
+        root_dir.joinpath("icons/mod/thumb.png")
     )
     package.depends_on(dependencies)
     
