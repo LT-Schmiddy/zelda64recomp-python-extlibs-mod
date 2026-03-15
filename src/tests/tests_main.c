@@ -32,7 +32,9 @@ void load_repl() {
 
         REPY_Handle local = REPY_CreateDict(0);
         REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
-        REPY_DictSetCStr(local, "mem_ptr", REPY_CreatePtr_SUH(mem_test));
+        REPY_DictSetCStr(local, "test_ptr", REPY_CreatePtr_SUH(mem_test));
+        REPY_DictSetCStr(local, "min_ptr", REPY_CreatePtr_SUH((void*)0x80000000));
+        REPY_DictSetCStr(local, "max_ptr", REPY_CreatePtr_SUH((void*)0x9FFFFFFF));
         
         REPY_Handle kwargs = REPY_CreateDict(0);
         REPY_DictSetCStr(kwargs, "local", local);
@@ -90,13 +92,13 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     {
         REPY_FN_SETUP;
         int int_ptr = 66;
-        REPY_FN_SET("ptr", REPY_CreatePtr_SUH(&int_ptr));
+        REPY_FN_SET("test_ptr", REPY_CreatePtr_SUH(&int_ptr));
         REPY_FN_EXEC_CACHE(thread_test_2, 
             "import threading, time\n"
             "from repy_api.mem import byteswapped as bs\n"
             "def t_test():\n"
             "    time.sleep(3)\n"
-            "    print(bs.read_s32(ptr))\n"
+            "    print(bs.read_s32(test_ptr))\n"
             "\n"
             "t = threading.Thread(None, t_test)\n"
             "t.start()\n"

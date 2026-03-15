@@ -118,7 +118,7 @@ LifetimeController::~LifetimeController() {
     delete _global_root;
     _global_root = nullptr;
 
-    py::finalize_interpreter();
+    // py::finalize_interpreter();
     PLOGI.printf("REPY: Lifetime Controller Finalized");
 }
 

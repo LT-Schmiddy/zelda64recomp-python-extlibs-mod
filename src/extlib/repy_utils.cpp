@@ -1,4 +1,8 @@
 #include "repy_utils.hpp"
+#include "lib_main.hpp"
+
+#define MAX_PTR -1610612737
+#define MIN_PTR -2147483648
 
 py::bytes recomp_memcpy_to_py_bytes(uint8_t* rdram, int32_t ptr, uint32_t size, bool reverse) {
     // Initalize the Python Object.
@@ -38,4 +42,22 @@ py::bytearray recomp_memcpy_to_py_bytearray(uint8_t* rdram, int32_t ptr, uint32_
 
     // Convert the raw PyObject* to a pybind11 type.
     return py::reinterpret_steal<py::bytearray>(new_bytearray);
+}
+
+void thread_check_exception() {
+    ZoneScoped;
+    // t_controller is thread_local. If it doesn't exist on this thread, then we didn't reach this point by calling a
+    // REPY API function. Therefore, this isn't a N64Recompiled thread.
+    if (t_controller == nullptr) {
+        throw std::runtime_error("Only threads created by N64Recompiled are allowed to access recompiled memory.");
+    }
+}
+
+void mem_bounds_check_exception(int32_t ptr) {
+    ZoneScoped;
+    if (ptr < MIN_PTR || ptr > MAX_PTR) {
+        throw std::range_error(
+            std::format("Address {} is not a valid recompiled memory address. Valid range is between {} and {}, inclusive", ptr, MIN_PTR, MAX_PTR)
+        );
+    }
 }
