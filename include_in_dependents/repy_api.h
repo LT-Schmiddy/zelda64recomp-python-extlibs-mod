@@ -1606,7 +1606,7 @@ REPY_DictSetCStr(REPY_FN_LOCAL_SCOPE, module_name, REPY_MakeSUH(REPY_ImportModul
  * @return The value of the variable as a `REPY_Handle`.
  */
 #define REPY_FN_GET(var_name) \
-REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name);
+REPY_DictGetCStr(REPY_FN_LOCAL_SCOPE, var_name)
 
 /**
  * @brief Sets a variable in the the local scope, using a `REPY_Handle` for the value.
@@ -2340,24 +2340,27 @@ inline void REPY_AddNrmToSysPath() {
 }
 
 /**
- * @brief Construct a new Python module from a NULL-terminated code string, importable by name.
+ * @brief Construct a new Python module from a NULL-terminated code string, optionally importable by name.
  * 
  * The Python code of the module is run immediately, rather than on first import.
  * 
  * @param identifier The name of the new module. Should be NULL-terminated.
  * @param code The Python code for the module. Should be NULL-terminated.
- * @param  REPY_bool add_to_sys The Python code for the module. Should be NULL-terminated.
+ * @param add_to_sys The Python code for the module. Should be NULL-terminated.
+ * @return a new `REPY_Handle` for the module.
  */
 REPY_IMPORT(REPY_Handle REPY_ConstructModuleFromCStr(const char* identifier, const char* code, REPY_bool add_to_sys));
 
 /**
- * @brief Construct a new Python module from a `char` array, importable by name.
+ * @brief Construct a new Python module from a `char` array, optionally importable by name.
  * 
  * The Python code of the module is run immediately, rather than on first import.
  * 
  * @param identifier The name of the new module. Should be NULL-terminated.
  * @param code The Python code for the module. Does not need to be null terminated.
  * @param len The length of the Python code, in bytes.
+ * @param add_to_sys The Python code for the module. Should be NULL-terminated.
+ * @return a new `REPY_Handle` for the module.
  */
 REPY_IMPORT(REPY_Handle REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, REPY_u32 len, REPY_bool add_to_sys));
 
@@ -2756,7 +2759,7 @@ REPY_IMPORT(REPY_f64 REPY_CastF64(REPY_Handle object));
  * The handle returned by this function will need to be released, either by making is Single-Use or by calling `REPY_Release`.
  * Failure to release this handle will result in a memory leak. 
  * 
- * @param value The value for the Python `str`.
+ * @param string The value for the Python `str`.
  * @return A new handle for your Python `str`.
  */
 REPY_IMPORT(REPY_Handle REPY_CreateStr(const char* string));
@@ -3264,7 +3267,7 @@ REPY_IMPORT(REPY_Handle REPY_CreateDict_SUH(REPY_u32 size, ...));
  * Note that any hashable Python type can be used as a dict key, not just `str` objects.
  * 
  * @param dict The `dict` to get an entry from.
- * @param dict The key for the entry. Should be a hashable Python type.
+ * @param key The key for the entry. Should be a hashable Python type.
  * @return The retrieved object. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));
@@ -3276,7 +3279,7 @@ REPY_IMPORT(REPY_Handle REPY_DictGet(REPY_Handle dict, REPY_Handle key));
  * code execution scopes.
  * 
  * @param dict The `dict` to get an entry from.
- * @param dict The key for the entry. Should be a NULL-terminated C string.
+ * @param key The key for the entry. Should be a NULL-terminated C string.
  * @return The retrieved object. Will be `REPY_NO_HANDLE` if an error occured.
  */
 REPY_IMPORT(REPY_Handle REPY_DictGetCStr(REPY_Handle dict, char* key));
@@ -3287,7 +3290,7 @@ REPY_IMPORT(REPY_Handle REPY_DictGetCStr(REPY_Handle dict, char* key));
  * Note that any hashable Python type can be used as a dict key, not just `str` objects.
  * 
  * @param dict The `dict` to insert into.
- * @param dict The key for the entry. Should be a hashable Python type.
+ * @param key The key for the entry. Should be a hashable Python type.
  * @param value The object to add.
  */
 REPY_IMPORT(void REPY_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle value));
@@ -3300,7 +3303,7 @@ REPY_IMPORT(void REPY_DictSet(REPY_Handle dict, REPY_Handle key, REPY_Handle val
  * code execution scopes.
  * 
  * @param dict The `dict` to insert into.
- * @param dict The key for the entry. Should be a NULL-terminated C string.
+ * @param key The key for the entry. Should be a NULL-terminated C string.
  * @param value The object to add.
  */
 REPY_IMPORT(void REPY_DictSetCStr(REPY_Handle dict, char* key, REPY_Handle value));
@@ -3311,7 +3314,7 @@ REPY_IMPORT(void REPY_DictSetCStr(REPY_Handle dict, char* key, REPY_Handle value
  * Note that any hashable Python type can be used as a dict key, not just `str` objects.
  * 
  * @param dict The `dict` to check for a key in.
- * @param dict The key for the entry. Should be a hashable Python type.
+ * @param key The key for the entry. Should be a hashable Python type.
  * @return `true` if the entry exists, `false` otherwise.
  */
 REPY_IMPORT(REPY_bool REPY_DictHas(REPY_Handle dict, REPY_Handle key));
@@ -3323,7 +3326,7 @@ REPY_IMPORT(REPY_bool REPY_DictHas(REPY_Handle dict, REPY_Handle key));
  * code execution scopes.
  * 
  * @param dict The `dict` to check for a key in.
- * @param dict The key for the entry. Should be a NULL-terminated C string.
+ * @param key The key for the entry. Should be a NULL-terminated C string.
  * @return `true` if the entry exists, `false` otherwise.
  */
 REPY_IMPORT(REPY_bool REPY_DictHasCStr(REPY_Handle dict, char* key));
@@ -3334,7 +3337,7 @@ REPY_IMPORT(REPY_bool REPY_DictHasCStr(REPY_Handle dict, char* key));
  * Note that any hashable Python type can be used as a dict key, not just `str` objects.
  * 
  * @param dict The `dict` to remove an entry from.
- * @param dict The key for the entry. Should be a hashable Python type.
+ * @param key The key for the entry. Should be a hashable Python type.
  */
 REPY_IMPORT(void REPY_DictDel(REPY_Handle dict, REPY_Handle key));
 
@@ -3345,7 +3348,7 @@ REPY_IMPORT(void REPY_DictDel(REPY_Handle dict, REPY_Handle key));
  * code execution scopes.
  * 
  * @param dict The `dict` to remove an entry from.
- * @param dict The key for the entry. Should be a NULL-terminated C string.
+ * @param key The key for the entry. Should be a NULL-terminated C string.
  */
 REPY_IMPORT(void REPY_DictDelCStr(REPY_Handle dict, char* key));
 /** @}*/
@@ -3517,13 +3520,13 @@ REPY_IMPORT(REPY_Handle REPY_EvalCStrN(const char* code, REPY_u32 len, REPY_Hand
  * `dict` will have new key-value pairs added to it, and **provided** handle is returned (that is to say, no new handle is created). 
  * Be advised that this will cause issues if `dict_nullable` is Single-Use.
  * 
- * @param dict_no_release Should be either a valid `REPY_Handle` for a dictionary, or `REPY_NO_OBJECT`.
+ * @param dict_nullable_no_release Should be either a valid `REPY_Handle` for a dictionary, or `REPY_NO_OBJECT`.
  * @param size the number of Python objects to add to the `dict`
  * @param ... The Python objects to add to the `dict`. 
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
  * `REPY_NO_OBJECT`
  */
-REPY_IMPORT(REPY_Handle REPY_VariadicLocals(REPY_Handle dict_nullable, REPY_u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_VariadicLocals(REPY_Handle dict_nullable_no_release, REPY_u32 size, ...));
 
 /**
  * @brief Shorthand for `REPY_VariadicLocals`
@@ -3546,13 +3549,13 @@ REPY_IMPORT(REPY_Handle REPY_VariadicLocals(REPY_Handle dict_nullable, REPY_u32 
  * Also important, because this function marks the returned `REPY_Handle` as single use, but can potentially return the same handle as it was given,
  * the handle for `dict_nullable` will become Single-Use if it was previously permanent.
  * 
- * @param dict_no_release Should be either a valid `REPY_Handle` for a dictionary, or `REPY_NO_OBJECT`.
+ * @param dict_nullable_no_release Should be either a valid `REPY_Handle` for a dictionary, or `REPY_NO_OBJECT`.
  * @param size the number of Python objects to add to the `dict`
  * @param ... The Python objects to add to the dict. 
  * @return A `REPY_Handle` for the resulting dict. Will be the same as `dict_nullable` if that argument was set to anything other than
  * `REPY_NO_OBJECT`.
  */
-REPY_IMPORT(REPY_Handle REPY_VariadicLocals_SUH(REPY_Handle dict_nullable, REPY_u32 size, ...));
+REPY_IMPORT(REPY_Handle REPY_VariadicLocals_SUH(REPY_Handle dict_nullable_no_release, REPY_u32 size, ...));
 
 /**
  * @brief Shorthand for `REPY_VariadicLocals_SUH`
@@ -3616,7 +3619,7 @@ REPY_IMPORT(REPY_bool REPY_CallAttr(REPY_Handle object, REPY_Handle name, REPY_H
  * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
  * 
  * @param object The Python object to call a member of.
- * @param func The name of the object attribute to call. Should be a NULL-terminated C string.
+ * @param name The name of the object attribute to call. Should be a NULL-terminated C string.
  * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
  * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
  * @return `true` if the call executed without error, `false` otherwise.
@@ -3634,7 +3637,7 @@ REPY_IMPORT(REPY_bool REPY_CallAttrCStr(REPY_Handle object, char* name, REPY_Han
  * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
  * 
  * @param object The Python object to call a member of.
- * @param func The name of the object attribute to call. Should be a NULL-terminated C string.
+ * @param name The name of the object attribute to call. Should be a NULL-terminated C string.
  * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
  * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
  * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
@@ -3652,7 +3655,7 @@ REPY_IMPORT(REPY_Handle REPY_CallAttrReturn(REPY_Handle object, REPY_Handle name
  * `REPY_CreateTuple_SUH` and `REPY_CreateDict_SUH` serve as easy methods of nesting argument construction into a call to this function.
  * 
  * @param object The Python object to call a member of.
- * @param func The name of the object attribute to call. Should be a NULL-terminated C string.
+ * @param name The name of the object attribute to call. Should be a NULL-terminated C string.
  * @param args_nullable A `tuple` of the positional arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo positional arguments.
  * @param kwargs_nullable A `dict` of the keyword arguments to pass to the function. Use `REPY_NO_OBJECT` to forgo keyword arguments.
  * @return A handle for the resulting object. Will be `REPY_NO_HANDLE` if an error occured.
@@ -3783,6 +3786,7 @@ REPY_IMPORT(char* REPY_InlineCodeSourceStrHelper(char* category, char* filename,
  * @param py_object a `REPY_Handle` for the Python object to iterate through.
  * @param py_scope_nullable a `REPY_Handle` to a Python `dict` being used a local scope. Can be `REPY_NO_OBJECT`.
  * @param var_name the variable name for the `REPY_IteratorHelper` pointer. If `py_scope_nullable` is set to `REPY_NO_OBJECT`, use `NULL`.
+ * @param auto_destroy If true, the `REPY_IteratorHelper` will automatically be destroyed once the loop ends.
  * @return A pointer to the new `REPY_IteratorHelper` on the heap.
  */
 REPY_IMPORT(REPY_IteratorHelper* REPY_IteratorHelper_Create(REPY_Handle py_object, REPY_Handle py_scope_nullable, const char* var_name, REPY_bool auto_destroy));
@@ -3804,7 +3808,6 @@ REPY_IMPORT(void REPY_IteratorHelper_Destroy(REPY_IteratorHelper* helper));
  * Used by the `REPY_FOREACH` and `REPY_FN_FOREACH_CACHE` macros.
  * 
  * @param helper A pointer to the `REPY_IteratorHelper` to update.
- * @param auto_destroy If true, the `REPY_IteratorHelper` will automatically be destroyed once the loop ends.
  * @return `true` if the iteration/loop should continue. `false` once it's time to end.
  */
 REPY_IMPORT(REPY_bool REPY_IteratorHelper_Update(REPY_IteratorHelper* helper));
@@ -3861,7 +3864,7 @@ REPY_IMPORT(REPY_IfStmtChain* REPY_IfStmtChain_Create(char* expr_string, char* f
  * 
  * Exists for completeness sake. Since `REPY_IfStmtChain` pointers should usualy be `static` in their own functions, this doesn't really get much use.
  * 
- * @param helper A pointer to the `REPY_IfStmtChain` to recursively destroy.
+ * @param chain A pointer to the `REPY_IfStmtChain` to recursively destroy.
  */
 REPY_IMPORT(void REPY_IfStmtChain_Destroy(REPY_IfStmtChain* chain));
 
@@ -3929,7 +3932,7 @@ REPY_IMPORT(void REPY_IfStmtChain_StealEvalBytecode(REPY_IfStmtChain* chain, REP
  * 
  * Used by several of the various `REPY_FN_IF_CACHE` macros.
  * 
- * @param root A pointer to the `REPY_IfStmtChain*` (ergo, a douple-pointer) variable for the first link in the if/else chain. For caching purposes, this
+ * @param chain_root A pointer to the `REPY_IfStmtChain*` (ergo, a douple-pointer) variable for the first link in the if/else chain. For caching purposes, this
  * will usually be a `static` variable. If value of the variable at `root` us NULL, that will be taken to mean that the chain has not been created yet
  * (IE, this is the first run of this if/else block).
  * @return A pointer to the new `REPY_IfStmtHelper`.
