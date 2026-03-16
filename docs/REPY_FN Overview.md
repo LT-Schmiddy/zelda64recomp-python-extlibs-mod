@@ -1,5 +1,7 @@
 # The REPY_FN Overview {#repy_fn_overview}
 
+This article gives a bird's eye view of the `REPY_FN` macro system. For a detailed look at all the various REPY_FN macros, see [the `REPY_FN` API topic](@ref repy_fn).
+
 ## Introduction
 
 RecompExternalPython, or REPY for short, is built for the purpose of being an easier alternative to compiling and building external shared libraries (often referred to as 'extlibs' in N64Recomp jargon) for all supported platforms. That particular goal informs everything about REPY's design and how it functions.
@@ -13,7 +15,7 @@ This is what makes the ability to include Python code and command the Python int
 
 The easiest (and generally recommended) way of using REPY is the `REPY_FN` family of macros. This is what enable REPY's advertised seamless inclusion of Python code into mod code functions. As a general overview, it works something like this:
 
-* At the top of your function call `REPY_FN_SETUP` or one of its sister macros to secure access to the Python interpreter and create a Python scope to correspond to your mod function's scope. You may not nest uses of these macros within the same function, but one function with a Python scope may call another function with a Python scope without issue.
+* At the top of your function, call `REPY_FN_SETUP` or one of its sister macros to secure access to the Python interpreter and create a Python scope to correspond to your mod function's scope. You may not nest uses of these macros within the same function, but one function with a Python scope may call another function with a Python scope without issue.
 * Python variables can be set in this scope using `REPY_FN_SET` or one of its sibling macros. Depending on the macro, the value can be a `REPY_Handle` reference to a Python object or an equivalent C-type value.
 * Python variables can be obtained from this scope `REPY_FN_GET` or one of its sibling macros. Depending on the macro, the value can be a `REPY_Handle` reference to a Python object or an equivalent C-type value.
 * Python code can be executed using `REPY_FN_EXEC` or one of it's sibling macros (for performance reasons, `REPY_FN_EXEC_CACHE` is recommended in most cases). The Python code will have access to any Python variables previously defined in this scope, and any resulting variables will be available in the scope afterword.

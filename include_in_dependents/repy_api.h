@@ -2346,7 +2346,8 @@ inline void REPY_AddNrmToSysPath() {
  * 
  * @param identifier The name of the new module. Should be NULL-terminated.
  * @param code The Python code for the module. Should be NULL-terminated.
- * @param add_to_sys The Python code for the module. Should be NULL-terminated.
+ * @param add_to_sys If true, the module is added to Python's `sys.modules`, allowing it to be brought into scope via an `import` statement. 
+ * If false, the module will only be available through the returned `REPY_Handle`.
  * @return a new `REPY_Handle` for the module.
  */
 REPY_IMPORT(REPY_Handle REPY_ConstructModuleFromCStr(const char* identifier, const char* code, REPY_bool add_to_sys));
@@ -2359,7 +2360,8 @@ REPY_IMPORT(REPY_Handle REPY_ConstructModuleFromCStr(const char* identifier, con
  * @param identifier The name of the new module. Should be NULL-terminated.
  * @param code The Python code for the module. Does not need to be null terminated.
  * @param len The length of the Python code, in bytes.
- * @param add_to_sys The Python code for the module. Should be NULL-terminated.
+ * @param add_to_sys If true, the module is added to Python's `sys.modules`, allowing it to be brought into scope via an `import` statement. 
+ * If false, the module will only be available through the returned `REPY_Handle`.
  * @return a new `REPY_Handle` for the module.
  */
 REPY_IMPORT(REPY_Handle REPY_ConstructModuleFromCStrN(const char* identifier, const char* code, REPY_u32 len, REPY_bool add_to_sys));

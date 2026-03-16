@@ -12,7 +12,7 @@ import _recomp_mem_raw
 def create_raw_memoryview(ptr: int, size: int) -> memoryview:
     """@brief Create a Python `memoryview` object granting direct, raw access to recompiled memory.
     
-    Be advised that using a memoryview on a non-N64Recompiled thread may be unsafe.
+    Be advised that using a `memoryview` on a non-N64Recompiled thread may be unsafe.
 
     @param ptr The mod memory address to write to. 
     @param size The maximum size of the memory to write.
