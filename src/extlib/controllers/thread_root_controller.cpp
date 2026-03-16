@@ -8,12 +8,12 @@ ThreadRootController::ThreadRootController(GlobalRootController* global_root, st
     // but actual initialization of ThreadInterpreterControllers will be handled lazily.
     _thread_interps.resize(interp_count, nullptr);
 
-    PLOGI.printf("Creating ThreadRootController (Interpreter Count: %u, Thread %u)", _thread_interps.size(), thread_id);
+    PLOGI << std::format("Creating ThreadRootController (Interpreter Count: {}, Thread {})", _thread_interps.size(), thread_id);
 }
 
 ThreadRootController::~ThreadRootController() {
     ZoneScoped;
-    PLOGI.printf("Deleting ThreadRootController (Interpreter Count: %u, Thread %u)", _thread_interps.size(), _thread_id);
+    PLOGI << std::format("Deleting ThreadRootController (Interpreter Count: {}, Thread {})", _thread_interps.size(), _thread_id);
     
     for (auto it : _thread_interps) {
         delete it;

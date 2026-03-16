@@ -31,7 +31,7 @@ thread_local ThreadRootController* t_controller = nullptr;
 // as empty, which would result in a crash.
 #define INTERP_API_HEADER \
     if (UNLIKELY(t_controller == nullptr)) { \
-        PLOGF.printf("No ThreadRootController exists for thread %u. Perhaps you forgot to call REPY_PushController?", std::this_thread::get_id()); \
+        PLOGF << std::format("No ThreadRootController exists for thread {}. Perhaps you forgot to call REPY_PushController?", std::this_thread::get_id()); \
         assert(t_controller == nullptr); \
     } \
     t_controller->set_rdram(rdram); 

@@ -5,7 +5,7 @@ ThreadInterpreterController::ThreadInterpreterController(GlobalRootController* g
     _global_root = global_root;
     _global_interp = global_interp;
 
-    PLOGI.printf("Creating ThreadInterpreterController (Interpreter %u, Thread %u)", _global_interp->get_index(), std::this_thread::get_id());
+    PLOGI << std::format("Creating ThreadInterpreterController (Interpreter {}, Thread {})", _global_interp->get_index(), std::this_thread::get_id());
 }
 
 ThreadInterpreterController::~ThreadInterpreterController() {
@@ -14,7 +14,7 @@ ThreadInterpreterController::~ThreadInterpreterController() {
     if (_is_active) {
         deactivate();
     }
-    PLOGI.printf("Creating ThreadInterpreterController (Interpreter %u, Thread %u)", _global_interp->get_index());
+    PLOGI << std::format("Destroying ThreadInterpreterController (Interpreter {}, Thread {})", _global_interp->get_index(), std::this_thread::get_id());
 }
 
 // Activation:
