@@ -84,9 +84,8 @@ native_libraries = [
 
         # Memcpy:
         "PythonNative_MemcpyToBytes",
-        "PythonNative_MemcpyFromBytes",
         "PythonNative_MemcpyToByteArray",
-        "PythonNative_MemcpyFromByteArray",
+        "PythonNative_MemcpyFromBuffer",
 
         # Indexing and Slicing
         "PythonNative_Len",

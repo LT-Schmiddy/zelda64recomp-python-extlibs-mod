@@ -69,9 +69,8 @@ RECOMP_IMPORT(".", void PythonNative_CastByteStr_Copy(u32 len, char* dst));
 
 // Memcpy
 RECOMP_IMPORT(".", REPY_Handle PythonNative_MemcpyToBytes(void* src, u32 len, bool reverse));
-RECOMP_IMPORT(".", u32 PythonNative_MemcpyFromBytes(void* src, u32 len, bool reverse, REPY_Handle py_obj));
 RECOMP_IMPORT(".", REPY_Handle PythonNative_MemcpyToByteArray(void* src, u32 len, bool reverse));
-RECOMP_IMPORT(".", u32 PythonNative_MemcpyFromByteArray(void* src, u32 len, bool reverse, REPY_Handle py_obj));
+RECOMP_IMPORT(".", u32 PythonNative_MemcpyFromBuffer(void* src, u32 len, bool reverse, REPY_Handle py_obj));
 
 // Indexing and Slicing
 RECOMP_IMPORT(".", u32 PythonNative_Len(REPY_Handle object));

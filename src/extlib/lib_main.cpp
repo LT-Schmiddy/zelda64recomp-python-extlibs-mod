@@ -464,32 +464,6 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToBytes) {
     }
 }
 
-RECOMP_DLL_FUNC(PythonNative_MemcpyFromBytes) {
-    ZoneScoped;
-    INTERP_API_HEADER;
-    try {
-	    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
-        uint32_t data_size = RECOMP_ARG(uint32_t, 1);
-        bool reverse = RECOMP_ARG(bool, 2);
-        py::bytes* bytes_obj = (py::bytes*)RECOMP_ARG_PYOBJECT(3);
-
-        py::buffer_info info = py::buffer(*bytes_obj).request();
-        uint8_t* buf_data = (uint8_t*)info.ptr;
-        py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
-        if (reverse) {
-            memcpy_rev_to_recomp(rdram, data_ptr, buf_data, buf_size);
-        } else {
-            memcpy_to_recomp(rdram, data_ptr, buf_data, buf_size);
-        }
-
-        t_controller->release_suh_handles();
-        RECOMP_RETURN(uint32_t, buf_size);
-    } catch (py::error_already_set &e) {
-        t_controller->handle_exception(&e);
-        t_controller->release_suh_handles();
-    }
-}
-
 RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
     ZoneScoped;
     INTERP_API_HEADER;
@@ -507,17 +481,16 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyToByteArray) {
     }
 }
 
-
-RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
+RECOMP_DLL_FUNC(PythonNative_MemcpyFromBuffer) {
     ZoneScoped;
     INTERP_API_HEADER;
     try {
 	    PTR(char) data_ptr = RECOMP_ARG(PTR(char), 0);
         uint32_t data_size = RECOMP_ARG(uint32_t, 1);
         bool reverse = RECOMP_ARG(bool, 2);
-        py::bytearray* bytes_obj = (py::bytearray*)RECOMP_ARG_PYOBJECT(3);
+        py::object* obj = RECOMP_ARG_PYOBJECT(3);
 
-        py::buffer_info info = py::buffer(*bytes_obj).request();
+        py::buffer_info info = py::buffer(*obj).request();
         uint8_t* buf_data = (uint8_t*)info.ptr;
         py::ssize_t buf_size = std::min(info.size, (py::ssize_t)data_size); 
         if (reverse) {
@@ -534,6 +507,7 @@ RECOMP_DLL_FUNC(PythonNative_MemcpyFromByteArray) {
         t_controller->release_suh_handles();
     }
 }
+
 
 // ====================================== Indexing and Slicing Operations: ====================================== 
 

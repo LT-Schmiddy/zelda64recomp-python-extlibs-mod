@@ -317,32 +317,18 @@ RECOMP_EXPORT REPY_Handle REPY_MemcpyToBytes(void* src, u32 len, bool reverse) {
     return PythonNative_MemcpyToBytes(src, len, reverse);
 }
 
-RECOMP_EXPORT u32 REPY_MemcpyFromBytes(void* dst, u32 len, bool reverse, REPY_Handle bytes_obj) {
-    return PythonNative_MemcpyFromBytes(dst, len, reverse, bytes_obj);
-}
-
-RECOMP_EXPORT void* REPY_AllocAndCopyBytes(bool reverse, REPY_Handle bytes_obj, u32* write_size) {
-    u32 size = PythonNative_Len(bytes_obj);
-    void* retVal = recomp_alloc(size);
-    u32 _write_size = PythonNative_MemcpyFromBytes(retVal, size, reverse, bytes_obj);
-    if (write_size != NULL) {
-        *write_size = _write_size;
-    }
-    return retVal;
-}
-
 RECOMP_EXPORT REPY_Handle REPY_MemcpyToByteArray(void* src, u32 len, bool reverse) {
     return PythonNative_MemcpyToByteArray(src, len, reverse);
 }
 
-RECOMP_EXPORT u32 REPY_MemcpyFromByteArray(void* dst, u32 len, bool reverse, REPY_Handle bytes_obj) {
-    return PythonNative_MemcpyFromByteArray(dst, len, reverse, bytes_obj);
+RECOMP_EXPORT u32 REPY_MemcpyFromBuffer(void* dst, u32 len, bool reverse, REPY_Handle buffer) {
+    return PythonNative_MemcpyFromBuffer(dst, len, reverse, buffer);
 }
 
-RECOMP_EXPORT void* REPY_AllocAndCopyByteArray(bool reverse, REPY_Handle bytes_obj, u32* write_size) {
-    u32 size = PythonNative_Len(bytes_obj);
+RECOMP_EXPORT void* REPY_AllocAndCopyBuffer(bool reverse, REPY_Handle buffer, u32* write_size) {
+    u32 size = PythonNative_Len(buffer);
     void* retVal = recomp_alloc(size);
-    u32 _write_size = PythonNative_MemcpyFromByteArray(retVal, size, reverse, bytes_obj);
+    u32 _write_size = PythonNative_MemcpyFromBuffer(retVal, size, reverse, buffer);
     if (write_size != NULL) {
         *write_size = _write_size;
     }

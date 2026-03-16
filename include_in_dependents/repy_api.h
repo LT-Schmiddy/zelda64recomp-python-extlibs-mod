@@ -2889,45 +2889,6 @@ REPY_IMPORT(char* REPY_CastByteStr(REPY_Handle object));
 REPY_IMPORT(REPY_Handle REPY_MemcpyToBytes(void* src, REPY_u32 len, REPY_bool reverse));
 
 /**
- * @brief Copy the content of a Python `bytes` object into mod memory.
- * 
- * The `bytes` data will be copied exactly as is, NULL-terminators and all. No additional NULL-terminator will be
- * added to the end of the data.
- * 
- * If the Python `bytes` object is smaller than `len`, then the remainder of destination will be untouched. If the
- * `bytes` object is larger than len, then copying will terminate when `len` is reached. Use the return value to get
- * how many bytes were actually copied.
- * 
- * Behavior with Python types other than `bytes` is undefined, and may change between versions.
- * 
- * @param dst The beginning of the memory region to write to. 
- * @param len The size of the destination region to copy, in bytes. 
- * @param reverse Set to `false` to copy normally, or `true` to reverse the byte order of the data being copied.
- * @param bytes_obj The Python `bytes` object to copy from.
- * @return The number of bytes actually copied.
- */
-REPY_IMPORT(REPY_u32 REPY_MemcpyFromBytes(void* dst, REPY_u32 len, REPY_bool reverse, REPY_Handle bytes_obj));
-
-
-/**
- * @brief Copy the content of a Python `bytes` object into mod memory, automatically allocating the space for it
- * with `recomp_alloc`.
- * 
- * The `bytes` data will be copied exactly as is, NULL-terminators and all. No additional NULL-terminator will be
- * added to the end of the data.
- * 
- * Failure to free the `void*` returned by this function with `recomp_free` will result in a memory leak.
- * 
- * Behavior with Python types other than `bytes` is undefined, and may change between versions.
- * 
- * @param reverse Set to `false` to copy normally, or `true` to reverse the byte order of the data being copied.
- * @param bytes_obj The Python `bytes` object to copy from.
- * @param write_size A pointer to a `u32`, where the number of bytes copied can be written to.
- * @return A `void*` to the data copied into mod memory.
- */
-REPY_IMPORT(void* REPY_AllocAndCopyBytes(REPY_bool reverse, REPY_Handle bytes_obj, REPY_u32* write_size));
-
-/**
  * @brief Create a Python `bytearray` object from a chunk of mod memory.
  * 
  * This function copies the entire `src` region exactly as is, NULL-terminators and all.
@@ -2940,16 +2901,14 @@ REPY_IMPORT(void* REPY_AllocAndCopyBytes(REPY_bool reverse, REPY_Handle bytes_ob
 REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, REPY_u32 len, REPY_bool reverse));
 
 /**
- * @brief Copy the content of a Python `bytearray` object into mod memory.
+ * @brief Copy the content of a Python object supporting buffer protocol (such as `bytes` and `bytearray`) into mod memory.
  * 
- * The `bytearray` data will be copied exactly as is, NULL-terminators and all. No additional NULL-terminator will be
+ * The binary data from the buffer will be copied exactly as is, NULL bytes and all. No additional NULL bytes will be 
  * added to the end of the data.
  * 
- * If the Python `bytearray` object is smaller than `len`, then the remainder of destination will be untouched. If the
+ * If the Python buffer object is smaller than `len`, then the remainder of destination will be untouched. If the
  * `bytearray` object is larger than len, then copying will terminate when `len` is reached. Use the return value to get
  * how many bytes were actually copied.
- * 
- * Behavior with Python types other than `bytearray` is undefined, and may change between versions.
  * 
  * @param dst The beginning of the memory region to write to. 
  * @param len The size of the destination region to copy, in bytes. 
@@ -2957,14 +2916,14 @@ REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, REPY_u32 len, REPY_boo
  * @param bytes_obj The Python `bytearray` object to copy from.
  * @return The number of bytes actually copied.
  */
-REPY_IMPORT(REPY_u32 REPY_MemcpyFromByteArray(void* dst, REPY_u32 len, REPY_bool reverse, REPY_Handle bytes_obj));
+REPY_IMPORT(REPY_u32 REPY_MemcpyFromBuffer(void* dst, REPY_u32 len, REPY_bool reverse, REPY_Handle buffer));
 
 /**
- * @brief Copy the content of a Python `bytearray` object into mod memory, automatically allocating the space for it
- * with `recomp_alloc`.
+ * @brief Copy the content of a Python object supporting buffer protocol into mod memory, automatically allocating 
+ * the space for it with `recomp_alloc`.
  * 
- * The `bytes` data will be copied exactly as is, NULL-terminators and all. No additional NULL-terminator will be
- * added to the end of the data.
+ * The binary data from the buffer will be copied exactly as is, NULL bytes and all. No additional NULL bytes will
+ * be added to the end of the data.
  * 
  * Failure to free the `void*` returned by this function with `recomp_free` will result in a memory leak.
  * 
@@ -2975,7 +2934,7 @@ REPY_IMPORT(REPY_u32 REPY_MemcpyFromByteArray(void* dst, REPY_u32 len, REPY_bool
  * @param write_size A pointer to a `u32`, where the number of bytes copied can be written to.
  * @return A `void*` to the data copied into mod memory.
  */
-REPY_IMPORT(void* REPY_AllocAndCopyByteArray(REPY_bool reverse, REPY_Handle bytes_obj, REPY_u32* write_size));
+REPY_IMPORT(void* REPY_AllocAndCopyBuffer(REPY_bool reverse, REPY_Handle buffer, REPY_u32* write_size));
 
 /** @}*/
 

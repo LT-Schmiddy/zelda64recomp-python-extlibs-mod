@@ -250,15 +250,15 @@ void run_api_tests() {
     // Testing writing back into recomp memory:
     char memcpy_from_test [13];
     memcpy_from_test [12] = 0; 
-    REPY_MemcpyFromBytes(memcpy_from_test, 12, false, memcpy_test_byte_str);
+    REPY_MemcpyFromBuffer(memcpy_from_test, 12, false, memcpy_test_byte_str);
     validate("REPY_MemcpyFromBytes - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(memcpy_from_test, memcpy_test_cstr, 12) == 0);
-    REPY_MemcpyFromByteArray(memcpy_from_test, 12, false, memcpy_test_byte_array);
+    REPY_MemcpyFromBuffer(memcpy_from_test, 12, false, memcpy_test_byte_array);
     validate("REPY_MemcpyFromByteArray - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(memcpy_from_test, memcpy_test_cstr, 12) == 0);
     u32 alloc_write_size = 0;
-    char* alloc_byte_str = REPY_AllocAndCopyBytes(false, memcpy_test_byte_str, &alloc_write_size);
+    char* alloc_byte_str = REPY_AllocAndCopyBuffer(false, memcpy_test_byte_str, &alloc_write_size);
     validate("REPY_AllocAndCopyBytes - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(alloc_byte_str, memcpy_test_cstr, 12) == 0);
     validate("REPY_AllocAndCopyBytes - alloc_write_size == 12", alloc_write_size == 12);
-    char* alloc_byte_array = REPY_AllocAndCopyByteArray(false, memcpy_test_byte_array, &alloc_write_size);
+    char* alloc_byte_array = REPY_AllocAndCopyBuffer(false, memcpy_test_byte_array, &alloc_write_size);
     validate("REPY_AllocAndCopyByteArray - strncmp(memcpy_from_test, memcpy_test_cstr) is true", strncmp(alloc_byte_array, memcpy_test_cstr, 12) == 0);
     validate("REPY_AllocAndCopyByteArray - alloc_write_size == 12", alloc_write_size == 12);
     recomp_free(alloc_byte_str);
