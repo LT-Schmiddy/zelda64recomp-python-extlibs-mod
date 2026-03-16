@@ -102,8 +102,13 @@ void GlobalInterpreterController::init_py_objects() {
     _py_exec = builtins.attr("exec");
     _py_eval = builtins.attr("eval");
     _py_next = builtins.attr("next");
-
+    
+    // Zipfile is a beefy module that can take some time to import.
+    // Since a couple REPY API functions depend on it, we'll import it
+    // ahead of time to avoid stuttering when those functions are called.
     _py_zipfile_module = py::module_::import("zipfile");
     _py_zipfile_class = _py_zipfile_module.attr("ZipFile");
+    
+    //
     _py_stop_iteration_type = py::eval("StopIteration");
 }
