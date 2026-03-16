@@ -7,7 +7,15 @@ GlobalInterpreterController::GlobalInterpreterController(REPY_InterpreterIndex i
     
     // Capturing critical Python objects:
     if (_index != PYTHON_MAIN_INTERPRETER_HANDLE) {
-        _subinterp = py::subinterpreter::create();
+        // We want to configure the subinterpreter manually to enable daemon threads.
+        PyInterpreterConfig cfg;
+        std::memset(&cfg, 0, sizeof(cfg));
+        cfg.allow_threads = 1;
+        cfg.allow_daemon_threads = 1;
+        cfg.check_multi_interp_extensions = 1;
+        cfg.gil = PyInterpreterConfig_OWN_GIL;
+
+        _subinterp = py::subinterpreter::create(cfg);
         py::subinterpreter_scoped_activate activate(_subinterp);
         init_py_objects();
     } else {
