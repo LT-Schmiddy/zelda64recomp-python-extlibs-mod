@@ -393,7 +393,7 @@ def doxyzip(c: Context):
         cwd=p.root_dir
     )
     
-    shutil.make_archive(p.root_dir.joinpath(f"doxygen/{p.project_name}"),"zip", p.root_dir.joinpath("doxygen/html"), Path("."), verbose=True)
+    shutil.make_archive(p.root_dir.joinpath(f"doxygen/{p.project_name}-Doxygen"),"zip", p.root_dir.joinpath("doxygen/html"), Path("."), verbose=True)
     
     
     

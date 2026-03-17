@@ -25,14 +25,16 @@ REPY_REGISTER_SUBINTERPRETER(test_subinterp);
 
 void load_repl() {
         recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
-        char mem_test[] = "memoryview_test";
+        char char_mem_test[] = "memoryview_test";
+        int array_test[] = {11, 22, 33, 44};
 
         REPY_Handle nrm_zip = REPY_GetNrmZipFile();
         REPY_Handle code_module = REPY_ImportModule("code");
 
         REPY_Handle local = REPY_CreateDict(0);
         REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
-        REPY_DictSetCStr(local, "test_ptr", REPY_CreatePtr_SUH(mem_test));
+        REPY_DictSetCStr(local, "char_mem_test_ptr", REPY_CreatePtr_SUH(char_mem_test));
+        REPY_DictSetCStr(local, "array_test_ptr", REPY_CreatePtr_SUH(array_test));
         REPY_DictSetCStr(local, "min_ptr", REPY_CreatePtr_SUH((void*)0x80000000));
         REPY_DictSetCStr(local, "max_ptr", REPY_CreatePtr_SUH((void*)0x9FFFFFFF));
         
