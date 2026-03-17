@@ -13,7 +13,6 @@ REPY has API functionality available so that subinterpreters can be easily used 
 
 There is one exception to this: subinterpreter are slow to initialize, and REPY needs to set up additional control structures to manage them efficiently during runtime. As a result, ANY subinterpreter to be made available for use with the REPY C API needs to be declared before REPY initializes. Calling the function `REPY_PreInitRegisterSubinterpreter` during the `REPY_ON_PRE_INIT` event will inform REPY that a mod would like to have a subinterpreter prepared for use. REPY makes a note of this, and returns a `REPY_InterpreterIndex` value that can be used to access the subinterpreter **once REPY has been initialized**. After REPY the main Python interpreter and configures the global control structure for it, each requested subinterpreter will be initialized and have their global control structures created. At this point, the `REPY_ON_CONFIG_SUBINTERPRETER` event will fire, and the subinterpreter will be available use via the index value captured earlier.
 
-## Activating Subinterpreters and 
+## The Interpreter Stack {#interpreter_stack}
 
-At a high level, you can set REPY to interact with a specific subinterpreter by calling
-`REPY_PushInterpreter`, at with point all Python operations and code execution will take place on the specified interpreter. When you're done, call `REPY_PopInterpreter`.
+REPY needs to keep track of what interpreter is being accessed at any given time.
