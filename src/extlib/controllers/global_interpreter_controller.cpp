@@ -11,7 +11,7 @@ GlobalInterpreterController::GlobalInterpreterController(REPY_InterpreterIndex i
         PyInterpreterConfig cfg;
         std::memset(&cfg, 0, sizeof(cfg));
         cfg.allow_threads = 1;
-        cfg.allow_daemon_threads = 1;
+        cfg.allow_daemon_threads = 0;
         cfg.check_multi_interp_extensions = 1;
         cfg.gil = PyInterpreterConfig_OWN_GIL;
 
