@@ -329,7 +329,7 @@ typedef void REPY_DeferredCleanupHelper;
  * 
  * Takes no arguments, returns void.
  */
-#define REPY_ON_CONFIG_SUBINTERPRETERS RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnConfigSubinterpreters)
+#define REPY_ON_CONFIG_INTERPRETERS RECOMP_CALLBACK(REPY_MOD_ID_STR, REPY_OnConfigInterpreters)
 
 /**
  * @brief Event that runs immediately after `REPY_ON_INIT_SUBINTERPRETERS`. Used by the various global and static code caching macros.
@@ -373,12 +373,20 @@ typedef void REPY_DeferredCleanupHelper;
  * 
  * These modules will be available by the time `REPY_ON_INIT` runs, and will be available to all subinterpreters.
  */
-#define REPY_PREINIT_ADD_NRM_TO_SYS_PATH \
+#define REPY_PREINIT_ADD_NRM_TO_ALL_INTERPRETERS \
 REPY_ON_PRE_INIT void _repy_register_nrm () { \
     const unsigned char* nrm_file_path = recomp_get_mod_file_path(); \
     REPY_PreInitAddSysPath(nrm_file_path); \
     recomp_free((void*)nrm_file_path); \
 };
+
+#define PRE_ADD_NRM_TO_MAIN_INTERPRETER \
+REPY_ON_CONFIG_INTERPRETERS void __repy_config_main_interpreter() { \
+    recomp_printf("Configuring Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
+    REPY_PushInterpreter(subinterp_identifier); \
+    REPY_AddNrmToSysPath(); \
+    REPY_PopInterpreter(); \
+} 
 
  /**
   * @brief Use this macro at the global level of a C file to initialize a subinterpreter on startup.
@@ -391,11 +399,11 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
   */
 #define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
 REPY_InterpreterIndex subinterp_identifier = 0; \
-REPY_ON_PRE_INIT void subinterp_identifier ## _register() { \
+REPY_ON_PRE_INIT void __repy_config_ ## subinterp_identifier () { \
     subinterp_identifier = REPY_PreInitRegisterSubinterpreter(); \
     recomp_printf("Registering Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
 } \
-REPY_ON_CONFIG_SUBINTERPRETERS void subinterp_identifier ## _config() { \
+REPY_ON_CONFIG_INTERPRETERS void subinterp_identifier ## _config() { \
     recomp_printf("Configuring Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
     REPY_PushInterpreter(subinterp_identifier); \
     REPY_AddNrmToSysPath(); \
@@ -2913,7 +2921,7 @@ REPY_IMPORT(REPY_Handle REPY_MemcpyToByteArray(void* src, REPY_u32 len, REPY_boo
  * @param dst The beginning of the memory region to write to. 
  * @param len The size of the destination region to copy, in bytes. 
  * @param reverse Set to `false` to copy normally, or `true` to reverse the byte order of the data being copied.
- * @param bytes_obj The Python `bytearray` object to copy from.
+ * @param buffer The Python buffer object to copy from.
  * @return The number of bytes actually copied.
  */
 REPY_IMPORT(REPY_u32 REPY_MemcpyFromBuffer(void* dst, REPY_u32 len, REPY_bool reverse, REPY_Handle buffer));
@@ -2930,8 +2938,8 @@ REPY_IMPORT(REPY_u32 REPY_MemcpyFromBuffer(void* dst, REPY_u32 len, REPY_bool re
  * Behavior with Python types other than `bytearray` is undefined, and may change between versions.
  * 
  * @param reverse Set to `false` to copy normally, or `true` to reverse the byte order of the data being copied.
- * @param bytes_obj The Python `bytearray` object to copy from.
- * @param write_size A pointer to a `u32`, where the number of bytes copied can be written to.
+ * @param buffer The Python buffer object to copy from.
+ * @param write_size A pointer to a `u32`, where the number of bytes copied can be written to. Can be NULL.
  * @return A `void*` to the data copied into mod memory.
  */
 REPY_IMPORT(void* REPY_AllocAndCopyBuffer(REPY_bool reverse, REPY_Handle buffer, REPY_u32* write_size));

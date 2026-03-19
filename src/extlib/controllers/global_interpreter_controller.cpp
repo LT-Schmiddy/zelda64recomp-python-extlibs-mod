@@ -109,6 +109,5 @@ void GlobalInterpreterController::init_py_objects() {
     _py_zipfile_module = py::module_::import("zipfile");
     _py_zipfile_class = _py_zipfile_module.attr("ZipFile");
     
-    //
     _py_stop_iteration_type = py::eval("StopIteration");
 }
