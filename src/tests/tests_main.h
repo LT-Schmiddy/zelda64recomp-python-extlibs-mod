@@ -8,6 +8,8 @@
 #include "repy_api.h"
 #include "test_utils.h"
 
+REPY_EXTERN_SUBINTERPRETER(test_subinterp);
+
 void validate(char* case_name, bool case_stmt);
 
 #endif

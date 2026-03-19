@@ -26,9 +26,9 @@ void ThreadInterpreterController::activate() {
 
     if (_index != 0) {
         _scope = new py::subinterpreter_scoped_activate(*(_global_interp->get_subinterp()));
+    } else {
+        _gil = new py::gil_scoped_acquire();
     }
-
-    _gil = new py::gil_scoped_acquire();
 
     if (_index != 0) {
         PLOGD.printf("Activated Python interpreter %u", _index);
@@ -43,14 +43,13 @@ void ThreadInterpreterController::deactivate() {
     REPY_InterpreterIndex _index = _global_interp->get_index();
     _is_active = false;
 
-    delete _gil;
-    _gil = nullptr;
-
     if (_index != 0) {
         delete _scope;
         _scope = nullptr;
         PLOGD.printf("Deactivated Python interpreter %u", _index);
     } else {
+        delete _gil;
+        _gil = nullptr;
         PLOGD.printf("Deactivated Python interpreter %u (main interpreter)", _index);
     }
 }

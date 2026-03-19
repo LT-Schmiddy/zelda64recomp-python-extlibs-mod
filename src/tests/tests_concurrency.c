@@ -29,7 +29,7 @@ THREAD_FUNC(testThread1) {
 
 THREAD_DATA(testThread2, 0x500, 121);
 THREAD_FUNC(testThread2) {
-    REPY_FN_SETUP;
+    REPY_FN_SETUP_INTERP(test_subinterp);
     REPY_FN_EXEC_CACHE(concur_test1, 
         "print('Hello from test_thread1')"
     );
