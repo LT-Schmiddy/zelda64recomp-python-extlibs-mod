@@ -217,7 +217,7 @@ def write_char(ptr: int, char: str):
     """@brief Write a single character represented by a `str` object to recompiled memory.
 
     @param ptr The mod memory address to write to. 
-    @param value The character to write, expressed as a `str` object. 
+    @param char The character to write, expressed as a `str` object. 
     @throws RuntimeError if called from a thread not created by N64Recompiled.
     @throws ValueError if the length of `char` is greater than 1.
     """
@@ -239,7 +239,7 @@ def write_byte_char(ptr: int, char: bytes):
     """@brief Write a single character represented by a `bytes` object to recompiled memory.
 
     @param ptr The mod memory address to write to. 
-    @param value The character to write, expressed as a `bytes` object. 
+    @param char The character to write, expressed as a `bytes` object. 
     @throws RuntimeError if called from a thread not created by N64Recompiled.
     @throws ValueError if the length of `char` is greater than 1.
     """

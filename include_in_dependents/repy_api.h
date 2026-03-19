@@ -380,7 +380,7 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
     recomp_free((void*)nrm_file_path); \
 };
 
-#define PRE_ADD_NRM_TO_MAIN_INTERPRETER \
+#define REPY_ADD_NRM_TO_MAIN_INTERPRETER \
 REPY_ON_CONFIG_INTERPRETERS void __repy_config_main_interpreter() { \
     recomp_printf("Configuring Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
     REPY_PushInterpreter(subinterp_identifier); \
