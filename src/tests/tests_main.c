@@ -23,6 +23,17 @@ void validate(char* case_name, bool case_stmt) {
 
 REPY_REGISTER_SUBINTERPRETER(test_subinterp);
 
+
+inline void* get_stack_pointer() {
+    char* sp;
+    __asm__ volatile (
+        "move %0, $sp"
+        : "=r"(sp)
+    );
+    // Adding the size of the stack push.
+    return (void*) (sp + sizeof(char) * 16);
+}
+
 void load_repl() {
         recomp_printf("Starting Interactive Shell. Call `exit()` to continue to game...\n");
         char char_mem_test[] = "memoryview_test";
@@ -35,13 +46,17 @@ void load_repl() {
         REPY_DictSetCStr(local, "nrm_zip", nrm_zip);
         REPY_DictSetCStr(local, "char_mem_test_ptr", REPY_CreatePtr_SUH(char_mem_test));
         REPY_DictSetCStr(local, "array_test_ptr", REPY_CreatePtr_SUH(array_test));
-        REPY_DictSetCStr(local, "min_ptr", REPY_CreatePtr_SUH((void*)0x80000000));
-        REPY_DictSetCStr(local, "max_ptr", REPY_CreatePtr_SUH((void*)0x9FFFFFFF));
+        // REPY_DictSetCStr(local, "min_ptr", REPY_CreatePtr_SUH((void*)0x80000000));
+        // REPY_DictSetCStr(local, "max_ptr", REPY_CreatePtr_SUH((void*)0x9FFFFFFF));
+        REPY_DictSetCStr(local, "stack_ptr", REPY_CreatePtr_SUH(get_stack_pointer()));
+        REPY_DictSetCStr(local, "mem_raw", REPY_MakeSUH(REPY_ImportModule("repy_api.mem.raw")));
+        REPY_DictSetCStr(local, "mem_bs", REPY_MakeSUH(REPY_ImportModule("repy_api.mem.byteswapped")));
+        REPY_DictSetCStr(local, "stack_ptr", REPY_CreatePtr_SUH(get_stack_pointer()));
         
-        REPY_Handle kwargs = REPY_CreateDict(0);
-        REPY_DictSetCStr(kwargs, "local", local);
+        REPY_Handle kwargs = REPY_CreateDict(2, REPY_CreatePairCStr_SUH( "local", local), REPY_CreatePairCStr_SUH("local_exit", REPY_CreateBool_SUH(1)));
         REPY_Release(local);
-        
+        char tbuf[20] = "hello world";
+        recomp_printf("%s", tbuf);
         REPY_CallAttrCStr(code_module, "interact", 0, kwargs);
         REPY_Release(kwargs);
 
@@ -49,6 +64,8 @@ void load_repl() {
         REPY_Release(code_module);
         REPY_Release(nrm_zip);
 }
+
+
 
 REPY_ON_POST_INIT void REPY_API_Tests() {
     // Testing Interpreter Operations
@@ -91,22 +108,22 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
     //     REPY_FN_CLEANUP;
     // }
 
-    {
-        REPY_FN_SETUP;
-        int int_ptr = 66;
-        REPY_FN_SET("test_ptr", REPY_CreatePtr_SUH(&int_ptr));
-        REPY_FN_EXEC_CACHE(thread_test_2, 
-            "import threading, time\n"
-            "from repy_api.mem import byteswapped as bs\n"
-            "def t_test():\n"
-            "    time.sleep(3)\n"
-            "    print(bs.read_s32(test_ptr))\n"
-            "\n"
-            "t = threading.Thread(None, t_test)\n"
-            "t.start()\n"
-        );
-        REPY_FN_CLEANUP;
-    }
+    // {
+    //     REPY_FN_SETUP;
+    //     int int_ptr = 66;
+    //     REPY_FN_SET("test_ptr", REPY_CreatePtr_SUH(&int_ptr));
+    //     REPY_FN_EXEC_CACHE(thread_test_2, 
+    //         "import threading, time\n"
+    //         "from repy_api.mem import byteswapped as bs\n"
+    //         "def t_test():\n"
+    //         "    time.sleep(3)\n"
+    //         "    print(bs.read_s32(test_ptr))\n"
+    //         "\n"
+    //         "t = threading.Thread(None, t_test)\n"
+    //         "t.start()\n"
+    //     );
+    //     REPY_FN_CLEANUP;
+    // }
 
     if (recomp_get_config_u32("save_case_count")) {
         REPY_FN_SETUP;
@@ -126,6 +143,7 @@ REPY_ON_POST_INIT void REPY_API_Tests() {
         load_repl();
         REPY_PopInterpreter();
     }
+    
     REPY_PopInterpreter();
 }
 
