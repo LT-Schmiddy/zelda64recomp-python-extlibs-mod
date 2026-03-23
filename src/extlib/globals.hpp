@@ -1,7 +1,7 @@
 #pragma once
 #include <tracy/Tracy.hpp>
 #define PYBIND11_DETAILED_ERROR_MESSAGES
-// #define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
+#define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
 // This is what allows us to use free-threaded Python
 #define Py_GIL_DISABLED 1
 #ifdef _DEBUG

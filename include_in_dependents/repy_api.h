@@ -2242,10 +2242,23 @@ REPY_IMPORT(REPY_Handle REPY_CopyHandle(REPY_Handle handle_no_release));
 /** @}*/
 
 /** \defgroup repy_interpreter_funcs (Sub)Interpreter Functions
- * \brief Functions Used for Python interpreter/subinterpreter operations.
+ * \brief Functions Used for REPY's Interpreter Stack, which handles interpreter/subinterpreter operations as well as `PyThreadState` management.
  * 
- * REPY manages the lifetime of the main Python interpreter and subinterpreters for you, keeping track of each interpreter via a
- * `REPY_InterpreterIndex` value.
+ * REPY used a free-threaded build of Python, with the traditional Python GIL is a non-factor. However, the CPython still needs to know whether
+ * or not a given thread needs access to the interpreter (and when subinterpreters are in use, which interpreter) using an opaque struct in CPython
+ * called `PyThreadState`.
+ *
+ * Because the mod developer has no control over what other mods a player may install, and whether these mods use REPY, no single mod can be given 
+ * responsibility for managing the `PyThreadState` directly. Therefore, REPY implements something called the Interpreter Stack: If a given mod code
+ * thread requires access to the main interpreter, a call to `REPY_PushInterpreter` tells REPY a mod needs access to a specific interpreter, and a 
+ * call to `REPY_PopInterpreter` tells REPY that the previously requested access is no longer needed. Using this, REPY itself manages the `PyThreadState`
+ * of a given N64Recompiled thread, making changes to the state only necessary.
+ * 
+ * For this reason, it is recommended to call `REPY_PushInterpreter` at the top of any function that needs Python interpreter access, and to call
+ * `REPY_PopInterpreter` before that function returns. The exception is when `REPY_FN` macros, as the setup and cleanup macros will automatically do 
+ * this for you.
+ * 
+ waitr* See \ref repy_performance_interpreter_stack for potential performance pitfalls related to Interpreter Stack management.
  * 
  * See \ref subinterpreters for more information on what they are, and REPY's usage of them.
  * 

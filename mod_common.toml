@@ -164,7 +164,9 @@ id = "log_level"
 name = "Log Level"
 description = """Log information about RecompExternalPython to console, and to REPY.log. 
 
-Only applied on game startup. Relaunch the game to change the value."""
+Only applied on game startup. Relaunch the game to change the value.
+
+Additionally, the current logging implementation is inefficient. Only use settings 'Debug' and 'Verbose' for development and testing."""
 type = "Enum"
 options = [ "NONE", "FATAL", "ERROR", "WARNING", "INFO", "DEBUG", "VERBOSE"]
 default = "WARNING"
