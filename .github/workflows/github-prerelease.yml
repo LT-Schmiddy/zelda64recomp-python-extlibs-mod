@@ -8,8 +8,6 @@ on:
       - "prerelease-*.*.*"
 jobs:
   build:
-    outputs:
-      thunderstore-package: ${{ steps.create-thunderstore-package.outputs.artifact-id }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo
@@ -54,10 +52,10 @@ jobs:
     - name: Read Thunderstore Manifest
       id: read_thunderstore_manifest
       run: |
-        python3 ./modbuild.py manifest -n mm >> ${{ github.workspace }}/manifest.json
-        NAME=$(jq -r '.name' ${{ github.workspace }}/manifest.json)
-        VERSION=$(jq -r '.version_number' ${{ github.workspace }}/manifest.json)
-        DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/manifest.json)
+        python3 ./modbuild.py manifest -n mm
+        NAME=$(jq -r '.name' ${{ github.workspace }}/RecompExternalPython_for_Zelda64Recompiled.manifest.json)
+        VERSION=$(jq -r '.version_number' ${{ github.workspace }}/RecompExternalPython_for_Zelda64Recompiled.manifest.json)
+        DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/RecompExternalPython_for_Zelda64Recompiled.manifest.json)
         echo "name=$NAME" >> "$GITHUB_OUTPUT"
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         echo "description=$DESCRIPTION" >> "$GITHUB_OUTPUT"
