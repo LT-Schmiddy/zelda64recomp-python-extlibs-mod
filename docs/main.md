@@ -2,6 +2,8 @@
 
 RecompExternalPython (also known as REPY) is a library designed to solve an persistent problem in the N64Recompiled ecosystem: the necessity of external libraries and the headaches they induce.
 
+This webside contains the documentation for the project. This is currently a first draft, with more comprehensive tutorials to be written in the future.
+
 ## Why REPY {#why_repy}
 
 In cases where an N64Recompiled mod needs to 'break containment' and access system resources that wouldn't have been available to an Nintendo 64 (such as file I/O, networking, getting the system time, etc), the de facto solution is to compile an external shared library (commonly referred to as an 'extlib' by the N64Recompiled modding community), and package that alongside the mod's `.nrm` file. This solution does work, but has several major drawbacks for mod developers. Some of these issues are:
@@ -25,3 +27,5 @@ What REPY will NOT do is enable you to write an entire mod with Python. There ar
 Simply include the `repy_api.h` header in your mod's source files, and add `RecompExternalPython:2.0.0` as a dependency for your mod in your `mod.toml`.
 
 The `REPY_FN` macros are the recommended interface for interacting with the Python interpreter from recompiled code. See the [`REPY_FN` Overview](\ref repy_fn_overview) for a quick overview of how to use it.
+
+Additionally, while REPY is fully capable of running Python code at the speeds required for N64Recompiled games, there are a few known performance pitfalls one should avoid. See the [Performance Considerations](\ref repy_performance) page for more information.

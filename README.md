@@ -1,10 +1,26 @@
-# RecompExternalPython - API for Embedding Python Code into N64Recompiled mods
+# Main Page {#main_page}
 
-The RecompExternalPython API is resource for N64Recompiled for modders. Enables use of the Python Standard library within mods, and executing Python code inline inside of mod code in a performant manner.
+RecompExternalPython (also known as REPY) is a library designed to solve an persistent problem in the N64Recompiled ecosystem: the necessity of external libraries and the headaches they induce.
 
-This enabled many behaviors that would otherwise require an external library to be compiled, and in manner that's MUCH easier than compiling your own external library.
+## Why REPY {#why_repy}
 
-Requires Zelda64Recompiled 1.2.1 or above.
+In cases where an N64Recompiled mod needs to 'break containment' and access system resources that wouldn't have been available to an Nintendo 64 (such as file I/O, networking, getting the system time, etc), the de facto solution is to compile an external shared library (commonly referred to as an 'extlib' by the N64Recompiled modding community), and package that alongside the mod's `.nrm` file. This solution does work, but has several major drawbacks for mod developers. Some of these issues are:
+
+* Extlibs need to be natively compiled for each platform that the mod developer wants to support, and then distributed with the `.nrm`. That means producing a `.dll` file for Windows, a `.dylib` file for MacOS, and a `.so` file for Linux users.  Mod templates and build scripts to facilitate cross-compilation do exist, but it's still an imperfect solution that can result in bloated project folders and slow build times.
+* Exchanging data between the recompiled game memory and the system memory suffers from multiple restrictions, including the inability to allocate in the recompiled memory space from the extlib code, the byte-swapping required when translating between recompiled memory and regular memory, the restriction that extlib functions (the ones exposed to mod memory) can only have four 32-bit arguments without (without getting into complicated operations involving the recompiled stack pointer).
+* Extlib code cannot call recompiled functions, be they functions from the original game or functions created by the mod. Navigating this restriction necessitates creating very awkward code paths and complicated application architecture that can become difficult to maintain.
+
+REPY aims to provide modders with an easier alternative to creating their own extlibs. By embedding the runtime for an interpreted programming language (specifically, Python) into an N64Recompiled extlib of its own,mods can instruct REPY to interact with the host system on their behalf. In essense, REPY is single extlib that encompasses the vast majority of cases where extlibs would be required.
+
+This enables REPY to provide easy solutions to the problems above:
+
+* REPY comes already compiled for every platform that N64Recompiled games support, meaning that modders don't need to deal with cross-compilation. All of the Python code is contained within the `.nrm` itself, making distribution much easier.
+* REPY automatically handles the complications of copying data between the native system (in this case, the Python interpreter) and recompiled memory. When using the C API, REPY is able allocate space in recompiled memory automatically when needed.
+* While it not possible for the Python interpreter to call into recompiled code, REPY circumvments that issue by allowing modders to control the Python interpreter from inside C functions. In fact, the `REPY_FN` macro collection enables modders to seamlessly interweave recompiled C code and Python extlib code within the same function.
+
+What REPY will NOT do is enable you to write an entire mod with Python. There are still aspects of N64Recompiled modding that must be handled through recompiled mod code, such as hooks and patches, that REPY cannot handle using Python. REPY merely offers an easier way to do things that mod code can't do alone.
+
+## Usage
 
 ## ORIGINAL - LTSchmiddy's Majora's Mask: Recompiled Mod Template
 
@@ -28,66 +44,29 @@ This template has somewhat different requirements from the default mod template.
 * `cmake`
 * `ninja`
 * `python` (or `python3` on POSIX systems).
-* `zig`
 
-On Linux and MacOS, you'll need to also ensure that you have the `zip` utility installed.
+**You do NOT need the `RecompModTool` tool or any special compilers, as the build script will compile all of the N64Recomp tools for you.**
 
-All of these can (and should) be installed via using [chocolatey](https://chocolatey.org/) on Windows, Homebrew on MacOS, or your distro's package manager on Linux.
-
-**You do NOT need the `RecompModTool` tool, as the build script will compile all of the N64Recomp tools for you.**
-
-You'll also need a `gcc` compatible compiler and linker with MIPS support. `clang` and `ld.lld` (part of the llvm toolset) are recommended.
-
-* On Windows, using [chocolatey](https://chocolatey.org/) to install both is recommended. The packages are `llvm` and `make` respectively.
-  * The LLVM 19.1.0 [llvm-project](https://github.com/llvm/llvm-project) release binary, which is also what chocolatey provides, does not support MIPS correctly. The solution is to install 18.1.8 instead, which can be done in chocolatey by specifying `--version 18.1.8` or by downloading the 18.1.8 release directly.
+* On Windows, using [chocolatey](https://chocolatey.org/) to install everything is recommended.
 * On Linux, these can both be installed using your distro's package manager.
-* On MacOS, these can both be installed using Homebrew. Apple clang won't work, as you need a mips target for building the mod code.
-
-Alternatively, if you don't want to downgrade your clang version (or want a later version than what's provided for your system), I maintain [MIPS-only builds of the latest llvm utilities](https://github.com/LT-Schmiddy/n64recomp-clang/releases/latest). They're what I use. I recommend the `N64RecompEssentials` packages, as they only have the tools that are useful for working with recomp mods.
+* On MacOS, these can both be installed using Homebrew.
 
 ### Building
 
-Run `git submodule update --init --recursive` to make sure you've clones all submodules. Then, run `make` (with an optional job count) to build everything.
+Currently, building is only supported on x86-64 Windows and Linux, and arm64 MacOS.
 
-Alternatively, you can also use special target invokations to only build specific things, such as the mod `.nrm` file or the extlib for a specific platform.
-See the Makefile for all valid targets.
+Run `git submodule update --init --recursive` to make sure you've clones all submodules. Then, run `./modbuild.py` to create a debug build. 
+Use `./modbuild.py thunderstore` to create the release packages.
 
-This repo is set up for building an extlib by default. If your mod isn't meant to have an extlib, simply remove the `extlib_compilation` section from your
-`mod.toml`, and the build scripts will disable all extlib handling when building the `all` target.
-
-On your first run, a file called `user_build_config.json` will be created at the root of the repo. Here you can set the command/path for the compiler and linker
-you want to use for your mod code. If you want to use my MIPS-only clang builds (or any compiler not on the system path), this is an easy way to set them up.
-You can also set which CMake presets you want to use for building your external library.
+For more build options, use `./modbuild.py -h` and for help information
 
 ### Extlib Compilation, Cross-Compilation, and CMake Presets
 
-This template is set up to automatically build and cross-compile your extlib code (via CMake and Zig) alongside your mod code when you invoke `make`.
+This template is set up to automatically build and cross-compile your extlib code (via CMake and Zig) alongside your mod code .
 CMake presets are used to handle any configuration differences between target platforms ([More info about CMake presets can be found
-here](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)). The default presets to use for each can be set in the `extlib_compiling`
-section of your `mod.toml`. These are copied into `user_build_config.json` when the file is created. If you want to use a different preset for
-a platform when compiling on your local system, without changing the default, you can change the preset in `user_build_config.json`.
-
-More information about extlib compiling can be found in the `mod.toml` file.
+here](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)).
 
 ### Testing
 
-This template includes handling of a dedicated testing environment for you mod in the form of the `./runtime` folder. First, create `./runtime` in your
-mod's root directory and copy in recomp's `assets` directory into it (You can also copy anyu config files, saves, and other mods you want to test against). After a build, your mod's `.nrm` file (and extlib file, if one is being built) will be copied to a folder called `./runtime/mods`, and a file called `./runtime/portable.txt` will be created. Then, if you use `runtime` and as your CWD, everything's ready to go for immediate testing as soon as your build finishes.
+This template includes handling of dedicated testing environments for this mod in the form of the `./test_env` folder. First, Copy in the `assets` from the recomp (or just the entire recomp) you want to test against into the folder corresponding to its game id (`./test_env/[game_id]`), along with any config files, saves, and other mods you want to test against. Then, create a file called `./test_env/[game_id]/portable.txt`. After a build, the mod's `.nrm` file and extlib files will be copied to a folder called `./test_env/[game_id]/mods`.  Once that's been done, you use `runtime` and as your CWD, everything's ready to go for immediate testing as soon as your build finishes.
 
-### Updating the Majora's Mask Decompilation Submodule
-
-Mods can also be made with newer versions of the Majora's Mask decompilation instead of the commit targeted by this repo's submodule.
-To update the commit of the decompilation that you're targeting, follow these steps:
-
-* Build the [N64Recomp](https://github.com/N64Recomp/N64Recomp) repo and copy the N64Recomp executable to the root of this repository.
-* Build the version of the Majora's Mask decompilation that you want to update to and copy the resulting .elf file to the root of this repository.
-* Update the `mm-decomp` submodule in your clone of this repo to point to the commit you built in the previous step.
-* Run `N64Recomp generate_symbols.toml --dump-context`
-* Rename `dump.toml` and `data_dump.toml` to `mm.us.rev1.syms.toml` and `mm.us.rev1.datasyms.toml` respectively.
-  * Place both files in the `Zelda64RecompSyms` folder.
-* Try building.
-  * If it succeeds, you're done.
-  * If it fails due to a missing header, create an empty header file in the `include/dummy_headers` folder, with the same path.
-    * For example, if it complains that `assets/objects/object_cow/object_cow.h` is missing, create an empty `include/dummy_headers/objects/object_cow.h` file.
-  * If RecompModTool fails due to a function "being marked as a patch but not existing in the original ROM", it's likely that function you're patching was renamed in the Majora's Mask decompilation.
-    * Find the relevant function in the map file for the old decomp commit, then go to that address in the new map file, and update the reference to this function in your code with the new name.
