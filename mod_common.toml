@@ -8,12 +8,12 @@ display_name = "Recomp External Python API"
 
 # The description that will show up when this mod is displayed in the mod menu. This should be human readable.
 description =  """
-A resource for modders. Enables use of Python code and the Python Standard library within mods, enabling many behaviors that would otherwise require an external library to be compiled.
+RecompExternalPython (also known as REPY) is a library designed to solve an persistent problem in the N64Recompiled ecosystem: the necessity of external libraries and the headaches they induce. This is accomplished by embedding a free-threaded Python runtime into an N64Recompiled mod.
 """
 
 # A short description that will show up in this mod's entry in the mod list. This should be human readable and kept short
 # to prevent it from being cut off due to the limited space.
-short_description = "A resource for modders. Allows running Python code from mods."
+short_description = "Allows mods to use the Python interpreter and run Python code to interact with the native system."
 
 # Authors of this mod.
 authors = [ "LT_Schmiddy" ]
@@ -173,7 +173,7 @@ default = "WARNING"
 
 [[manifest.config_options]]
 id = "log_to_file"
-name = "Save REPY's log to a file."
+name = "Save REPY's log to a file. Be advised the current logging implementation is inefficient. Leave off except for development and testing."
 description = """
 Save REPY's log to a file.
 """

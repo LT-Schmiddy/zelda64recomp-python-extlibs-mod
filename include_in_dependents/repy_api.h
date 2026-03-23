@@ -369,9 +369,10 @@ typedef void REPY_DeferredCleanupHelper;
  * @brief Adds this .nrm file to Python's module search path.
  * 
  * This will allow you to add Python modules (both single files and module folders) to your mod by
- * including them under the `additional_files` section of your mod.toml
+ * including them under the `additional_files` section of your mod.toml. See \ref including_python_modules for more information.
  * 
- * These modules will be available by the time `REPY_ON_INIT` runs, and will be available to all subinterpreters.
+ * These modules will be available by the time `REPY_ON_CONFIG_INTERPRETERS` runs, and will be available to all subinterpreters.
+ * Unless you're creating a mod that bundles Python packages for other mods to use, this is likely not the behavior you want.
  */
 #define REPY_PREINIT_ADD_NRM_TO_ALL_INTERPRETERS \
 REPY_ON_PRE_INIT void _repy_register_nrm () { \
@@ -380,6 +381,15 @@ REPY_ON_PRE_INIT void _repy_register_nrm () { \
     recomp_free((void*)nrm_file_path); \
 };
 
+
+/**
+ * @brief Adds this .nrm file to the main Python interpreter's module search path.
+ * 
+ * This will allow you to add Python modules (both single files and module folders) to your mod by
+ * including them under the `additional_files` section of your mod.toml. See \ref including_python_modules for more information.
+ * 
+ * These modules will be available during `REPY_ON_CONFIG_INTERPRETERS`.
+ */
 #define REPY_ADD_NRM_TO_MAIN_INTERPRETER \
 REPY_ON_CONFIG_INTERPRETERS void __repy_config_main_interpreter() { \
     recomp_printf("Configuring Main Interpreter (Index %i)\n", 0); \
@@ -395,7 +405,7 @@ REPY_ON_CONFIG_INTERPRETERS void __repy_config_main_interpreter() { \
   * for which is set via the `subinterp_identifier` argument.
   * 
   * This macro also adds this .nrm to the import path`sys.path` for the new subinterpreter, meaning that
-  * the subinterpreter can import Python modules stored within the .nrm.
+  * the subinterpreter can import Python modules stored within the `.nrm`. See \ref including_python_modules for more information.
   */
 #define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
 REPY_InterpreterIndex subinterp_identifier = 0; \
