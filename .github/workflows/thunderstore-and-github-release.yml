@@ -82,11 +82,10 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         name: Release ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
-        body_path: ./thunderstore_package/CHANGELOG.md
+        body_path: ./thunderstore_info/CHANGELOG.md
         files: |
           ./thunderstore_packages/*thunderstore.zip
           ./include_in_dependents/*
-          ./doxygen/*.zip
         make_latest: true
 
     - name: Publish MM Thunderstore Release
@@ -102,7 +101,7 @@ jobs:
         version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
         categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
           libraries
-        file: ./thunderstore_packages/${{ steps.read_mm_thunderstore_manifest.outputs.name }}.thunderstore.zip
+        file: ${{ github.workspace }}/thunderstore_packages/${{ steps.read_mm_thunderstore_manifest.outputs.name }}.thunderstore.zip
 
     - name: Publish BK Thunderstore Release
       id: publish_bk_thunderstore_release
@@ -117,5 +116,5 @@ jobs:
         version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
         categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
           libraries
-        file: ./thunderstore_packages/${{ steps.read_bk_thunderstore_manifest.outputs.name }}.thunderstore.zip
+        file: ${{ github.workspace }}/thunderstore_packages/${{ steps.read_bk_thunderstore_manifest.outputs.name }}.thunderstore.zip
     
