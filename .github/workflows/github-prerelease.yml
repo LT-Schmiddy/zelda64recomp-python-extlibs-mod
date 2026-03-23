@@ -47,7 +47,7 @@ jobs:
       with:
         name: ThunderstorePackage
         path: |
-          ./thunderstore_packages/*thunderstore.zip
+          ./*thunderstore.zip
 
     - name: Read Thunderstore Manifest
       id: read_thunderstore_manifest
@@ -69,7 +69,7 @@ jobs:
         name: Prerelease ${{ steps.read_thunderstore_manifest.outputs.version }}
         body_path: ./thunderstore_info/CHANGELOG.md
         files: |
-          ./thunderstore_packages/*thunderstore.zip
+          ./*thunderstore.zip
           ./include_in_dependents/*
           ./doxygen/*.zip
         prerelease: true

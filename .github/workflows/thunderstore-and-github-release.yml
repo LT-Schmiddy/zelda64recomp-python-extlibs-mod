@@ -43,7 +43,7 @@ jobs:
     - name: Run Buildscript
       id: run_buildscript
       run: |-
-        python3 ./modbuild.py thunderstore doxyzip
+        python3 ./modbuild.py thunderstore
 
     - name: Upload Build Artifacts
       id: upload_build_artifacts
@@ -51,7 +51,7 @@ jobs:
       with:
         name: ThunderstorePackage
         path: |
-          ./thunderstore_packages/*thunderstore.zip
+          ./*thunderstore.zip
 
     - name: Read MM Thunderstore Manifest
       id: read_mm_thunderstore_manifest
@@ -84,7 +84,7 @@ jobs:
         name: Release ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
         body_path: ./thunderstore_info/CHANGELOG.md
         files: |
-          ./thunderstore_packages/*thunderstore.zip
+          ./*thunderstore.zip
           ./include_in_dependents/*
         make_latest: true
 
@@ -101,7 +101,7 @@ jobs:
         version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
         categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
           libraries
-        file: ${{ github.workspace }}/thunderstore_packages/${{ steps.read_mm_thunderstore_manifest.outputs.name }}.thunderstore.zip
+        file: ./${{ steps.read_mm_thunderstore_manifest.outputs.name }}.thunderstore.zip
 
     - name: Publish BK Thunderstore Release
       id: publish_bk_thunderstore_release
@@ -116,5 +116,5 @@ jobs:
         version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
         categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
           libraries
-        file: ${{ github.workspace }}/thunderstore_packages/${{ steps.read_bk_thunderstore_manifest.outputs.name }}.thunderstore.zip
+        file: ./${{ steps.read_bk_thunderstore_manifest.outputs.name }}.thunderstore.zip
     

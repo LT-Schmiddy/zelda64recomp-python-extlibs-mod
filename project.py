@@ -13,7 +13,7 @@ binaries_dir: Path = root_dir.joinpath("binaries")
 mod_build_dir = build_dir.joinpath("mod")
 tests_build_dir = build_dir.joinpath("tests")
 
-package_dir = root_dir.joinpath("thunderstore_packages")
+package_dir = root_dir.joinpath(".")
 
 make_mips_compiler_path: Path = None
 make_mips_linker_path: Path = None
