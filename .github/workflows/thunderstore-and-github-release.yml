@@ -88,33 +88,33 @@ jobs:
           ./include_in_dependents/*
         make_latest: true
 
-    - name: Publish MM Thunderstore Release
-      id: publish_mm_thunderstore_release
-      uses: GreenTF/upload-thunderstore-package@v4.3
-      with:
-        repo: thunderstore.io
-        token: ${{ secrets.THUNDERSTORE_SERVICE_TOKEN }}
-        community: zelda-64-recompiled
-        namespace: ${{ vars.THUNDERSTORE_TEAM }} # the thunderstore 'team' to publish under
-        name: ${{ steps.read_mm_thunderstore_manifest.outputs.name }} # the name of the package
-        description: ${{ steps.read_mm_thunderstore_manifest.outputs.description }}
-        version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
-        categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
-          libraries
-        file: ./${{ steps.read_mm_thunderstore_manifest.outputs.name }}.thunderstore.zip
+    # - name: Publish MM Thunderstore Release
+    #   id: publish_mm_thunderstore_release
+    #   uses: GreenTF/upload-thunderstore-package@v4.3
+    #   with:
+    #     repo: thunderstore.io
+    #     token: ${{ secrets.THUNDERSTORE_SERVICE_TOKEN }}
+    #     community: zelda-64-recompiled
+    #     namespace: ${{ vars.THUNDERSTORE_TEAM }} # the thunderstore 'team' to publish under
+    #     name: ${{ steps.read_mm_thunderstore_manifest.outputs.name }} # the name of the package
+    #     description: ${{ steps.read_mm_thunderstore_manifest.outputs.description }}
+    #     version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
+    #     categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
+    #       libraries
+    #     file: ./${{ steps.read_mm_thunderstore_manifest.outputs.name }}.thunderstore.zip
 
-    - name: Publish BK Thunderstore Release
-      id: publish_bk_thunderstore_release
-      uses: GreenTF/upload-thunderstore-package@v4.3
-      with:
-        repo: thunderstore.io
-        token: ${{ secrets.THUNDERSTORE_SERVICE_TOKEN }}
-        community: banjo-recompiled
-        namespace: ${{ vars.THUNDERSTORE_TEAM }} # the thunderstore 'team' to publish under
-        name: ${{ steps.read_mm_thunderstore_manifest.outputs.name }} # the name of the package
-        description: ${{ steps.read_mm_thunderstore_manifest.outputs.description }}
-        version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
-        categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
-          libraries
-        file: ./${{ steps.read_bk_thunderstore_manifest.outputs.name }}.thunderstore.zip
+    # - name: Publish BK Thunderstore Release
+    #   id: publish_bk_thunderstore_release
+    #   uses: GreenTF/upload-thunderstore-package@v4.3
+    #   with:
+    #     repo: thunderstore.io
+    #     token: ${{ secrets.THUNDERSTORE_SERVICE_TOKEN }}
+    #     community: banjo-recompiled
+    #     namespace: ${{ vars.THUNDERSTORE_TEAM }} # the thunderstore 'team' to publish under
+    #     name: ${{ steps.read_mm_thunderstore_manifest.outputs.name }} # the name of the package
+    #     description: ${{ steps.read_mm_thunderstore_manifest.outputs.description }}
+    #     version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
+    #     categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
+    #       libraries
+    #     file: ./${{ steps.read_bk_thunderstore_manifest.outputs.name }}.thunderstore.zip
     
