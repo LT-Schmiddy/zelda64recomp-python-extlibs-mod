@@ -1,4 +1,4 @@
-# Main Page {#main_page}
+# Main Page {#mainpage}
 
 RecompExternalPython (also known as REPY) is a library designed to solve an persistent problem in the N64Recompiled ecosystem: the necessity of external libraries and the headaches they induce.
 

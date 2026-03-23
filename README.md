@@ -1,8 +1,18 @@
-# Main Page {#main_page}
+# Main Page {#mainpage}
 
 RecompExternalPython (also known as REPY) is a library designed to solve an persistent problem in the N64Recompiled ecosystem: the necessity of external libraries and the headaches they induce.
 
-## Why REPY {#why_repy}
+The goal for this project is to support every N64Recompiled port that comes along, and the source code is designed to not be tied to any specific game. However, since there is currently no universal specification for `.nrm` files, the API still needs to packaged for each game individually. Currently, only the following games are supported:
+
+* [Zelda64Recompiled](https://github.com/Zelda64Recomp/Zelda64Recomp)
+* [Banjo64Recompiled](https://github.com/BanjoRecomp/BanjoRecomp)
+* [Starfox64Recompiled](https://github.com/sonicdcer/Starfox64Recomp)
+* [MarioKart64Recompiled](https://github.com/sonicdcer/MarioKart64Recomp)
+* [Goemon64Recompiled](https://github.com/klorfmorf/Goemon64Recomp)
+
+If you would like your N64Recompiled port to be supported by REPY, please make as issue or a PR.
+
+## Why REPY
 
 In cases where an N64Recompiled mod needs to 'break containment' and access system resources that wouldn't have been available to an Nintendo 64 (such as file I/O, networking, getting the system time, etc), the de facto solution is to compile an external shared library (commonly referred to as an 'extlib' by the N64Recompiled modding community), and package that alongside the mod's `.nrm` file. This solution does work, but has several major drawbacks for mod developers. Some of these issues are:
 
@@ -21,6 +31,10 @@ This enables REPY to provide easy solutions to the problems above:
 What REPY will NOT do is enable you to write an entire mod with Python. There are still aspects of N64Recompiled modding that must be handled through recompiled mod code, such as hooks and patches, that REPY cannot handle using Python. REPY merely offers an easier way to do things that mod code can't do alone.
 
 ## Usage
+
+Simply include the [`repy_api.h` header](https://github.com/LT-Schmiddy/zelda64recomp-python-extlibs-mod/blob/custom-main/include_in_dependents/repy_api.h) in your mod's source files, and add `RecompExternalPython:2.0.0` as a dependency for your mod in your `mod.toml`.
+
+For more information, please consult project's [official documentation](https://lt-schmiddy.github.io/docs/REPY_for_N64Recomp/index.html).
 
 ## ORIGINAL - LTSchmiddy's Majora's Mask: Recompiled Mod Template
 
