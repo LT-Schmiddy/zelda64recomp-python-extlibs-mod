@@ -291,7 +291,7 @@ def manifest(c: Context, name: str = None, output_file: str = None, list: bool =
         
     for package in package_list:
         if output_file is None:
-            output = Path(package.manifest['name']).with_suffix(".json")
+            output = Path(package.manifest['name']).with_suffix(".manifest.json")
         else:
             output = Path(output_file)
             

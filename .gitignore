@@ -35,4 +35,5 @@ patches.map
 *.exp
 *.pyc
 *.thunderstore.zip
+*.manifest.json
 *.nrm
