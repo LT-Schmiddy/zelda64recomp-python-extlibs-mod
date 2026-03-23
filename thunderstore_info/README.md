@@ -1,4 +1,4 @@
-# Main Page {#mainpage}
+# REPY: Recomp External Python
 
 RecompExternalPython (also known as REPY) is a library designed to solve a persistent problem in the N64Recompiled ecosystem: the necessity of external libraries and the headaches they introduce. This is accomplished by embedding a free-threaded Python runtime into an N64Recompiled mod.
 
