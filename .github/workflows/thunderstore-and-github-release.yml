@@ -12,8 +12,6 @@ on:
       - "release-*.*.*"
 jobs:
   build:
-    outputs:
-      thunderstore-package: ${{ steps.create-thunderstore-package.outputs.artifact-id }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repo
@@ -25,12 +23,27 @@ jobs:
     - name: Get Apt Packages
       id: get_apt_packages
       run: |-
-        sudo apt install -y cmake make ninja-build python3 jq
+        sudo apt install -y ninja-build jq zip doxygen
+
+    - name: setup-python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.14' 
+
+    - name: Get Snap Packages
+      id: get_snap_packages
+      run: |-
+        sudo snap install cmake --classic
+
+    - name: Print Python Version
+      id: print_python_version
+      run: |-
+        python3 --version
 
     - name: Run Buildscript
       id: run_buildscript
       run: |-
-        python3 ./modbuild.py thunderstore
+        python3 ./modbuild.py thunderstore doxyzip
 
     - name: Upload Build Artifacts
       id: upload_build_artifacts
@@ -38,14 +51,26 @@ jobs:
       with:
         name: ThunderstorePackage
         path: |
-          ./thunderstore_package/*
+          ./thunderstore_packages/*thunderstore.zip
 
-    - name: Read Thunderstore Manifest
-      id: read_thunderstore_manifest
+    - name: Read MM Thunderstore Manifest
+      id: read_mm_thunderstore_manifest
       run: |
-        NAME=$(jq -r '.name' ${{ github.workspace }}/thunderstore_package/manifest.json)
-        VERSION=$(jq -r '.version_number' ${{ github.workspace }}/thunderstore_package/manifest.json)
-        DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/thunderstore_package/manifest.json)
+        python3 ./modbuild.py manifest -n mm
+        NAME=$(jq -r '.name' ${{ github.workspace }}/RecompExternalPython_for_Zelda64Recompiled.manifest.json)
+        VERSION=$(jq -r '.version_number' ${{ github.workspace }}/RecompExternalPython_for_Zelda64Recompiled.manifest.json)
+        DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/RecompExternalPython_for_Zelda64Recompiled.manifest.json)
+        echo "name=$NAME" >> "$GITHUB_OUTPUT"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "description=$DESCRIPTION" >> "$GITHUB_OUTPUT"
+
+    - name: Read BK Thunderstore Manifest
+      id: read_bk_thunderstore_manifest
+      run: |
+        python3 ./modbuild.py manifest -n bk
+        NAME=$(jq -r '.name' ${{ github.workspace }}/RecompExternalPython_for_BanjoRecompiled.manifest.json)
+        VERSION=$(jq -r '.version_number' ${{ github.workspace }}/RecompExternalPython_for_BanjoRecompiled.manifest.json)
+        DESCRIPTION=$(jq -r '.description' ${{ github.workspace }}/RecompExternalPython_for_BanjoRecompiled.manifest.json)
         echo "name=$NAME" >> "$GITHUB_OUTPUT"
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         echo "description=$DESCRIPTION" >> "$GITHUB_OUTPUT"
@@ -56,26 +81,41 @@ jobs:
       uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: Release ${{ steps.read_thunderstore_manifest.outputs.version }}
+        name: Release ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
         body_path: ./thunderstore_package/CHANGELOG.md
         files: |
+          ./thunderstore_packages/*thunderstore.zip
           ./include_in_dependents/*
-          ./*thunderstore.zip
+          ./doxygen/*.zip
         make_latest: true
 
-    - name: Publish Thunderstore Release
-      id: publish_thunderstore_release
+    - name: Publish MM Thunderstore Release
+      id: publish_mm_thunderstore_release
       uses: GreenTF/upload-thunderstore-package@v4.3
       with:
         repo: thunderstore.io
         token: ${{ secrets.THUNDERSTORE_SERVICE_TOKEN }}
         community: zelda-64-recompiled
         namespace: ${{ vars.THUNDERSTORE_TEAM }} # the thunderstore 'team' to publish under
-        name: ${{ steps.read_thunderstore_manifest.outputs.name }} # the name of the package
-        description: ${{ steps.read_thunderstore_manifest.outputs.description }}
-        version: ${{ steps.read_thunderstore_manifest.outputs.version }}
+        name: ${{ steps.read_mm_thunderstore_manifest.outputs.name }} # the name of the package
+        description: ${{ steps.read_mm_thunderstore_manifest.outputs.description }}
+        version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
         categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
           libraries
-        file: ./${{ steps.read_thunderstore_manifest.outputs.name }}.thunderstore.zip
+        file: ./thunderstore_packages/${{ steps.read_mm_thunderstore_manifest.outputs.name }}.thunderstore.zip
 
+    - name: Publish BK Thunderstore Release
+      id: publish_bk_thunderstore_release
+      uses: GreenTF/upload-thunderstore-package@v4.3
+      with:
+        repo: thunderstore.io
+        token: ${{ secrets.THUNDERSTORE_SERVICE_TOKEN }}
+        community: banjo-recompiled
+        namespace: ${{ vars.THUNDERSTORE_TEAM }} # the thunderstore 'team' to publish under
+        name: ${{ steps.read_mm_thunderstore_manifest.outputs.name }} # the name of the package
+        description: ${{ steps.read_mm_thunderstore_manifest.outputs.description }}
+        version: ${{ steps.read_mm_thunderstore_manifest.outputs.version }}
+        categories: | # valid categories are 'audio', 'misc', 'libraries', 'modpacks', and 'mods'.
+          libraries
+        file: ./thunderstore_packages/${{ steps.read_bk_thunderstore_manifest.outputs.name }}.thunderstore.zip
     
