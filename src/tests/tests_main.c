@@ -5,6 +5,7 @@
 #include "tests_concurrency.h"
 
 REPY_PREINIT_ADD_NRM_TO_ALL_INTERPRETERS;
+REPY_ADD_NRM_TO_MAIN_INTERPRETER;
 
 int _test_cases = 0;
 int _test_cases_passed = 0; 
