@@ -105,6 +105,19 @@ mnsg_toml_data = {
     }
 }
 
+dk64_toml_data = {
+    "manifest": {
+        "game_id": "dk64",
+        "minimum_recomp_version": "1.0.0"
+    },
+    "inputs": {
+        "func_reference_syms_file": str(root_dir.joinpath("./syms/Dk64Syms/dump.toml")),
+        "data_reference_syms_files": [
+            str(root_dir.joinpath("./syms/Dk64Syms/data_dump.toml"))
+        ]
+    }
+}
+
 
 mod_toml_data = {
     "manifest": {
@@ -317,11 +330,13 @@ bk_mod_toml, bk_mod_nrm = add_toml_and_nrm_job("bk", "mod", mod_build_dir, [mod_
 sf64_mod_toml, sf64_mod_nrm = add_toml_and_nrm_job("sf64", "mod", mod_build_dir, [mod_common_data, sf64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
 mk64_mod_toml, mk64_mod_nrm = add_toml_and_nrm_job("mk64", "mod", mod_build_dir, [mod_common_data, mk64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
 mnsg_mod_toml, mnsg_mod_nrm = add_toml_and_nrm_job("mnsg", "mod", mod_build_dir, [mod_common_data, mnsg_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
+dk64_mod_toml, dk64_mod_nrm = add_toml_and_nrm_job("dk64", "mod", mod_build_dir, [mod_common_data, dk64_toml_data, mod_toml_data], [archive_extractions["llvmmips"], makefiles['mod']], repy_api_files)
 mm_tests_toml, mm_tests_nrm = add_toml_and_nrm_job("mm", "tests", tests_build_dir, [tests_common_data, mm_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 bk_tests_toml, bk_tests_nrm = add_toml_and_nrm_job("bk", "tests", tests_build_dir, [tests_common_data, bk_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 sf64_tests_toml, sf64_tests_nrm = add_toml_and_nrm_job("sf64", "tests", tests_build_dir, [tests_common_data, sf64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 mk64_tests_toml, mk64_tests_nrm = add_toml_and_nrm_job("mk64", "tests", tests_build_dir, [tests_common_data, mk64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 mnsg_tests_toml, mnsg_tests_nrm = add_toml_and_nrm_job("mnsg", "tests", tests_build_dir, [tests_common_data, mnsg_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
+dk64_tests_toml, dk64_tests_nrm = add_toml_and_nrm_job("dk64", "tests", tests_build_dir, [tests_common_data, dk64_toml_data, tests_toml_data], [archive_extractions["llvmmips"], makefiles['tests']])
 
 # Extlib Compilation
 extlib_name = "RecompPythonNative"
@@ -557,6 +572,7 @@ add_build_output("bk_debug", "test_env/bk/mods", [bk_mod_nrm, bk_tests_nrm] + cm
 add_build_output("sf64_debug", "test_env/sf64/mods", [sf64_mod_nrm, sf64_tests_nrm] + cmake_debug_builds)
 add_build_output("mk64_debug", "test_env/mk64/mods", [mk64_mod_nrm, mk64_tests_nrm] + cmake_debug_builds)
 add_build_output("mnsg_debug", "test_env/mnsg/mods", [mnsg_mod_nrm, mnsg_tests_nrm] + cmake_debug_builds)
+add_build_output("dk64_debug", "test_env/dk64/mods", [dk64_mod_nrm, dk64_tests_nrm] + cmake_debug_builds)
 
 def package_url_from_git() -> str:
     result = subprocess.run(
@@ -600,6 +616,7 @@ add_thunderstore_package("bk", "RecompExternalPython_for_BanjoRecompiled", proje
 add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled", project_version_string, [sf64_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("mk64", "RecompExternalPython_for_MarioKart64Recompiled", project_version_string, [mk64_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("mnsg", "RecompExternalPython_for_Goemon64Recompiled", project_version_string, [mnsg_mod_nrm] + cmake_release_builds)
+add_thunderstore_package("dk64", "RecompExternalPython_for_DonkeyKong64Recompiled", project_version_string, [dk64_mod_nrm] + cmake_release_builds)
 
 clean_paths: list[Path] = [
     build_dir
