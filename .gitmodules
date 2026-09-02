@@ -30,3 +30,9 @@
 [submodule "syms/Dk64Syms"]
 	path = syms/Dk64Syms
 	url = https://github.com/Rainchus/Dk64Syms.git
+[submodule "syms/MarioKart64RecompSyms_GitLab"]
+	path = syms/MarioKart64RecompSyms_GitLab
+	url = https://gitlab.com/sonicdcer/MarioKart64RecompSyms.git
+[submodule "syms/Starfox64RecompSyms_GitLab"]
+	path = syms/Starfox64RecompSyms_GitLab
+	url = https://gitlab.com/sonicdcer/Starfox64RecompSyms.git
