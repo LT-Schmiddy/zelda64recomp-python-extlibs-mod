@@ -6,6 +6,7 @@
 
 REPY_PREINIT_ADD_NRM_TO_ALL_INTERPRETERS;
 REPY_ADD_NRM_TO_MAIN_INTERPRETER;
+REPY_REGISTER_SUBINTERPRETER(test_subinterp);
 
 int _test_cases = 0;
 int _test_cases_passed = 0; 
@@ -21,9 +22,6 @@ void validate(char* case_name, bool case_stmt) {
         recomp_printf("Case %s %s\n", case_stmt ? "Passed:" : "Failed!", case_name);
     }
 }
-
-REPY_REGISTER_SUBINTERPRETER(test_subinterp);
-
 
 inline void* get_stack_pointer() {
     char* sp;

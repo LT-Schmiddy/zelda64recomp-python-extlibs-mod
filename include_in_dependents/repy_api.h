@@ -409,11 +409,11 @@ REPY_ON_CONFIG_INTERPRETERS void __repy_config_main_interpreter() { \
   */
 #define REPY_REGISTER_SUBINTERPRETER(subinterp_identifier) \
 REPY_InterpreterIndex subinterp_identifier = 0; \
-REPY_ON_PRE_INIT void __repy_config_ ## subinterp_identifier () { \
+REPY_ON_PRE_INIT void __repy_register_ ## subinterp_identifier () { \
     subinterp_identifier = REPY_PreInitRegisterSubinterpreter(); \
     recomp_printf("Registering Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
 } \
-REPY_ON_CONFIG_INTERPRETERS void subinterp_identifier ## _config() { \
+REPY_ON_CONFIG_INTERPRETERS void __repy_config_ ## subinterp_identifier() { \
     recomp_printf("Configuring Subinterpreter '%s' (Index %i)\n", #subinterp_identifier, subinterp_identifier); \
     REPY_PushInterpreter(subinterp_identifier); \
     REPY_AddNrmToSysPath(); \
