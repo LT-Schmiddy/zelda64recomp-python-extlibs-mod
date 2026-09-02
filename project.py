@@ -569,8 +569,8 @@ def add_build_output(job_name: str, output_path: Path, dependencies: list[JobBas
 cmake_debug_builds = [i for i in cmake_build_groups["Debug"].values()]
 add_build_output("zelda_debug", "test_env/zelda/mods", [mm_mod_nrm, mm_tests_nrm] + cmake_debug_builds)
 add_build_output("bk_debug", "test_env/bk/mods", [bk_mod_nrm, bk_tests_nrm] + cmake_debug_builds)
-add_build_output("sf64_debug", "test_env/sf64/mods", [sf64_mod_nrm, sf64_tests_nrm] + cmake_debug_builds)
-add_build_output("mk64_debug", "test_env/mk64/mods", [mk64_mod_nrm, mk64_tests_nrm] + cmake_debug_builds)
+# add_build_output("sf64_debug", "test_env/sf64/mods", [sf64_mod_nrm, sf64_tests_nrm] + cmake_debug_builds)
+# add_build_output("mk64_debug", "test_env/mk64/mods", [mk64_mod_nrm, mk64_tests_nrm] + cmake_debug_builds)
 add_build_output("mnsg_debug", "test_env/mnsg/mods", [mnsg_mod_nrm, mnsg_tests_nrm] + cmake_debug_builds)
 add_build_output("dk64_debug", "test_env/dk64/mods", [dk64_mod_nrm, dk64_tests_nrm] + cmake_debug_builds)
 
@@ -613,8 +613,8 @@ def add_thunderstore_package(job_name: str, package_name: str, version_str: str,
 cmake_release_builds = [i for i in cmake_build_groups["Release"].values()]
 add_thunderstore_package("mm", "RecompExternalPython_for_Zelda64Recompiled", project_version_string, [mm_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("bk", "RecompExternalPython_for_BanjoRecompiled", project_version_string, [bk_mod_nrm] + cmake_release_builds)
-add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled", project_version_string, [sf64_mod_nrm] + cmake_release_builds)
-add_thunderstore_package("mk64", "RecompExternalPython_for_MarioKart64Recompiled", project_version_string, [mk64_mod_nrm] + cmake_release_builds)
+# add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled", project_version_string, [sf64_mod_nrm] + cmake_release_builds)
+# add_thunderstore_package("mk64", "RecompExternalPython_for_MarioKart64Recompiled", project_version_string, [mk64_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("mnsg", "RecompExternalPython_for_Goemon64Recompiled", project_version_string, [mnsg_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("dk64", "RecompExternalPython_for_DonkeyKong64Recompiled", project_version_string, [dk64_mod_nrm] + cmake_release_builds)
 
