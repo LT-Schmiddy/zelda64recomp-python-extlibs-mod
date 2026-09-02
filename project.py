@@ -72,9 +72,9 @@ sf64_toml_data = {
         "minimum_recomp_version": "1.0.0"
     },
     "inputs": {
-        "func_reference_syms_file": str(root_dir.joinpath("./syms/Starfox64RecompSyms/sf64.us.rev1.syms.toml")),
+        "func_reference_syms_file": str(root_dir.joinpath("./syms/Starfox64RecompSyms_GitLab/sf64.us.rev1.syms.toml")),
         "data_reference_syms_files": [ 
-            str(root_dir.joinpath("./syms/Starfox64RecompSyms/sf64.us.rev1.datasyms.toml"))
+            str(root_dir.joinpath("./syms/Starfox64RecompSyms_GitLab/sf64.us.rev1.datasyms.toml"))
         ]
     }
 }
@@ -85,9 +85,9 @@ mk64_toml_data = {
         "minimum_recomp_version": "0.0.9"
     },
     "inputs": {
-        "func_reference_syms_file": str(root_dir.joinpath("./syms/MarioKart64RecompSyms/mk64.us.syms.toml")),
+        "func_reference_syms_file": str(root_dir.joinpath("./syms/MarioKart64RecompSyms_GitLab/mk64.us.syms.toml")),
         "data_reference_syms_files": [ 
-            str(root_dir.joinpath("./syms/MarioKart64RecompSyms/mk64.us.datasyms.toml"))
+            str(root_dir.joinpath("./syms/MarioKart64RecompSyms_GitLab/mk64.us.datasyms.toml"))
         ]
     }
 }
@@ -569,8 +569,8 @@ def add_build_output(job_name: str, output_path: Path, dependencies: list[JobBas
 cmake_debug_builds = [i for i in cmake_build_groups["Debug"].values()]
 add_build_output("zelda_debug", "test_env/zelda/mods", [mm_mod_nrm, mm_tests_nrm] + cmake_debug_builds)
 add_build_output("bk_debug", "test_env/bk/mods", [bk_mod_nrm, bk_tests_nrm] + cmake_debug_builds)
-# add_build_output("sf64_debug", "test_env/sf64/mods", [sf64_mod_nrm, sf64_tests_nrm] + cmake_debug_builds)
-# add_build_output("mk64_debug", "test_env/mk64/mods", [mk64_mod_nrm, mk64_tests_nrm] + cmake_debug_builds)
+add_build_output("sf64_debug", "test_env/sf64/mods", [sf64_mod_nrm, sf64_tests_nrm] + cmake_debug_builds)
+add_build_output("mk64_debug", "test_env/mk64/mods", [mk64_mod_nrm, mk64_tests_nrm] + cmake_debug_builds)
 add_build_output("mnsg_debug", "test_env/mnsg/mods", [mnsg_mod_nrm, mnsg_tests_nrm] + cmake_debug_builds)
 add_build_output("dk64_debug", "test_env/dk64/mods", [dk64_mod_nrm, dk64_tests_nrm] + cmake_debug_builds)
 
@@ -613,8 +613,8 @@ def add_thunderstore_package(job_name: str, package_name: str, version_str: str,
 cmake_release_builds = [i for i in cmake_build_groups["Release"].values()]
 add_thunderstore_package("mm", "RecompExternalPython_for_Zelda64Recompiled", project_version_string, [mm_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("bk", "RecompExternalPython_for_BanjoRecompiled", project_version_string, [bk_mod_nrm] + cmake_release_builds)
-# add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled", project_version_string, [sf64_mod_nrm] + cmake_release_builds)
-# add_thunderstore_package("mk64", "RecompExternalPython_for_MarioKart64Recompiled", project_version_string, [mk64_mod_nrm] + cmake_release_builds)
+add_thunderstore_package("sf64", "RecompExternalPython_for_Starfox64Recompiled", project_version_string, [sf64_mod_nrm] + cmake_release_builds)
+add_thunderstore_package("mk64", "RecompExternalPython_for_MarioKart64Recompiled", project_version_string, [mk64_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("mnsg", "RecompExternalPython_for_Goemon64Recompiled", project_version_string, [mnsg_mod_nrm] + cmake_release_builds)
 add_thunderstore_package("dk64", "RecompExternalPython_for_DonkeyKong64Recompiled", project_version_string, [dk64_mod_nrm] + cmake_release_builds)
 
